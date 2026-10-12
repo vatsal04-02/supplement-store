@@ -167,9 +167,8 @@
   // is passed to CSS so the stage never enlarges them beyond their pixels.
   function productImageMarkup(p, loading) {
     if (!p.image) {
-      return '<div class="product-photo-pending" role="img" aria-label="' + esc('Photo of ' + p.brand + ' ' + p.name + ' awaiting upload') + '">' +
-        '<span class="pending-brand" aria-hidden="true">' + esc(p.brand) + '</span>' +
-        '<span class="pending-note" aria-hidden="true">Store photo coming soon</span></div>';
+      return '<div class="product-photo-pending"><span class="pending-brand">' + esc(p.brand) + '</span> ' +
+        '<span class="pending-note">Store photo coming soon</span></div>';
     }
     return '<picture data-source-w="' + p.imageWidth + '" data-source-h="' + p.imageHeight + '">' +
       (p.imageWebp ? '<source srcset="' + esc(p.imageWebp) + '" type="image/webp">' : '') +
@@ -189,8 +188,8 @@
     });
   }
 
-  function photoTrust(p, decorative) {
-    return p.image ? '<span class="product-photo-trust"' + (decorative ? ' aria-hidden="true"' : '') + '>Store-supplied photo</span>' : '';
+  function photoTrust(p) {
+    return p.image ? '<span class="product-photo-trust">Store-supplied photo</span>' : '';
   }
 
   function priceMarkup(variant) {
@@ -254,8 +253,9 @@
     var featuredStock = STOCK_LABELS[p.stock] || 'Confirm with store';
     var label = p.brand + ' ' + p.name;
     return '<article class="featured-card" data-id="' + esc(p.id) + '" data-index="' + index + '">' +
-      '<a class="featured-photo" href="#catalogue" data-open-catalogue data-category-link="' + esc(p.category) + '" data-select-item="' + esc(p.id) + '" aria-label="' + esc('View ' + label + ' in the catalogue') + '">' +
-      productImageMarkup(p, 'lazy') + photoTrust(p, true) + '</a>' +
+      '<a class="featured-photo" href="#catalogue" data-open-catalogue data-category-link="' + esc(p.category) + '" data-select-item="' + esc(p.id) + '" aria-label="' +
+      esc((p.image ? 'Store-supplied photo of ' + label : p.brand + ' store photo coming soon: ' + p.name) + ', view in the catalogue') + '">' +
+      productImageMarkup(p, 'lazy') + photoTrust(p) + '</a>' +
       '<div class="featured-body"><span>' + esc(p.brand) + '</span><h3>' + esc(p.name) + '</h3><p>' + esc(category + (variant ? ' · ' + variantLabel(variant) : '')) + '</p>' +
       '<div class="featured-facts"><div class="featured-fact"><small>Selling price</small><strong>' + esc(featuredPrice) + '</strong></div>' +
       '<div class="featured-fact"><small>Availability</small><strong>' + esc(featuredStock) + '</strong></div></div>' +
@@ -293,10 +293,11 @@
     else note = count ? 'Browse the listed products' : 'On the store shelves · ask for current options';
     var mediaMarkup = primary
       ? categoryPicture(primary, 'category-primary', tileSizes) + (visual && store ? categoryPicture(store, 'category-store-proof', '112px') : '')
-      : '<span class="category-mark" aria-hidden="true">' + String(index + 1).padStart(2, '0') + '</span>';
+      : '<span class="category-mark" data-mark="' + String(index + 1).padStart(2, '0') + '"></span>';
+    // The tile's name comes from its visible copy (WCAG 2.5.3 label in name);
+    // the image layer is decorative here because the note says what it shows.
     return '<a class="category-tile category-' + esc(category.id) + (primary ? '' : ' category-typographic') + (!visual && store ? ' category-store-primary' : '') +
-      '" href="#catalogue" data-open-catalogue data-category-link="' + esc(category.id) + '" data-track-source="category_tile" aria-label="' +
-      esc('Browse ' + category.label + ': ' + count + ' listed ' + (count === 1 ? 'product' : 'products')) + '"><div class="category-media">' + mediaMarkup +
+      '" href="#catalogue" data-open-catalogue data-category-link="' + esc(category.id) + '" data-track-source="category_tile"><div class="category-media" aria-hidden="true">' + mediaMarkup +
       '</div><div class="category-copy"><span>' + count + ' listed</span><strong>' + esc(category.label) + '</strong><small class="category-visual-note">' + esc(note) + '</small></div></a>';
   }).join('');
   applyMediaVars(categoryGrid);

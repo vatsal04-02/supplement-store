@@ -43,22 +43,36 @@ body.lock {
 .visit-copy,
 .reviews-intro,
 .location-copy,
+.founder-copy,
 .featured-body {
   container-type: inline-size;
 }
 @media (min-width: 1051px) {
   .visit-copy h2 {
-    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 17cqi);
+    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 16.2cqi);
   }
   .reviews-intro h2 {
-    font-size: min(clamp(3rem, 5vw, 5rem), 16.4cqi);
+    font-size: min(clamp(3rem, 5vw, 5rem), 15.6cqi);
   }
   .location-copy h3 {
-    font-size: min(clamp(2.5rem, 4.5vw, 4.8rem), 14cqi);
+    font-size: min(clamp(2.5rem, 4.5vw, 4.8rem), 13.4cqi);
+  }
+  .founder-copy h2 {
+    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 16.2cqi);
   }
   .featured-card:first-child .featured-body h3 {
     font-size: min(2.1rem, 12.2cqi);
   }
+}
+
+/* Dialog titles (often long product names) scale to the dialog width so a
+   phone never shows "MONOHYDRAT / E". Desktop sizes are unchanged. */
+.modal {
+  container-type: inline-size;
+}
+.modal .modal-head h2 {
+  font-size: min(2.6rem, 9cqi);
+  overflow-wrap: normal;
 }
 
 /* 3. Review mode and owner approvals ------------------------------------- */
@@ -167,6 +181,9 @@ html:not(.review-mode) [data-owner-note] {
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
   transition: -webkit-text-stroke-color var(--motion-base, 260ms) ease, transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
 }
+.category-tile .category-mark:before {
+  content: attr(data-mark);
+}
 @supports not (-webkit-text-stroke: 1px #fff) {
   .category-tile .category-mark {
     color: rgba(255, 255, 255, 0.07);
@@ -234,10 +251,16 @@ html:not(.review-mode) [data-owner-note] {
   opacity: 0.38;
   cursor: not-allowed;
 }
-.card-action.add.is-added {
+/* "Added" confirmation: white on the red system, including while the pointer
+   is still over the button (the hover wipe would otherwise cover it). */
+.card-action.add.is-added,
+.card-action.add.is-added:hover {
   background: var(--white);
   border-color: var(--white);
   color: var(--black);
+}
+.card-action.add.is-added:before {
+  background: var(--white);
 }
 .detail-purchase {
   display: grid;

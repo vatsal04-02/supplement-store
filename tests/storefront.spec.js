@@ -22,18 +22,42 @@ for (const viewport of VIEWPORTS) {
       expect(problems).toEqual([]);
     });
 
-    test('display headings never split a word', async ({ page }) => {
-      await page.goto('/');
-      await page.evaluate(() => { document.getElementById('catalogue').hidden = false; });
-      const offenders = await page.evaluate(() => {
-        const style = document.createElement('style');
-        style.textContent = '*{overflow-wrap:normal!important;word-break:normal!important}';
-        document.head.appendChild(style);
-        return [...document.querySelectorAll('h1, h2, h3, .category-copy strong, .btn, .card-action')]
-          .filter((el) => el.getClientRects().length && el.scrollWidth > el.clientWidth + 1)
-          .map((el) => el.textContent.trim().slice(0, 50));
+    test('display headings and dialog titles fit their longest word with a 4% margin', async ({ page }) => {
+      // System fonts differ by a few percent across devices, so a word that only
+      // just fits here would split elsewhere (the original "NUTRITI / ON." bug).
+      const check = (selector) => page.evaluate((sel) => {
+        const out = [];
+        for (const el of document.querySelectorAll(sel)) {
+          if (!el.getClientRects().length || !el.clientWidth) continue;
+          // Hyphens are legitimate break points ("Pre- / workout"), so test the parts.
+          for (const word of el.textContent.trim().split(/\s+/).flatMap((w) => w.split(/(?<=-)/))) {
+            // A custom element, so the site's own span rules cannot restyle the probe.
+            const probe = document.createElement('x-probe');
+            probe.textContent = word;
+            probe.style.setProperty('white-space', 'nowrap', 'important');
+            probe.style.setProperty('display', 'inline', 'important');
+            el.appendChild(probe);
+            const width = probe.getBoundingClientRect().width;
+            probe.remove();
+            if (width > el.clientWidth * 0.96) out.push(word + ' (' + Math.round(width) + '/' + el.clientWidth + ')');
+          }
+        }
+        return out;
+      }, selector);
+      await page.goto('/#catalogue');
+      expect(await check('main h2, main h3, .category-copy strong')).toEqual([]);
+      // The hero lines never wrap by design; they must stay inside the copy column.
+      const heroOverflow = await page.evaluate(() => {
+        const column = document.querySelector('.hero-copy').getBoundingClientRect();
+        return [...document.querySelectorAll('.hero-line > span')].filter((line) => line.getBoundingClientRect().right > column.right + 1).length;
       });
-      expect(offenders).toEqual([]);
+      expect(heroOverflow).toBe(0);
+      await page.locator('.product-card[data-id="wellcore-micronised-creatine"] [data-details]').click();
+      await expect(page.locator('#modalBackdrop')).toHaveClass(/open/);
+      expect(await check('.modal-head h2')).toEqual([]);
+      await page.keyboard.press('Escape');
+      await page.locator('.site-nav .cart-open').click();
+      expect(await check('.drawer-head h2')).toEqual([]);
     });
   });
 }
@@ -58,7 +82,8 @@ test('products without a supplied photo show a placeholder stage, not a broken i
   await page.goto('/');
   const pending = page.locator('#featuredGrid .product-photo-pending');
   await expect(pending).toHaveCount(2);
-  await expect(pending.first()).toHaveAttribute('aria-label', /awaiting upload/);
+  await expect(pending.first()).toContainText('Store photo coming soon');
+  await expect(page.locator('#featuredGrid .featured-photo').nth(2)).toHaveAccessibleName(/^Pintola store photo coming soon/);
   await expect(page.locator('#featuredGrid .featured-card:has(.product-photo-pending) .product-photo-trust')).toHaveCount(0);
 });
 
