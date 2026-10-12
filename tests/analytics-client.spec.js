@@ -58,7 +58,10 @@ test('an unreachable collector never breaks the page', async ({ page }) => {
 test.describe('Global Privacy Control', () => {
   test('is honoured: no events, no collector requests', async ({ page }) => {
     let requests = 0;
-    await page.route('**/api/collect', (route) => { requests++; return route.fulfill({ status: 204 }); });
+    await page.route('**/api/collect', (route) => {
+      requests++;
+      return route.fulfill({ status: 204 });
+    });
     await page.addInitScript(() => Object.defineProperty(navigator, 'globalPrivacyControl', { get: () => true }));
     await instrument(page);
     await page.goto('/');
@@ -73,7 +76,9 @@ test.describe('Global Privacy Control', () => {
 
 test('Google Analytics is never loaded without a measurement ID and consent', async ({ page }) => {
   const thirdParty = [];
-  page.on('request', (request) => { if (!request.url().startsWith('http://127.0.0.1')) thirdParty.push(request.url()); });
+  page.on('request', (request) => {
+    if (!request.url().startsWith('http://127.0.0.1')) thirdParty.push(request.url());
+  });
   await page.goto('/');
   await openCatalogue(page);
   await expect(page.locator('#consentBanner')).toBeHidden();
@@ -83,7 +88,9 @@ test('Google Analytics is never loaded without a measurement ID and consent', as
 
 test('with a GA4 ID configured, the banner asks first and declining keeps Google out', async ({ page }) => {
   const google = [];
-  page.on('request', (request) => { if (/googletagmanager|google-analytics/.test(request.url())) google.push(request.url()); });
+  page.on('request', (request) => {
+    if (/googletagmanager|google-analytics/.test(request.url())) google.push(request.url());
+  });
   await page.route('**/js/site-config.js', async (route) => {
     const response = await route.fetch();
     await route.fulfill({ response, body: (await response.text()).replace("ga4MeasurementId: ''", "ga4MeasurementId: 'G-TEST1234'") });

@@ -16,7 +16,10 @@ test.beforeEach(async ({ page }) => {
   await instrument(page);
 });
 
-for (const viewport of [{ width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+for (const viewport of [
+  { width: 390, height: 844 },
+  { width: 1440, height: 900 }
+]) {
   test(`storefront at ${viewport.width}px has no serious or critical violations`, async ({ page }) => {
     await page.setViewportSize(viewport);
     await page.goto('/');

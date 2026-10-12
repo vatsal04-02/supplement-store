@@ -46,11 +46,31 @@
   };
 
   var PARAM_RULES = {
-    item_id: 'id', item_name: 'text', item_brand: 'text', item_category: 'id', item_variant: 'text',
-    item_list_id: 'id', item_list_name: 'text', item_ids: 'idlist', index: 'int', quantity: 'int',
-    value: 'num', price: 'num', currency: 'id', search_term: 'term', results_count: 'int',
-    filter_type: 'id', filter_value: 'text', source: 'id', contact: 'id', context: 'id',
-    items_count: 'int', lines_count: 'int', method: 'id', policy: 'id', action: 'id'
+    item_id: 'id',
+    item_name: 'text',
+    item_brand: 'text',
+    item_category: 'id',
+    item_variant: 'text',
+    item_list_id: 'id',
+    item_list_name: 'text',
+    item_ids: 'idlist',
+    index: 'int',
+    quantity: 'int',
+    value: 'num',
+    price: 'num',
+    currency: 'id',
+    search_term: 'term',
+    results_count: 'int',
+    filter_type: 'id',
+    filter_value: 'text',
+    source: 'id',
+    contact: 'id',
+    context: 'id',
+    items_count: 'int',
+    lines_count: 'int',
+    method: 'id',
+    policy: 'id',
+    action: 'id'
   };
 
   var KEYS = {
@@ -61,21 +81,31 @@
   };
 
   function storageGet(area, key) {
-    try { return window[area].getItem(key); } catch (error) { return null; }
+    try {
+      return window[area].getItem(key);
+    } catch (error) {
+      return null;
+    }
   }
   function storageSet(area, key, value) {
     try {
       if (value == null) window[area].removeItem(key);
       else window[area].setItem(key, value);
-    } catch (error) { /* storage unavailable: keep the in-memory state */ }
+    } catch (error) {
+      /* storage unavailable: keep the in-memory state */
+    }
   }
 
   var isLocal = location.protocol === 'file:' || /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
   var debug = cfg.debug === true || (cfg.debug === 'auto' && isLocal);
   var privacySignal = !!(navigator.globalPrivacyControl === true || navigator.doNotTrack === '1' || window.doNotTrack === '1');
   var respectSignals = cfg.respectPrivacySignals !== false;
-  var endpoint = cfg.firstParty && cfg.firstParty.enabled && typeof cfg.firstParty.endpoint === 'string' ? cfg.firstParty.endpoint.trim() : '';
-  var ga4Id = typeof cfg.ga4MeasurementId === 'string' && /^G-[A-Z0-9]{4,20}$/.test(cfg.ga4MeasurementId.trim()) ? cfg.ga4MeasurementId.trim() : '';
+  var endpoint =
+    cfg.firstParty && cfg.firstParty.enabled && typeof cfg.firstParty.endpoint === 'string' ? cfg.firstParty.endpoint.trim() : '';
+  // A page opened straight from disk has no server to send to.
+  if (location.protocol === 'file:') endpoint = '';
+  var ga4Id =
+    typeof cfg.ga4MeasurementId === 'string' && /^G-[A-Z0-9]{4,20}$/.test(cfg.ga4MeasurementId.trim()) ? cfg.ga4MeasurementId.trim() : '';
 
   var state = {
     optOut: storageGet('localStorage', KEYS.optOut) === '1',
@@ -86,10 +116,18 @@
   var lastFingerprint = { key: '', at: 0 };
   var pageViewSent = false;
 
-  function blockedBySignal() { return respectSignals && privacySignal; }
-  function measuringAllowed() { return !state.optOut && !blockedBySignal(); }
-  function firstPartyActive() { return !!endpoint && measuringAllowed(); }
-  function ga4Active() { return !!ga4Id && state.ga4Consent === 'granted' && measuringAllowed(); }
+  function blockedBySignal() {
+    return respectSignals && privacySignal;
+  }
+  function measuringAllowed() {
+    return !state.optOut && !blockedBySignal();
+  }
+  function firstPartyActive() {
+    return !!endpoint && measuringAllowed();
+  }
+  function ga4Active() {
+    return !!ga4Id && state.ga4Consent === 'granted' && measuringAllowed();
+  }
 
   function randomHex(bytes) {
     var out = '';
@@ -117,7 +155,11 @@
   function landingContext() {
     var stored = storageGet('sessionStorage', KEYS.landing);
     if (stored) {
-      try { return JSON.parse(stored); } catch (error) { /* rebuild below */ }
+      try {
+        return JSON.parse(stored);
+      } catch (error) {
+        /* rebuild below */
+      }
     }
     var ctx = { ref: '', utm_source: '', utm_medium: '', utm_campaign: '' };
     try {
@@ -130,7 +172,9 @@
         var value = params.get(key);
         if (value) ctx[key] = cleanId(value).slice(0, 60);
       });
-    } catch (error) { /* keep empty context */ }
+    } catch (error) {
+      /* keep empty context */
+    }
     storageSet('sessionStorage', KEYS.landing, JSON.stringify(ctx));
     return ctx;
   }
@@ -144,11 +188,21 @@
 
   function cleanText(value, max) {
     // Control characters are stripped on purpose.
-    // eslint-disable-next-line no-control-regex
-    return String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max || 80);
+    return (
+      String(value)
+        // eslint-disable-next-line no-control-regex
+        .replace(/[\u0000-\u001f\u007f]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, max || 80)
+    );
   }
   function cleanId(value) {
-    return String(value).toLowerCase().replace(/[^a-z0-9_.:-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64);
+    return String(value)
+      .toLowerCase()
+      .replace(/[^a-z0-9_.:-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 64);
   }
   function cleanTerm(value) {
     return cleanText(value, 120)
@@ -165,12 +219,25 @@
       var rule = PARAM_RULES[key];
       var value = params[key];
       if (!rule || value == null || value === '') return;
-      if (rule === 'id') { value = cleanId(value); if (value) out[key] = value; }
-      else if (rule === 'text') { value = cleanText(value); if (value) out[key] = value; }
-      else if (rule === 'term') { value = cleanTerm(value); if (value) out[key] = value; }
-      else if (rule === 'int') { value = Number(value); if (Number.isInteger(value) && value >= 0 && value <= 100000) out[key] = value; }
-      else if (rule === 'num') { value = Number(value); if (Number.isFinite(value) && value >= 0 && value <= 10000000) out[key] = Math.round(value * 100) / 100; }
-      else if (rule === 'idlist' && Array.isArray(value)) { value = value.map(cleanId).filter(Boolean).slice(0, 24); if (value.length) out[key] = value; }
+      if (rule === 'id') {
+        value = cleanId(value);
+        if (value) out[key] = value;
+      } else if (rule === 'text') {
+        value = cleanText(value);
+        if (value) out[key] = value;
+      } else if (rule === 'term') {
+        value = cleanTerm(value);
+        if (value) out[key] = value;
+      } else if (rule === 'int') {
+        value = Number(value);
+        if (Number.isInteger(value) && value >= 0 && value <= 100000) out[key] = value;
+      } else if (rule === 'num') {
+        value = Number(value);
+        if (Number.isFinite(value) && value >= 0 && value <= 10000000) out[key] = Math.round(value * 100) / 100;
+      } else if (rule === 'idlist' && Array.isArray(value)) {
+        value = value.map(cleanId).filter(Boolean).slice(0, 24);
+        if (value.length) out[key] = value;
+      }
     });
     return out;
   }
@@ -187,27 +254,56 @@
   var flushTimer = 0;
 
   function scheduleFlush() {
-    if (queue.length >= 20) { flush(); return; }
+    if (queue.length >= 20) {
+      flush();
+      return;
+    }
     if (!flushTimer) flushTimer = window.setTimeout(flush, 4000);
   }
 
   function flush(onExit) {
-    if (flushTimer) { window.clearTimeout(flushTimer); flushTimer = 0; }
-    if (!queue.length || !firstPartyActive()) { queue.length = 0; return; }
+    if (flushTimer) {
+      window.clearTimeout(flushTimer);
+      flushTimer = 0;
+    }
+    if (!queue.length || !firstPartyActive()) {
+      queue.length = 0;
+      return;
+    }
     while (queue.length) {
       var batch = queue.splice(0, 25);
       var body = JSON.stringify({ v: 1, sid: sessionId(), events: batch });
       var sent = false;
       try {
         if (navigator.sendBeacon) sent = navigator.sendBeacon(endpoint, new Blob([body], { type: 'text/plain;charset=UTF-8' }));
-      } catch (error) { sent = false; }
-      if (sent) { status.sent += batch.length; continue; }
-      if (!window.fetch) { status.failed += batch.length; status.lastError = 'No transport available'; continue; }
+      } catch (error) {
+        sent = false;
+      }
+      if (sent) {
+        status.sent += batch.length;
+        continue;
+      }
+      if (!window.fetch) {
+        status.failed += batch.length;
+        status.lastError = 'No transport available';
+        continue;
+      }
       (function (count) {
-        window.fetch(endpoint, { method: 'POST', body: body, keepalive: !!onExit, credentials: 'omit', headers: { 'Content-Type': 'text/plain;charset=UTF-8' } })
+        window
+          .fetch(endpoint, {
+            method: 'POST',
+            body: body,
+            keepalive: !!onExit,
+            credentials: 'omit',
+            headers: { 'Content-Type': 'text/plain;charset=UTF-8' }
+          })
           .then(function (response) {
             if (response.ok) status.sent += count;
-            else { status.failed += count; status.lastError = 'Collector responded ' + response.status; log('collector error', response.status); }
+            else {
+              status.failed += count;
+              status.lastError = 'Collector responded ' + response.status;
+              log('collector error', response.status);
+            }
           })
           .catch(function (error) {
             status.failed += count;
@@ -221,25 +317,37 @@
   document.addEventListener('visibilitychange', function () {
     if (document.visibilityState === 'hidden') flush(true);
   });
-  window.addEventListener('pagehide', function () { flush(true); });
+  window.addEventListener('pagehide', function () {
+    flush(true);
+  });
 
   /* ---------- Google Analytics 4 (consent-gated) ---------- */
   var gaLoaded = false;
 
-  function gtag() { window.dataLayer.push(arguments); }
+  function gtag() {
+    window.dataLayer.push(arguments);
+  }
 
   function loadGa4() {
     if (gaLoaded || !ga4Active()) return;
     gaLoaded = true;
     window.dataLayer = window.dataLayer || [];
     window.gtag = window.gtag || gtag;
-    window.gtag('consent', 'default', { analytics_storage: 'granted', ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied' });
+    window.gtag('consent', 'default', {
+      analytics_storage: 'granted',
+      ad_storage: 'denied',
+      ad_user_data: 'denied',
+      ad_personalization: 'denied'
+    });
     window.gtag('js', new Date());
     window.gtag('config', ga4Id, { send_page_view: false });
     var script = document.createElement('script');
     script.async = true;
     script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(ga4Id);
-    script.onerror = function () { status.lastError = 'Google Analytics script failed to load'; log(status.lastError); };
+    script.onerror = function () {
+      status.lastError = 'Google Analytics script failed to load';
+      log(status.lastError);
+    };
     document.head.appendChild(script);
   }
 
@@ -247,7 +355,9 @@
   function forwardToGa4(name, params) {
     if (!ga4Active() || !window.gtag) return;
     var payload = {};
-    Object.keys(params).forEach(function (key) { payload[key] = params[key]; });
+    Object.keys(params).forEach(function (key) {
+      payload[key] = params[key];
+    });
     if (GA_ITEM_EVENTS[name] && params.item_id) {
       var item = { item_id: params.item_id };
       ['item_name', 'item_brand', 'item_category', 'item_variant', 'quantity', 'price', 'index', 'item_list_id'].forEach(function (key) {
@@ -256,7 +366,9 @@
       payload.items = [item];
     }
     if (name === 'view_item_list' && params.item_ids) {
-      payload.items = params.item_ids.map(function (id, i) { return { item_id: id, index: i }; });
+      payload.items = params.item_ids.map(function (id, i) {
+        return { item_id: id, index: i };
+      });
       delete payload.item_ids;
     }
     window.gtag('event', name, payload);
@@ -275,7 +387,9 @@
           document.cookie = name + '=; Max-Age=0; path=/' + (domain ? '; domain=' + domain : '');
         });
       });
-    } catch (error) { /* best effort */ }
+    } catch (error) {
+      /* best effort */
+    }
   }
 
   /* ---------- public API ---------- */
@@ -303,25 +417,34 @@
     var event = { name: name, params: clean, ts: now, path: location.pathname.slice(0, 120) || '/', device: deviceClass() };
     if (name === 'page_view') {
       var landing = landingContext();
-      Object.keys(landing).forEach(function (k) { if (landing[k]) event[k] = landing[k]; });
+      Object.keys(landing).forEach(function (k) {
+        if (landing[k]) event[k] = landing[k];
+      });
     }
 
     recent.push(event);
     if (recent.length > 60) recent.shift();
     log(name, clean);
 
-    if (firstPartyActive()) { queue.push(event); scheduleFlush(); }
+    if (firstPartyActive()) {
+      queue.push(event);
+      scheduleFlush();
+    }
     forwardToGa4(name, clean);
     // A separately installed Google Tag Manager container can pick events up
     // from the dataLayer. Skipped when gtag.js is in use, to avoid double counts.
     if (!gaLoaded && window.dataLayer && window.google_tag_manager) {
       var layerEvent = { event: name };
-      Object.keys(clean).forEach(function (k) { layerEvent[k] = clean[k]; });
+      Object.keys(clean).forEach(function (k) {
+        layerEvent[k] = clean[k];
+      });
       window.dataLayer.push(layerEvent);
     }
     try {
       document.dispatchEvent(new CustomEvent('infinite:analytics', { detail: event }));
-    } catch (error) { /* old browsers */ }
+    } catch (error) {
+      /* old browsers */
+    }
     return true;
   }
 
@@ -391,8 +514,12 @@
     setOptOut: setOptOut,
     setGa4Consent: setGa4Consent,
     getState: getState,
-    status: function () { return { sent: status.sent, failed: status.failed, dropped: status.dropped, lastError: status.lastError, queued: queue.length }; },
-    recent: function () { return recent.slice(); },
+    status: function () {
+      return { sent: status.sent, failed: status.failed, dropped: status.dropped, lastError: status.lastError, queued: queue.length };
+    },
+    recent: function () {
+      return recent.slice();
+    },
     schema: EVENT_SCHEMA
   };
 

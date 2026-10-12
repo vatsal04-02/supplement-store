@@ -31,7 +31,12 @@ test('category tile filters the catalogue and records the filter', async ({ page
   await expect(page.locator('#productGrid .product-card')).toHaveCount(2);
   await expect(page.locator('.filter[data-filter="creatine"]')).toHaveAttribute('aria-pressed', 'true');
   const filters = await events(page, 'filter_products');
-  expect(filters.at(-1).params).toMatchObject({ filter_type: 'category', filter_value: 'creatine', source: 'category_tile', results_count: 2 });
+  expect(filters.at(-1).params).toMatchObject({
+    filter_type: 'category',
+    filter_value: 'creatine',
+    source: 'category_tile',
+    results_count: 2
+  });
 });
 
 test('a category with nothing listed explains why and offers a prepared WhatsApp question', async ({ page }) => {
@@ -61,7 +66,10 @@ test('search narrows results, shows a no-match state and records the search once
   await search.press('Enter');
   await search.press('Enter');
   const searches = await events(page, 'search');
-  expect(searches.map((e) => [e.params.search_term, e.params.results_count])).toEqual([['wellcore', 1], ['isolate', 0]]);
+  expect(searches.map((e) => [e.params.search_term, e.params.results_count])).toEqual([
+    ['wellcore', 1],
+    ['isolate', 0]
+  ]);
   await page.locator('#clearSearch').click();
   await expect(page.locator('#productGrid .product-card')).toHaveCount(4);
   await expect(search).toBeFocused();

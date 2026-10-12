@@ -99,7 +99,9 @@ const PUBLIC_ENTRIES = new Set(['index.html', 'admin', 'assets', 'css', 'js', 'r
 
 function clientIp(req, config) {
   if (config.trustProxy) {
-    const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+    const forwarded = String(req.headers['x-forwarded-for'] || '')
+      .split(',')[0]
+      .trim();
     if (forwarded) return forwarded;
   }
   return req.socket.remoteAddress || '';
@@ -121,7 +123,8 @@ function createRateLimiter(limit, windowMs) {
   };
 }
 
-const BOT_PATTERN = /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|preview|lighthouse|pagespeed|pingdom|uptime|monitor|curl|wget|python|httpclient|headless/i;
+const BOT_PATTERN =
+  /bot|crawl|spider|slurp|facebookexternalhit|whatsapp|preview|lighthouse|pagespeed|pingdom|uptime|monitor|curl|wget|python|httpclient|headless/i;
 
 function tokenMatches(provided, expected) {
   if (!provided || !expected) return false;
@@ -151,7 +154,9 @@ function readBody(req, limit) {
       }
       chunks.push(chunk);
     });
-    req.on('end', () => { if (!tooLarge) resolve(Buffer.concat(chunks).toString('utf8')); });
+    req.on('end', () => {
+      if (!tooLarge) resolve(Buffer.concat(chunks).toString('utf8'));
+    });
     req.on('error', reject);
   });
 }
@@ -186,7 +191,15 @@ export async function createServer(overrides = {}) {
 
   function sendJson(res, status, body, extra = {}) {
     const payload = JSON.stringify(body);
-    res.writeHead(status, baseHeaders({ 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow', ...extra }));
+    res.writeHead(
+      status,
+      baseHeaders({
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'X-Robots-Tag': 'noindex, nofollow',
+        ...extra
+      })
+    );
     res.end(payload);
   }
 
@@ -195,7 +208,11 @@ export async function createServer(overrides = {}) {
     const origin = req.headers.origin;
     if (origin && origin !== 'null') {
       let originHost;
-      try { originHost = new URL(origin).host; } catch (error) { originHost = ''; }
+      try {
+        originHost = new URL(origin).host;
+      } catch (error) {
+        originHost = '';
+      }
       if (originHost !== req.headers.host) return sendJson(res, 403, { error: 'cross_origin' });
     }
     const ip = clientIp(req, config);
@@ -204,14 +221,22 @@ export async function createServer(overrides = {}) {
     try {
       body = await readBody(req, 32 * 1024);
     } catch (error) {
-      return sendJson(res, error.status || 400, { error: error.status === 413 ? 'payload_too_large' : 'bad_request' }, error.status === 413 ? { Connection: 'close' } : {});
+      return sendJson(
+        res,
+        error.status || 400,
+        { error: error.status === 413 ? 'payload_too_large' : 'bad_request' },
+        error.status === 413 ? { Connection: 'close' } : {}
+      );
     }
     if (!config.collect) {
       res.writeHead(204, baseHeaders({ 'Cache-Control': 'no-store' }));
       return res.end();
     }
     const userAgent = String(req.headers['user-agent'] || '');
-    if (!userAgent || (BOT_PATTERN.test(userAgent) && !(config.allowHeadless && /HeadlessChrome/.test(userAgent) && !/lighthouse/i.test(userAgent)))) {
+    if (
+      !userAgent ||
+      (BOT_PATTERN.test(userAgent) && !(config.allowHeadless && /HeadlessChrome/.test(userAgent) && !/lighthouse/i.test(userAgent)))
+    ) {
       res.writeHead(204, baseHeaders({ 'Cache-Control': 'no-store' }));
       return res.end();
     }
@@ -221,7 +246,15 @@ export async function createServer(overrides = {}) {
     } catch (error) {
       return sendJson(res, 400, { error: 'invalid_json' });
     }
-    if (!data || data.v !== 1 || typeof data.sid !== 'string' || !/^[a-f0-9]{16}$/.test(data.sid) || !Array.isArray(data.events) || !data.events.length || data.events.length > 50) {
+    if (
+      !data ||
+      data.v !== 1 ||
+      typeof data.sid !== 'string' ||
+      !/^[a-f0-9]{16}$/.test(data.sid) ||
+      !Array.isArray(data.events) ||
+      !data.events.length ||
+      data.events.length > 50
+    ) {
       return sendJson(res, 400, { error: 'invalid_payload' });
     }
     const now = Date.now();
@@ -250,7 +283,10 @@ export async function createServer(overrides = {}) {
   async function handleStats(req, res, url) {
     if (req.method !== 'GET') return sendJson(res, 405, { error: 'method_not_allowed' }, { Allow: 'GET' });
     if (!statsConfigured) {
-      return sendJson(res, 503, { error: 'not_configured', message: 'Set ANALYTICS_ADMIN_TOKEN (at least 24 characters) on the server to enable reports.' });
+      return sendJson(res, 503, {
+        error: 'not_configured',
+        message: 'Set ANALYTICS_ADMIN_TOKEN (at least 24 characters) on the server to enable reports.'
+      });
     }
     const ip = clientIp(req, config);
     const header = String(req.headers.authorization || '');
@@ -311,7 +347,13 @@ export async function createServer(overrides = {}) {
     const etag = 'W/"' + info.size.toString(16) + '-' + Math.floor(info.mtimeMs).toString(16) + '"';
     const isHtml = ext === '.html';
     const cacheControl = segments[0] === 'assets' ? 'public, max-age=604800' : 'no-cache';
-    const headers = baseHeaders({ 'Content-Type': type, 'Cache-Control': cacheControl, ETag: etag, 'Last-Modified': info.mtime.toUTCString(), Vary: 'Accept-Encoding' });
+    const headers = baseHeaders({
+      'Content-Type': type,
+      'Cache-Control': cacheControl,
+      ETag: etag,
+      'Last-Modified': info.mtime.toUTCString(),
+      Vary: 'Accept-Encoding'
+    });
     if (isHtml) headers['Content-Security-Policy'] = csp;
     if (segments[0] === 'admin') headers['X-Robots-Tag'] = 'noindex, nofollow';
     if (req.headers['if-none-match'] === etag) {
@@ -326,7 +368,10 @@ export async function createServer(overrides = {}) {
         const key = encoding + ':' + filePath + ':' + etag;
         let compressed = compressedCache.get(key);
         if (!compressed) {
-          compressed = encoding === 'br' ? await brotli(body, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } }) : await gzip(body, { level: 9 });
+          compressed =
+            encoding === 'br'
+              ? await brotli(body, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } })
+              : await gzip(body, { level: 9 });
           if (compressedCache.size > 200) compressedCache.clear();
           compressedCache.set(key, compressed);
         }

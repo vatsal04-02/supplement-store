@@ -35,10 +35,14 @@ function validSiteUrl(value) {
   if (!value) return '';
   try {
     const url = new URL(value);
-    if (url.protocol !== 'https:' || /example\.|localhost|127\.0\.0\.1/.test(url.hostname)) throw new Error('not a production https origin');
+    if (url.protocol !== 'https:' || /example\.|localhost|127\.0\.0\.1/.test(url.hostname))
+      throw new Error('not a production https origin');
     return url.origin;
   } catch (error) {
-    throw new Error(`siteUrl "${value}" in js/site-config.js must be the confirmed production origin, e.g. https://www.yourdomain.in (${error.message})`, { cause: error });
+    throw new Error(
+      `siteUrl "${value}" in js/site-config.js must be the confirmed production origin, e.g. https://www.yourdomain.in (${error.message})`,
+      { cause: error }
+    );
   }
 }
 
@@ -108,13 +112,16 @@ async function main() {
     html = html.replace(/\n\s*<!-- A canonical URL, og:url and absolute social-preview image are intentionally omitted[^>]*-->/, '');
     html = html.replace('<meta name="twitter:card" content="summary" />', '<meta name="twitter:card" content="summary_large_image" />');
     html = html.replace(/(\s*)<title>/, `$1${tags}$1<title>`);
-    html = html.replace(/(<script type="application\/ld\+json" id="businessJsonLd">\s*)([\s\S]*?)(\s*<\/script>)/, (match, open, json, close) => {
-      const data = JSON.parse(json);
-      data.url = siteUrl + '/';
-      data.logo = siteUrl + '/assets/brand/logo-192.png';
-      data.image = siteUrl + '/assets/social/og-1200x630.jpg';
-      return open + JSON.stringify(data, null, 2) + close;
-    });
+    html = html.replace(
+      /(<script type="application\/ld\+json" id="businessJsonLd">\s*)([\s\S]*?)(\s*<\/script>)/,
+      (match, open, json, close) => {
+        const data = JSON.parse(json);
+        data.url = siteUrl + '/';
+        data.logo = siteUrl + '/assets/brand/logo-192.png';
+        data.image = siteUrl + '/assets/social/og-1200x630.jpg';
+        return open + JSON.stringify(data, null, 2) + close;
+      }
+    );
   }
   await writeFile(indexPath, html);
 
@@ -124,7 +131,10 @@ async function main() {
   await writeFile(path.join(DIST, 'robots.txt'), robots.join('\n') + '\n');
   if (siteUrl) {
     const today = new Date().toISOString().slice(0, 10);
-    await writeFile(path.join(DIST, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n    <lastmod>${today}</lastmod>\n  </url>\n</urlset>\n`);
+    await writeFile(
+      path.join(DIST, 'sitemap.xml'),
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n  <url>\n    <loc>${siteUrl}/</loc>\n    <lastmod>${today}</lastmod>\n  </url>\n</urlset>\n`
+    );
   }
 
   if (STATIC) {
@@ -136,7 +146,20 @@ async function main() {
       '  Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()',
       '  X-Frame-Options: DENY'
     ];
-    await writeFile(path.join(DIST, '_headers'), ['/*', ...security, '', '/admin/*', '  X-Robots-Tag: noindex, nofollow', '', '/assets/*', '  Cache-Control: public, max-age=604800', ''].join('\n'));
+    await writeFile(
+      path.join(DIST, '_headers'),
+      [
+        '/*',
+        ...security,
+        '',
+        '/admin/*',
+        '  X-Robots-Tag: noindex, nofollow',
+        '',
+        '/assets/*',
+        '  Cache-Control: public, max-age=604800',
+        ''
+      ].join('\n')
+    );
   }
 
   // Size report
@@ -150,12 +173,17 @@ async function main() {
     const isText = /\.(html|css|js|json|xml|txt|svg)$/.test(file);
     const gzSize = isText ? zlib.gzipSync(await readFile(file), { level: 9 }).length : size;
     gz += gzSize;
-    if (isText) lines.push(`  ${rel.padEnd(28)} ${(size / 1024).toFixed(1).padStart(7)} KB  gzip ${(gzSize / 1024).toFixed(1).padStart(6)} KB`);
+    if (isText)
+      lines.push(`  ${rel.padEnd(28)} ${(size / 1024).toFixed(1).padStart(7)} KB  gzip ${(gzSize / 1024).toFixed(1).padStart(6)} KB`);
   }
   console.log(`Built ${STATIC ? 'static ' : ''}site → dist/`);
   console.log(lines.sort().join('\n'));
   console.log(`  total ${(raw / 1024 / 1024).toFixed(2)} MB (${(gz / 1024 / 1024).toFixed(2)} MB with text gzipped)`);
-  console.log(siteUrl ? `  SEO: canonical, og:url, og:image and sitemap.xml written for ${siteUrl}` : '  SEO: siteUrl not set — canonical, og:url, og:image and sitemap.xml omitted (launch dependency)');
+  console.log(
+    siteUrl
+      ? `  SEO: canonical, og:url, og:image and sitemap.xml written for ${siteUrl}`
+      : '  SEO: siteUrl not set — canonical, og:url, og:image and sitemap.xml omitted (launch dependency)'
+  );
   if (STATIC) console.log('  Static build: first-party analytics collector disabled; the /admin/ dashboard needs the Node server.');
 }
 

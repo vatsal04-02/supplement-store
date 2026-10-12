@@ -98,9 +98,7 @@ html:not(.review-mode) [data-owner-note] {
   max-height: 84%;
   padding: 18px 14px;
   border: 1px dashed rgba(255, 255, 255, 0.22);
-  background:
-    radial-gradient(circle at 50% 38%, rgba(184, 0, 25, 0.16), transparent 64%),
-    rgba(8, 8, 8, 0.6);
+  background: radial-gradient(circle at 50% 38%, rgba(184, 0, 25, 0.16), transparent 64%), rgba(8, 8, 8, 0.6);
   text-align: center;
 }
 .product-photo-pending .pending-brand {
@@ -156,8 +154,7 @@ html:not(.review-mode) [data-owner-note] {
 .category-typographic .category-media {
   background:
     radial-gradient(circle at 86% 18%, rgba(184, 0, 25, 0.2), transparent 42%),
-    radial-gradient(circle at 12% 110%, rgba(101, 0, 13, 0.28), transparent 46%),
-    linear-gradient(135deg, #111111 0%, #080808 62%);
+    radial-gradient(circle at 12% 110%, rgba(101, 0, 13, 0.28), transparent 46%), linear-gradient(135deg, #111111 0%, #080808 62%);
 }
 .category-typographic .category-media:after {
   content: "";
@@ -179,7 +176,9 @@ html:not(.review-mode) [data-owner-note] {
   letter-spacing: -0.04em;
   color: transparent;
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
-  transition: -webkit-text-stroke-color var(--motion-base, 260ms) ease, transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
+  transition:
+    -webkit-text-stroke-color var(--motion-base, 260ms) ease,
+    transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
 }
 .category-tile .category-mark:before {
   content: attr(data-mark);
@@ -534,6 +533,15 @@ html:not(.review-mode) [data-owner-note] {
 
   body.motion-ready .reveal-target.reveal-done {
     animation: none;
+  }
+  /* The designed hover lift for featured cards and category tiles was always
+     overridden by the more specific `body.motion-ready .reveal-target` rule.
+     It applies again once a card's reveal has finished. */
+  @media (hover: hover) and (pointer: fine) {
+    body.motion-ready .featured-card.reveal-done:hover,
+    body.motion-ready .category-tile.reveal-done:hover {
+      transform: translateY(-4px);
+    }
   }
 
   /* Reveal targets wait in their starting pose, so content that scrolls in

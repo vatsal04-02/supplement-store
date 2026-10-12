@@ -51,7 +51,8 @@ window.INFINITE_CATEGORY_MEDIA = {
     visual: null,
     /* visual: { srcset: 'assets/categories/category-visual-protein-720.webp 720w, assets/categories/category-visual-protein-1440.webp 1440w', fallback: 'assets/categories/category-visual-protein.jpg', width: 1440, height: 960, alt: 'Cinematic protein powder and scoop under red studio lighting, supporting imagery for the protein category, not an actual store product' }, */
     store: {
-      srcset: 'assets/store/protein-shelves-256.webp 256w, assets/store/protein-shelves-512.webp 512w, assets/store/protein-shelves-720.webp 720w',
+      srcset:
+        'assets/store/protein-shelves-256.webp 256w, assets/store/protein-shelves-512.webp 512w, assets/store/protein-shelves-720.webp 720w',
       fallback: 'assets/store/protein-shelves-720.jpg',
       width: 720,
       height: 1280,
@@ -63,7 +64,8 @@ window.INFINITE_CATEGORY_MEDIA = {
     visual: null,
     /* visual: { srcset: 'assets/categories/category-visual-mass-gainer-720.webp 720w, assets/categories/category-visual-mass-gainer-1440.webp 1440w', fallback: 'assets/categories/category-visual-mass-gainer.jpg', width: 1920, height: 1280, alt: 'Infinite Nutrition branded mass-gainer display tub beside an oat milkshake and powder scoop under red studio lighting, supporting imagery for the mass-gainer category, not an actual store product' }, */
     store: {
-      srcset: 'assets/store/protein-shelves-256.webp 256w, assets/store/protein-shelves-512.webp 512w, assets/store/protein-shelves-720.webp 720w',
+      srcset:
+        'assets/store/protein-shelves-256.webp 256w, assets/store/protein-shelves-512.webp 512w, assets/store/protein-shelves-720.webp 720w',
       fallback: 'assets/store/protein-shelves-720.jpg',
       width: 720,
       height: 1280,
@@ -75,7 +77,8 @@ window.INFINITE_CATEGORY_MEDIA = {
     visual: null,
     /* visual: { srcset: 'assets/categories/category-visual-creatine-720.webp 720w, assets/categories/category-visual-creatine-1440.webp 1440w', fallback: 'assets/categories/category-visual-creatine.jpg', width: 1440, height: 960, alt: 'Cinematic powder and scoop under red studio lighting, supporting imagery for the creatine category, not an actual store product' }, */
     store: {
-      srcset: 'assets/store/creatine-display-512.webp 512w, assets/store/creatine-display-720.webp 720w, assets/store/creatine-display-1280.webp 1280w',
+      srcset:
+        'assets/store/creatine-display-512.webp 512w, assets/store/creatine-display-720.webp 720w, assets/store/creatine-display-1280.webp 1280w',
       fallback: 'assets/store/creatine-display-1280.jpg',
       width: 1280,
       height: 720,
@@ -114,11 +117,15 @@ window.INFINITE_PRODUCTS = [
     // Cropped from the store's creatine display photo (assets/store/creatine-display-1280.jpg).
     image: 'assets/products/muscleblaze-creatine-single.jpg',
     imageWebp: 'assets/products/muscleblaze-creatine-single.webp',
-    imageWidth: 118, imageHeight: 150,
+    imageWidth: 118,
+    imageHeight: 150,
     alt: 'MuscleBlaze Micronised Creatine Monohydrate tub photographed at Infinite Nutrition',
     variants: [],
     specifications: [],
-    ingredients: '', serving: '', allergens: '', usage: '',
+    ingredients: '',
+    serving: '',
+    allergens: '',
+    usage: '',
     stock: null
   },
   {
@@ -129,11 +136,15 @@ window.INFINITE_PRODUCTS = [
     // Cropped from the store's creatine display photo (assets/store/creatine-display-1280.jpg).
     image: 'assets/products/wellcore-creatine-single.jpg',
     imageWebp: 'assets/products/wellcore-creatine-single.webp',
-    imageWidth: 114, imageHeight: 126,
+    imageWidth: 114,
+    imageHeight: 126,
     alt: 'Wellcore Micronised Creatine Monohydrate tub photographed at Infinite Nutrition',
     variants: [],
     specifications: [],
-    ingredients: '', serving: '', allergens: '', usage: '',
+    ingredients: '',
+    serving: '',
+    allergens: '',
+    usage: '',
     stock: null
   },
   {
@@ -145,13 +156,24 @@ window.INFINITE_PRODUCTS = [
     // assets/products/pintola-high-protein-peanut-butter-single.jpg / .webp (175 × 260).
     image: '',
     imageWebp: '',
-    imageWidth: 175, imageHeight: 260,
+    imageWidth: 175,
+    imageHeight: 260,
     alt: 'Pintola High Protein Peanut Butter, Dark Chocolate – Crunchy, photographed at Infinite Nutrition',
     variants: [
-      { id: 'dark-chocolate-crunchy', label: 'Dark Chocolate – Crunchy', flavour: 'Dark Chocolate – Crunchy', size: '', price: null, mrp: null }
+      {
+        id: 'dark-chocolate-crunchy',
+        label: 'Dark Chocolate – Crunchy',
+        flavour: 'Dark Chocolate – Crunchy',
+        size: '',
+        price: null,
+        mrp: null
+      }
     ],
     specifications: [],
-    ingredients: '', serving: '', allergens: '', usage: '',
+    ingredients: '',
+    serving: '',
+    allergens: '',
+    usage: '',
     stock: null
   },
   {
@@ -163,11 +185,15 @@ window.INFINITE_PRODUCTS = [
     // assets/products/qnt-l-carnitine-single.jpg / .webp (105 × 240).
     image: '',
     imageWebp: '',
-    imageWidth: 105, imageHeight: 240,
+    imageWidth: 105,
+    imageHeight: 240,
     alt: 'QNT L-Carnitine Liquid Formula bottle photographed at Infinite Nutrition',
     variants: [],
     specifications: [],
-    ingredients: '', serving: '', allergens: '', usage: '',
+    ingredients: '',
+    serving: '',
+    allergens: '',
+    usage: '',
     stock: null
   }
 ];

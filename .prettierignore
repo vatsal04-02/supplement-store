@@ -1,0 +1,9 @@
+dist/
+docs/
+node_modules/
+test-results/
+reports/
+index.html
+admin/index.html
+css/styles.css
+package-lock.json

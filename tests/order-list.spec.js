@@ -97,15 +97,22 @@ test('order list survives a reload and rejects tampered storage', async ({ page 
   await page.reload();
   await expect(page.locator('#cartCount')).toHaveText('1');
 
-  await page.evaluate((key) => localStorage.setItem(key, JSON.stringify([
-    { id: 'wellcore-micronised-creatine', variantId: '', qty: 2 },
-    { id: 'wellcore-micronised-creatine', variantId: '', qty: 3 },
-    { id: 'not-a-product', variantId: '', qty: 1 },
-    { id: 'pintola-high-protein-peanut-butter', variantId: 'made-up-variant', qty: 1 },
-    { id: 'muscleblaze-micronised-creatine', variantId: '', qty: 500 },
-    { id: 'muscleblaze-micronised-creatine', variantId: '', qty: 1.5 },
-    '<img src=x onerror=alert(1)>'
-  ])), CART_KEY);
+  await page.evaluate(
+    (key) =>
+      localStorage.setItem(
+        key,
+        JSON.stringify([
+          { id: 'wellcore-micronised-creatine', variantId: '', qty: 2 },
+          { id: 'wellcore-micronised-creatine', variantId: '', qty: 3 },
+          { id: 'not-a-product', variantId: '', qty: 1 },
+          { id: 'pintola-high-protein-peanut-butter', variantId: 'made-up-variant', qty: 1 },
+          { id: 'muscleblaze-micronised-creatine', variantId: '', qty: 500 },
+          { id: 'muscleblaze-micronised-creatine', variantId: '', qty: 1.5 },
+          '<img src=x onerror=alert(1)>'
+        ])
+      ),
+    CART_KEY
+  );
   await page.reload();
   await expect(page.locator('#cartCount')).toHaveText('5');
   const stored = await page.evaluate((key) => JSON.parse(localStorage.getItem(key)), CART_KEY);

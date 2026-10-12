@@ -26,9 +26,11 @@ test('mobile menu opens, closes on link, outside tap and Escape', async ({ page 
 
 test('every in-page navigation link points at an existing section', async ({ page }) => {
   await page.goto('/');
-  const missing = await page.evaluate(() => [...document.querySelectorAll('a[href^="#"]')]
-    .map((a) => a.getAttribute('href'))
-    .filter((href) => href.length > 1 && !document.querySelector(href)));
+  const missing = await page.evaluate(() =>
+    [...document.querySelectorAll('a[href^="#"]')]
+      .map((a) => a.getAttribute('href'))
+      .filter((href) => href.length > 1 && !document.querySelector(href))
+  );
   expect(missing).toEqual([]);
 });
 
@@ -91,7 +93,10 @@ test('owner notes are visible in review mode and hidden when reviewMode is false
 
 test('telephone and WhatsApp links are tracked with the right contact role', async ({ page }) => {
   await page.goto('/');
-  await page.locator('.contact-row a[href="tel:+918303253308"]').first().evaluate((a) => a.addEventListener('click', (e) => e.preventDefault()));
+  await page
+    .locator('.contact-row a[href="tel:+918303253308"]')
+    .first()
+    .evaluate((a) => a.addEventListener('click', (e) => e.preventDefault()));
   await page.locator('.contact-row a[href="tel:+918303253308"]').first().click();
   const [contact] = await events(page, 'contact_store');
   expect(contact.params).toMatchObject({ method: 'phone', contact: 'secondary', source: 'visit' });

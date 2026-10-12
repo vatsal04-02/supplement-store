@@ -27,11 +27,17 @@
   var embedUrl = isGoogleMapsUrl(config.embedUrl, '/maps/') ? config.embedUrl : '';
   var directionsUrl = isGoogleMapsUrl(config.directionsUrl, '/maps/dir/') ? config.directionsUrl : '';
   var placeId = typeof config.placeId === 'string' && /^[A-Za-z0-9_-]{10,200}$/.test(config.placeId) ? config.placeId : '';
-  var locationLabel = typeof config.locationLabel === 'string' && config.locationLabel.trim() ? config.locationLabel.trim() : 'Infinite Nutrition';
+  var locationLabel =
+    typeof config.locationLabel === 'string' && config.locationLabel.trim() ? config.locationLabel.trim() : 'Infinite Nutrition';
 
   if (placeId) {
     if (!embedUrl) embedUrl = 'https://www.google.com/maps?q=' + encodeURIComponent('place_id:' + placeId) + '&output=embed';
-    if (!directionsUrl) directionsUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(locationLabel) + '&destination_place_id=' + encodeURIComponent(placeId);
+    if (!directionsUrl)
+      directionsUrl =
+        'https://www.google.com/maps/dir/?api=1&destination=' +
+        encodeURIComponent(locationLabel) +
+        '&destination_place_id=' +
+        encodeURIComponent(placeId);
   }
 
   if (embedUrl) {

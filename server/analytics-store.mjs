@@ -54,7 +54,11 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
   }
 
   function visitorKey(date, ip, userAgent) {
-    return crypto.createHmac('sha256', saltFor(date)).update(String(ip) + '\n' + String(userAgent)).digest('hex').slice(0, 16);
+    return crypto
+      .createHmac('sha256', saltFor(date))
+      .update(String(ip) + '\n' + String(userAgent))
+      .digest('hex')
+      .slice(0, 16);
   }
 
   async function append(records) {
@@ -120,7 +124,12 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
 
   async function report(from, to) {
     const dates = datesBetween(from, to);
-    const daily = new Map(dates.map((date) => [date, { date, pageViews: 0, sessions: new Set(), visitors: new Set(), productViews: 0, addToCartUnits: 0, whatsappClicks: 0 }]));
+    const daily = new Map(
+      dates.map((date) => [
+        date,
+        { date, pageViews: 0, sessions: new Set(), visitors: new Set(), productViews: 0, addToCartUnits: 0, whatsappClicks: 0 }
+      ])
+    );
     const sessions = new Map();
     const products = new Map();
     const categories = new Map();
@@ -128,17 +137,43 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
     const whatsappSources = new Map();
     const contactSplit = { primary: 0, secondary: 0, other: 0 };
     const totals = {
-      events: 0, pageViews: 0, productListViews: 0, selectItem: 0, productViews: 0,
-      addToCartEvents: 0, addToCartUnits: 0, removeFromCartUnits: 0, cartViews: 0,
-      whatsappClicks: 0, whatsappListClicks: 0, whatsappProductClicks: 0, phoneClicks: 0,
-      searches: 0, searchesNoResults: 0, filterUses: 0, locationViews: 0, directionsClicks: 0, policyViews: 0
+      events: 0,
+      pageViews: 0,
+      productListViews: 0,
+      selectItem: 0,
+      productViews: 0,
+      addToCartEvents: 0,
+      addToCartUnits: 0,
+      removeFromCartUnits: 0,
+      cartViews: 0,
+      whatsappClicks: 0,
+      whatsappListClicks: 0,
+      whatsappProductClicks: 0,
+      phoneClicks: 0,
+      searches: 0,
+      searchesNoResults: 0,
+      filterUses: 0,
+      locationViews: 0,
+      directionsClicks: 0,
+      policyViews: 0
     };
     let firstEventAt = null;
     let lastEventAt = null;
 
     const productRow = (p) => {
       const id = p.item_id;
-      if (!products.has(id)) products.set(id, { id, name: p.item_name || '', brand: p.item_brand || '', category: p.item_category || '', views: 0, selects: 0, addUnits: 0, removeUnits: 0, whatsappClicks: 0 });
+      if (!products.has(id))
+        products.set(id, {
+          id,
+          name: p.item_name || '',
+          brand: p.item_brand || '',
+          category: p.item_category || '',
+          views: 0,
+          selects: 0,
+          addUnits: 0,
+          removeUnits: 0,
+          whatsappClicks: 0
+        });
       const row = products.get(id);
       if (!row.name && p.item_name) row.name = p.item_name;
       if (!row.brand && p.item_brand) row.brand = p.item_brand;
@@ -159,7 +194,8 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
       if (!lastEventAt || r.t > lastEventAt) lastEventAt = r.t;
       if (r.s) {
         day.sessions.add(r.s);
-        if (!sessions.has(r.s)) sessions.set(r.s, { productView: false, add: false, whatsapp: false, source: null, device: r.d || 'unknown' });
+        if (!sessions.has(r.s))
+          sessions.set(r.s, { productView: false, add: false, whatsapp: false, source: null, device: r.d || 'unknown' });
       }
       if (r.v) day.visitors.add(r.v);
       const session = r.s ? sessions.get(r.s) : null;
@@ -275,12 +311,23 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
         whatsappRate: rate(withWhatsapp, sessionCount),
         noResultSearchRate: rate(totals.searchesNoResults, totals.searches)
       },
-      daily: [...daily.values()].map((d) => ({ date: d.date, pageViews: d.pageViews, sessions: d.sessions.size, visitors: d.visitors.size, productViews: d.productViews, addToCartUnits: d.addToCartUnits, whatsappClicks: d.whatsappClicks })),
+      daily: [...daily.values()].map((d) => ({
+        date: d.date,
+        pageViews: d.pageViews,
+        sessions: d.sessions.size,
+        visitors: d.visitors.size,
+        productViews: d.productViews,
+        addToCartUnits: d.addToCartUnits,
+        whatsappClicks: d.whatsappClicks
+      })),
       products: sortDesc([...products.values()], 'views'),
       categories: sortDesc([...categories.values()], 'filterUses'),
       searches: {
         top: sortDesc([...searchTerms.values()], 'count').slice(0, 20),
-        noResults: sortDesc([...searchTerms.values()].filter((s) => s.noResults > 0).map((s) => ({ term: s.term, count: s.noResults })), 'count').slice(0, 20)
+        noResults: sortDesc(
+          [...searchTerms.values()].filter((s) => s.noResults > 0).map((s) => ({ term: s.term, count: s.noResults })),
+          'count'
+        ).slice(0, 20)
       },
       sources: countBy('source'),
       devices: countBy('device'),

@@ -55,15 +55,21 @@ test('every referenced local file exists and nothing is inlined as base64', () =
   const refs = new Set();
   const collect = (source, base) => {
     for (const m of source.matchAll(/(?:src|href)="([^"#:]+?)"/g)) refs.add(path.posix.join(base, m[1]));
-    for (const m of source.matchAll(/(?:srcset|imagesrcset)="([^"]+)"/g)) m[1].split(',').forEach((part) => refs.add(path.posix.join(base, part.trim().split(/\s+/)[0])));
+    for (const m of source.matchAll(/(?:srcset|imagesrcset)="([^"]+)"/g))
+      m[1].split(',').forEach((part) => refs.add(path.posix.join(base, part.trim().split(/\s+/)[0])));
   };
   collect(html, '');
   collect(adminHtml, 'admin');
-  PRODUCTS.forEach((p) => { if (p.image) refs.add(p.image); if (p.imageWebp) refs.add(p.imageWebp); });
-  Object.values(MEDIA).forEach((m) => [m.visual, m.store].filter(Boolean).forEach((img) => {
-    refs.add(img.fallback);
-    img.srcset.split(',').forEach((part) => refs.add(part.trim().split(/\s+/)[0]));
-  }));
+  PRODUCTS.forEach((p) => {
+    if (p.image) refs.add(p.image);
+    if (p.imageWebp) refs.add(p.imageWebp);
+  });
+  Object.values(MEDIA).forEach((m) =>
+    [m.visual, m.store].filter(Boolean).forEach((img) => {
+      refs.add(img.fallback);
+      img.srcset.split(',').forEach((part) => refs.add(part.trim().split(/\s+/)[0]));
+    })
+  );
   const missing = [...refs].filter((ref) => ref && !ref.startsWith('..') && !fs.existsSync(path.join(ROOT, ref)));
   expect(missing).toEqual([]);
   expect(html).not.toMatch(/data:[a-z]+\/[a-z+.-]+;base64/);
@@ -80,7 +86,12 @@ test('structured data publishes no ratings, reviews, prices or unconfirmed addre
   const data = JSON.parse(html.match(/id="businessJsonLd">([\s\S]*?)<\/script>/)[1]);
   const text = JSON.stringify(data);
   expect(text).not.toMatch(/aggregateRating|review|"price|openingHours|streetAddress|postalCode|geo"/i);
-  expect(data.address).toEqual({ '@type': 'PostalAddress', addressLocality: 'Lucknow', addressRegion: 'Uttar Pradesh', addressCountry: 'IN' });
+  expect(data.address).toEqual({
+    '@type': 'PostalAddress',
+    addressLocality: 'Lucknow',
+    addressRegion: 'Uttar Pradesh',
+    addressCountry: 'IN'
+  });
   // No canonical or og:url is published until the production domain is confirmed.
   expect(SITE.siteUrl).toBe('');
   expect(html).not.toMatch(/rel="canonical"|property="og:url"/);
