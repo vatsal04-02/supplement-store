@@ -48,6 +48,7 @@ Legend: **Where** = the file to edit. `site-config` = `js/site-config.js`,
 | C5 | Authenticity evidence | Supply documentation before publishing any authorised-dealer, certification, partnership or guaranteed-authenticity claim. None is made today. | Content in `index.html` |
 | C6 | Customer reviews | Exact source, wording, rating, date and permission for any review. None are published; no rating appears in structured data. | Reviews section in `index.html` |
 | C7 | Social profiles | Exact Instagram and other official profile URLs. | Footer in `index.html`; JSON-LD `sameAs` |
+| C9 | "100% original" | The hero line can start with "100% original" only once the store can document it (supplier invoices or brand authorisation). It is hidden until then. | `site-config` → `approvals.originalClaim` |
 | C8 | Transparent logo | No transparent logo was supplied, so the header, hero and footer use a background-removed cut of the supplied 380 px logo (`assets/brand/logo-mark-*`) on a #0a0a0a container. Supply an official transparent PNG or SVG to replace it. | `assets/brand/` |
 
 ## D. Technical go-live steps

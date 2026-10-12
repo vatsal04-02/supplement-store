@@ -89,7 +89,7 @@ test('owner notes are hidden on the public site and shown in review mode', async
   // Not approved, so the unconfirmed credit is withheld.
   await expect(page.locator('.powered')).toBeHidden();
   // Customer-facing honesty notes remain.
-  await expect(page.locator('.trust-caveat')).toBeVisible();
+  await expect(page.locator('.honest-note')).toBeVisible();
 
   await useReviewMode(page);
   await page.reload();
@@ -179,7 +179,7 @@ for (const viewport of [
       await page.evaluate((target) => document.getElementById(target).scrollIntoView({ behavior: 'instant', block: 'start' }), id);
       const gap = await page.evaluate((target) => {
         const header = document.querySelector('.site-nav').getBoundingClientRect().bottom;
-        const kicker = document.getElementById(target).querySelector('.eyebrow').getBoundingClientRect().top;
+        const kicker = document.getElementById(target).querySelector('.eyebrow, h2, .location-fragment').getBoundingClientRect().top;
         const section = document.getElementById(target).getBoundingClientRect().top;
         return { kicker: kicker - header, section: section - header };
       }, id);

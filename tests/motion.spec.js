@@ -29,7 +29,7 @@ test('product cards lift 6px, scale the photo to 1.06 and show a red glow', asyn
 
 test('outlined buttons sweep red from the left; solid buttons lift and glow', async ({ page }) => {
   await page.goto('/');
-  for (const selector of ['.editorial-hero .actions .btn:not(.primary)', '.enquiry-process-buttons .btn.cart-open']) {
+  for (const selector of ['.bulk-strip .btn', '.nav-tools .icon-btn']) {
     const sweep = await hoverAndRead(page, selector, (el) => {
       const cs = getComputedStyle(el, '::before');
       return cs.transform + ' ' + cs.transformOrigin.split(' ')[0];

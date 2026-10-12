@@ -29,7 +29,11 @@ window.INFINITE_SITE = {
   // Owner approvals for wording that must not be published by default.
   approvals: {
     // "Powered by Fit & First" — relationship and permission not yet confirmed.
-    fitAndFirstCredit: false
+    fitAndFirstCredit: false,
+    // "100% original" in the hero line is an authenticity guarantee. Set to
+    // true only once the store can document it (supplier invoices or brand
+    // authorisation); until then the line starts at "Imported & Indian brands".
+    originalClaim: false
   },
 
   // Published store numbers. The first entry is used for single-button

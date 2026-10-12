@@ -1463,3 +1463,208 @@ main > section {
     transform: none !important;
   }
 }
+
+/* 13. Master pass: copy tightening and conversion ----------------------- */
+/* Announcement bar: messages share one cell and cross-fade (opacity only). */
+.utility {
+  display: grid;
+  justify-items: center;
+}
+.utility-msg {
+  grid-area: 1 / 1;
+  opacity: 0;
+  transition: opacity 400ms ease-out;
+}
+.utility-msg.is-active {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .utility-msg {
+    transition: none;
+  }
+}
+
+/* Hero: one proof line replaces the four service cells. */
+.hero-proof {
+  margin: 26px 0 30px;
+  color: #bdbdbd;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  line-height: 1.6;
+  text-transform: uppercase;
+}
+.editorial-hero .actions {
+  margin-top: 0;
+}
+
+/* Reviews: one honest line under the headline. */
+.reviews-tagline {
+  margin: 14px 0 0;
+  color: var(--red);
+  font-size: 0.86rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Sections that now carry a single CTA. */
+.enquiry-process-actions {
+  justify-content: flex-start;
+}
+.trust-evidence-actions {
+  justify-content: flex-start;
+}
+
+/* Bulk orders strip, between Featured and Categories. */
+.bulk-strip {
+  position: relative;
+  background: linear-gradient(90deg, #65000d 0%, #3d0008 60%, #140204 100%);
+  border-block: 1px solid rgba(225, 29, 46, 0.35);
+}
+.bulk-strip-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px 28px;
+  padding-block: 22px;
+}
+.bulk-strip p {
+  margin: 0;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+.bulk-strip strong {
+  margin-right: 6px;
+  font-family: var(--display);
+  font-size: 1.15rem;
+  text-transform: uppercase;
+}
+.bulk-strip span {
+  color: #e6e6e6;
+}
+.bulk-strip .btn {
+  flex: 0 0 auto;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #ffffff;
+}
+
+/* Sticky mobile contact bar: slides in once the hero has gone. */
+@media (max-width: 760px) {
+  .mobile-bar {
+    transform: translateY(110%);
+    visibility: hidden;
+    transition:
+      transform 250ms ease-out,
+      visibility 0s linear 250ms;
+  }
+  .mobile-bar.is-visible {
+    transform: none;
+    visibility: visible;
+    transition: transform 250ms ease-out;
+  }
+  .mobile-bar .mobile-call {
+    background: var(--deep);
+  }
+  .mobile-bar .mobile-wa {
+    background: var(--red);
+  }
+  /* Full-width CTAs on phones. */
+  main section .btn.btn,
+  .editorial-hero .actions .btn,
+  .bulk-strip .btn {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+  .bulk-strip-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  /* These held two buttons before; with one CTA they span the row. */
+  .editorial-hero .actions,
+  .enquiry-process-buttons,
+  .trust-evidence-actions,
+  .finder-actions,
+  .location-actions,
+  .review-action {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .mobile-bar,
+  .mobile-bar.is-visible {
+    transition: none;
+  }
+}
+
+/* Back to top: desktop only, after two viewports. */
+.back-to-top {
+  display: none;
+}
+@media (min-width: 761px) and (hover: hover) and (pointer: fine) {
+  .back-to-top {
+    position: fixed;
+    z-index: 55;
+    right: 24px;
+    bottom: 24px;
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    background: #111111;
+    color: #ffffff;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(8px);
+    transition:
+      opacity 250ms ease-out,
+      transform 250ms ease-out,
+      visibility 0s linear 250ms;
+  }
+  .back-to-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity 250ms ease-out,
+      transform 250ms ease-out;
+  }
+  .back-to-top:hover {
+    border-color: var(--red);
+  }
+  .toast-region {
+    bottom: 84px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .back-to-top {
+    transition: none !important;
+  }
+}
+
+/* Store policies: seven buttons close their last row at every column count. */
+.policy-grid > .policy-button:nth-child(7):last-child {
+  grid-column: 1 / -1;
+}
+@media (min-width: 1051px) {
+  .policy-grid > .policy-button:nth-child(7):last-child {
+    grid-column: span 2;
+  }
+}
+/* The location panel no longer has a headline above its address. */
+.location-copy > .location-fragment:first-child,
+.location-copy > .location-pending-note + .location-fragment {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-proof {
+    animation: none !important;
+  }
+}

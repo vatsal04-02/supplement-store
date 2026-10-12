@@ -1132,7 +1132,7 @@
       }
     });
     var mobile = byId('mobileWhatsApp');
-    mobile.textContent = count ? 'Send list on WhatsApp' : 'WhatsApp enquiry';
+    mobile.textContent = count ? 'Send list on WhatsApp' : 'WhatsApp';
     if (count) mobile.setAttribute('aria-label', 'Send list on WhatsApp: ' + count + ' selected ' + (count === 1 ? 'item' : 'items'));
     else mobile.removeAttribute('aria-label');
     previousCartCount = count;
@@ -1866,9 +1866,20 @@
 
   var siteNav = document.querySelector('.site-nav');
   var navTick = false;
+  var backToTop = byId('backToTop');
   function syncNavSurface() {
     siteNav.classList.toggle('scrolled', window.scrollY > 18);
+    // Back to top (desktop only, see CSS) after two viewports of scrolling.
+    if (backToTop) backToTop.classList.toggle('is-visible', window.scrollY > window.innerHeight * 2);
     navTick = false;
+  }
+  if (backToTop) {
+    backToTop.hidden = false;
+    backToTop.addEventListener('click', function () {
+      window.scrollTo({ top: 0, behavior: reducedMotionQuery.matches ? 'auto' : 'smooth' });
+      var brand = document.querySelector('.site-nav .brand');
+      if (brand) brand.focus({ preventScroll: true });
+    });
   }
   window.addEventListener(
     'scroll',
@@ -2177,6 +2188,52 @@
     },
     { passive: true }
   );
+
+  // Sticky mobile contact bar: appears once the hero has scrolled away.
+  var mobileBar = document.querySelector('.mobile-bar');
+  if (mobileBar && heroSection && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        mobileBar.classList.toggle('is-visible', !entry.isIntersecting);
+      });
+    }).observe(heroSection);
+  } else if (mobileBar) {
+    mobileBar.classList.add('is-visible');
+  }
+
+  // Announcement bar: rotates its factual messages every 4.5s while it is on
+  // screen and the tab is visible; reduced motion keeps the first one.
+  var utilityMessages = Array.prototype.slice.call(document.querySelectorAll('.utility-msg'));
+  var utilityBar = document.querySelector('.utility');
+  if (utilityMessages.length > 1 && utilityBar && 'IntersectionObserver' in window && !reducedMotionQuery.matches) {
+    var utilityIndex = 0;
+    var utilityTimer = 0;
+    var utilityVisible = false;
+    var showUtility = function (index) {
+      utilityMessages.forEach(function (message, i) {
+        message.classList.toggle('is-active', i === index);
+        if (i === index) message.removeAttribute('aria-hidden');
+        else message.setAttribute('aria-hidden', 'true');
+      });
+    };
+    var syncUtilityTimer = function () {
+      var run = utilityVisible && document.visibilityState === 'visible';
+      if (run && !utilityTimer) {
+        utilityTimer = setInterval(function () {
+          utilityIndex = (utilityIndex + 1) % utilityMessages.length;
+          showUtility(utilityIndex);
+        }, 4500);
+      } else if (!run && utilityTimer) {
+        clearInterval(utilityTimer);
+        utilityTimer = 0;
+      }
+    };
+    new IntersectionObserver(function (entries) {
+      utilityVisible = entries[entries.length - 1].isIntersecting;
+      syncUtilityTimer();
+    }).observe(utilityBar);
+    document.addEventListener('visibilitychange', syncUtilityTimer);
+  }
 
   // Hero embers: 16 slow red particles drifting up over the photo side.
   // Desktop with motion allowed only; CSS hides them otherwise, and they

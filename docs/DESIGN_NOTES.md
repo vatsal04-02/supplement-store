@@ -157,6 +157,26 @@ because of the original design's blurred and screen-blended layers. A real
 browser with GPU compositing is expected to do better; measure on target
 devices with DevTools before launch.
 
+## Master pass: copy and conversion
+
+- **Headlines:** How it works · Start with your goal · FAQ · Store policies ·
+  Read the label · Reviews (+ "No fake reviews. Ever.") · Visit the store ·
+  Before you enquire. "Find us with confidence" and the second founder
+  headline are gone.
+- **Labels and CTAs:** red kickers stay on the hero, Product checks and the
+  founder only; each section has one primary button.
+- **One honest-store note** ("Before you enquire", in Why Infinite
+  Nutrition); the other disclaimer banners moved into the FAQ or were
+  dropped as duplicates.
+- **Hero:** the four service cells became one line, "Imported & Indian
+  brands · Guidance before you buy". "100% original" is withheld until
+  approved (`approvals.originalClaim`).
+- **Conversion:** sticky mobile Call + WhatsApp bar after the hero; a gym /
+  trainer bulk-order strip after Featured (prefilled WhatsApp, no prices); a
+  rotating announcement bar with three factual messages; a desktop
+  back-to-top button after two viewports. The catalogue already had
+  client-side category filter chips (all seven categories).
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The

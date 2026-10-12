@@ -172,7 +172,7 @@ test('product details dialog: facts, quantity, add to list and focus return', as
 test('mobile quick bar sends the list on WhatsApp when it has items', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
-  await expect(page.locator('#mobileWhatsApp')).toHaveText('WhatsApp enquiry');
+  await expect(page.locator('#mobileWhatsApp')).toHaveText('WhatsApp');
   await openCatalogue(page);
   await (await card(page, 'wellcore-micronised-creatine')).locator('[data-add]').click();
   await expect(page.locator('#mobileWhatsApp')).toHaveText('Send list on WhatsApp');

@@ -175,20 +175,109 @@ test('exactly three sections are light: reviews, why and visit', async ({ page }
   expect(light).toEqual(['reviews', 'why', 'visit']);
 });
 
-test('every section heading uses the red kicker and one headline style', async ({ page }) => {
+test('headlines match the agreed copy, with kickers on key sections only', async ({ page }) => {
   await page.goto('/');
+  const heads = await page.evaluate(() =>
+    Object.fromEntries(
+      [...document.querySelectorAll('main > section:not(.hero)')]
+        .filter((s) => !s.hidden)
+        .map((s) => [s.id || s.className.split(' ')[0], s.querySelector('h2').textContent.trim()])
+    )
+  );
+  expect(heads).toEqual({
+    featured: 'Featured range.',
+    categories: 'Shop by category.',
+    'flavour-editorial': 'Read the label.',
+    'enquiry-process': 'How it works.',
+    finder: 'Start with your goal.',
+    reviews: 'Reviews.',
+    authenticity: 'Verify before you use.',
+    why: 'Why Infinite Nutrition.',
+    founder: 'Built on strength. Driven by purpose.',
+    visit: 'Visit the store.',
+    policies: 'Store policies.',
+    faq: 'FAQ.'
+  });
+  await expect(page.locator('.reviews-tagline')).toHaveText('No fake reviews. Ever.');
+  await expect(page.locator('.honest-note strong')).toHaveText('Before you enquire.');
+  // Removed: the redundant location headline and the second founder headline.
+  await expect(page.locator('#store-location h3, .founder-training h3')).toHaveCount(0);
+  const kickers = await page.locator('main .eyebrow').evaluateAll((list) => list.map((k) => k.closest('section').id));
+  expect(kickers).toEqual(['home', 'authenticity', 'founder']);
   const result = await page.evaluate(() => {
     const sections = [...document.querySelectorAll('main > section:not(.hero)')].filter((s) => !s.hidden);
-    const missing = sections.filter((s) => !s.querySelector('.eyebrow')).map((s) => s.id || s.className);
-    const kickers = [...new Set([...document.querySelectorAll('main .eyebrow')].map((k) => getComputedStyle(k).backgroundColor))];
-    const sizes = [...new Set(sections.map((s) => getComputedStyle(s.querySelector('h2')).fontSize))];
-    return { missing, kickers, sizes };
+    return [...new Set(sections.map((s) => getComputedStyle(s.querySelector('h2')).fontSize))].map(parseFloat);
   });
-  expect(result.missing).toEqual([]);
-  expect(result.kickers).toEqual(['rgb(184, 0, 25)']);
   // Column-width caps (to keep long words whole) may shave a few pixels.
-  const px = result.sizes.map(parseFloat);
-  expect(Math.max(...px) - Math.min(...px)).toBeLessThanOrEqual(8);
+  expect(Math.max(...result) - Math.min(...result)).toBeLessThanOrEqual(8);
+});
+
+test('one primary call to action per section and one honest-store note', async ({ page }) => {
+  await page.goto('/');
+  const counts = await page.evaluate(() =>
+    [...document.querySelectorAll('main > section')]
+      .filter((s) => !s.hidden && s.id !== 'catalogue')
+      .map((s) => [s.id || s.className.split(' ')[0], [...s.querySelectorAll('.btn')].filter((b) => b.checkVisibility()).length])
+      .filter(([, n]) => n > 1)
+  );
+  expect(counts).toEqual([]);
+  await expect(page.locator('.trust-caveat, .catalogue-note')).toHaveCount(0);
+  await expect(page.locator('.honest-note')).toHaveCount(1);
+  // Hero: one proof line; the unapproved "100% original" claim stays hidden.
+  await expect(page.locator('.hero-benefits')).toHaveCount(0);
+  await expect(page.locator('.hero-proof [data-approval="originalClaim"]')).toBeHidden();
+  expect((await page.locator('.hero-proof').innerText()).toLowerCase()).toBe('imported & indian brands · guidance before you buy');
+});
+
+test('bulk-order strip opens a prefilled WhatsApp bulk enquiry', async ({ page }) => {
+  await page.goto('/');
+  const order = await page.evaluate(() => [...document.querySelector('main').children].map((el) => el.id || el.className.split(' ')[0]));
+  expect(order.indexOf('bulk-strip')).toBe(order.indexOf('featured') + 1);
+  const href = await page.locator('.bulk-strip a').getAttribute('href');
+  const text = new URL(href).searchParams.get('text');
+  expect(new URL(href).pathname).toBe('/918840427558');
+  expect(text).toContain('bulk enquiry for a gym or trainer order');
+  expect(text).not.toMatch(/₹|discount|offer/i);
+});
+
+test('the announcement bar rotates factual messages', async ({ page }) => {
+  await page.clock.install();
+  await page.goto('/');
+  const active = () => page.locator('.utility-msg.is-active').textContent();
+  expect(await active()).toBe('Sports nutrition and supplements · Lucknow');
+  await page.clock.fastForward(4600);
+  expect(await active()).toBe('Build an order list, then enquire on WhatsApp');
+  await page.clock.fastForward(4600);
+  expect(await active()).toBe('Call or WhatsApp +91 88404 27558');
+  await expect(page.locator('.utility-msg[aria-hidden="true"]')).toHaveCount(2);
+});
+
+test('back-to-top appears after two viewports on desktop and returns to the top', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const button = page.locator('#backToTop');
+  await expect(button).toBeHidden();
+  await page.evaluate(() => window.scrollTo({ top: innerHeight * 2.5, behavior: 'instant' }));
+  await expect(button).toBeVisible();
+  await expect(button).toHaveAccessibleName('Back to top');
+  await button.click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.evaluate(() => window.scrollTo({ top: 3000, behavior: 'instant' }));
+  await expect(button).toBeHidden();
+});
+
+test('sticky mobile bar with Call and WhatsApp appears after the hero', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  const bar = page.locator('.mobile-bar');
+  await expect(bar).toBeHidden();
+  await page.evaluate(() => window.scrollTo({ top: 1400, behavior: 'instant' }));
+  await expect(bar).toBeVisible();
+  await expect(bar.locator('a[href="tel:+918840427558"]')).toHaveText('Call');
+  await expect(bar.locator('#mobileWhatsApp')).toHaveText('WhatsApp');
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await expect(bar).toBeHidden();
 });
 
 test('unfinished content stays hidden on the public site', async ({ page }) => {
