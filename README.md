@@ -57,16 +57,16 @@ Files marked ✎ are the ones the owner edits. Comments in each explain every fi
 
 ## Commands
 
-| Command | What it does |
-|---|---|
-| `npm start` | Serve the source tree with the analytics API (development data in `data/development/`) |
-| `npm run build` | Minified production build in `dist/` for the Node server |
-| `npm run build:static` | Build for a static host: collector off, `_headers` with CSP |
-| `npm run start:dist` | Serve `dist/` |
-| `npm test` | Full Playwright suite (starts its own server) |
-| `npm run lint` / `npm run format` | ESLint / Prettier |
-| `npm run check` | Lint + format check + tests |
-| `npm run audit:lighthouse` | Lighthouse mobile and desktop on `dist/` (run `npm run build` first) |
+| Command                           | What it does                                                                           |
+| --------------------------------- | -------------------------------------------------------------------------------------- |
+| `npm start`                       | Serve the source tree with the analytics API (development data in `data/development/`) |
+| `npm run build`                   | Minified production build in `dist/` for the Node server                               |
+| `npm run build:static`            | Build for a static host: collector off, `_headers` with CSP                            |
+| `npm run start:dist`              | Serve `dist/`                                                                          |
+| `npm test`                        | Full Playwright suite (starts its own server)                                          |
+| `npm run lint` / `npm run format` | ESLint / Prettier                                                                      |
+| `npm run check`                   | Lint + format check + tests                                                            |
+| `npm run audit:lighthouse`        | Lighthouse mobile and desktop on `dist/` (run `npm run build` first)                   |
 
 Tests use Chromium via Playwright. On a new machine run
 `npx playwright install chromium` once.
@@ -80,17 +80,17 @@ without JavaScript — `npm test` fails if they drift from `site-config`.
 
 **Server environment variables** (see `.env.example`):
 
-| Variable | Default | Purpose |
-|---|---|---|
-| `PORT` | `8080` | Listening port |
-| `HOST` | `127.0.0.1` (dev), `0.0.0.0` (production) | Listening address |
-| `NODE_ENV` | — | `production` enables HSTS, `upgrade-insecure-requests` and the production event store |
-| `STATIC_ROOT` | `.` | Folder to serve (`dist` after a build) |
-| `ANALYTICS_ADMIN_TOKEN` | — | Dashboard access token (≥ 24 characters). Reports are disabled without it |
-| `ANALYTICS_DATA_DIR` | `data` | Event storage folder |
-| `ANALYTICS_RETENTION_DAYS` | `395` | Days of events kept |
-| `ANALYTICS_COLLECT` | `1` | `0` pauses collection |
-| `TRUST_PROXY` | `0` | `1` behind a trusted reverse proxy (uses `X-Forwarded-For`) |
+| Variable                   | Default                                   | Purpose                                                                               |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
+| `PORT`                     | `8080`                                    | Listening port                                                                        |
+| `HOST`                     | `127.0.0.1` (dev), `0.0.0.0` (production) | Listening address                                                                     |
+| `NODE_ENV`                 | —                                         | `production` enables HSTS, `upgrade-insecure-requests` and the production event store |
+| `STATIC_ROOT`              | `.`                                       | Folder to serve (`dist` after a build)                                                |
+| `ANALYTICS_ADMIN_TOKEN`    | —                                         | Dashboard access token (≥ 24 characters). Reports are disabled without it             |
+| `ANALYTICS_DATA_DIR`       | `data`                                    | Event storage folder                                                                  |
+| `ANALYTICS_RETENTION_DAYS` | `395`                                     | Days of events kept                                                                   |
+| `ANALYTICS_COLLECT`        | `1`                                       | `0` pauses collection                                                                 |
+| `TRUST_PROXY`              | `0`                                       | `1` behind a trusted reverse proxy (uses `X-Forwarded-For`)                           |
 
 No secret is ever placed in frontend code. The dashboard token is entered by
 the owner and kept only in that browser tab.
