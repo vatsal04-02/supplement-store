@@ -111,3 +111,16 @@ test('the owner dashboard is excluded from search engines', () => {
   expect(adminHtml).toContain('<meta name="robots" content="noindex, nofollow" />');
   expect(read('robots.txt')).toContain('Disallow: /admin/');
 });
+
+test('vercel.json publishes the static build with the current security policy', async () => {
+  const { buildCsp } = await import('../server/server.mjs');
+  const vercel = JSON.parse(read('vercel.json'));
+  const pkg = JSON.parse(read('package.json'));
+  expect(vercel.outputDirectory).toBe('dist');
+  expect(vercel.buildCommand).toBe('npm run build:vercel');
+  expect(pkg.scripts['build:vercel']).toContain('--vercel');
+  const global = vercel.headers.find((rule) => rule.source === '/(.*)');
+  const csp = global.headers.find((h) => h.key === 'Content-Security-Policy').value;
+  expect(csp).toBe(buildCsp(SITE, true));
+  expect(vercel.redirects).toEqual([{ source: '/admin', destination: '/admin/', permanent: true }]);
+});

@@ -135,6 +135,12 @@
             if (response.status === 503 && body.error === 'not_configured')
               throw new ApiError('config', body.message || 'Reports are not configured on the server.', 503);
             if (response.status === 400) throw new ApiError('range', body.message || 'That date range cannot be reported.', 400);
+            if (response.status === 404 || response.status === 405)
+              throw new ApiError(
+                'network',
+                'This host has no analytics API (for example a Vercel or other static deployment). Reports need the included Node server (npm start); use Google Analytics on static hosting.',
+                response.status
+              );
             throw new ApiError(
               'server',
               'The server could not build the report (error ' + response.status + '). Try again shortly.',

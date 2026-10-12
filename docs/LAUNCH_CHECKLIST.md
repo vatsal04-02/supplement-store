@@ -49,10 +49,12 @@ Legend: **Where** = the file to edit. `site-config` = `js/site-config.js`,
 
 1. Fill in A1–A9 (and any of B/C you can).
 2. `npm ci && npm run check` — lint, formatting and the full test suite must pass.
-3. `npm run build` (or `npm run build:static`).
+3. `npm run build` (or `npm run build:static`; Vercel runs `npm run build:vercel` itself).
 4. Deploy `dist/`:
    - Node host: `NODE_ENV=production STATIC_ROOT=dist ANALYTICS_ADMIN_TOKEN=… npm start`, behind HTTPS. Behind one reverse proxy set `TRUST_PROXY=1` (and `ALLOWED_ORIGINS=https://<domain>` if the proxy rewrites `Host`).
-   - Static host: upload `dist/` (including `_headers`).
+   - Vercel: import the repository and keep the Framework Preset on "Other" with
+     no build/output overrides; `vercel.json` supplies them.
+   - Other static host: upload `dist/` (including `_headers`).
 5. `npm run audit:lighthouse` against the build, then check the live site in
    Google's Rich Results Test and PageSpeed Insights.
 6. Submit `https://<domain>/sitemap.xml` in Google Search Console and create or

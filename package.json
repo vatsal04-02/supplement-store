@@ -11,6 +11,7 @@
     "start:dist": "STATIC_ROOT=dist node server/server.mjs",
     "build": "node scripts/build.mjs",
     "build:static": "node scripts/build.mjs --static",
+    "build:vercel": "node scripts/build.mjs --vercel",
     "lint": "eslint .",
     "test": "playwright test",
     "test:headed": "playwright test --headed",

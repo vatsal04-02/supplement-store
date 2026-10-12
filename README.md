@@ -102,16 +102,24 @@ the owner and kept only in that browser tab.
   `npm ci && npm run build`, then run
   `NODE_ENV=production STATIC_ROOT=dist ANALYTICS_ADMIN_TOKEN=… node server/server.mjs`
   behind HTTPS, with a persistent volume for `ANALYTICS_DATA_DIR`. Deploy the whole repository: the server serves `dist/` and reads the shared event schema from `js/analytics-schema.js`.
-- **Static host**: `npm run build:static` and upload `dist/`. Use Google
-  Analytics 4 for measurement (set `ga4MeasurementId`); the dashboard needs the
-  Node server.
+- **Vercel**: import the repository; `vercel.json` already sets everything
+  (install `npm ci`, build `npm run build:vercel`, output `dist`, security
+  headers, `/admin` → `/admin/`). Leave the project's Framework Preset as
+  "Other" and the build/output overrides empty so `vercel.json` applies. Vercel
+  cannot run the Node analytics server, so the first-party collector is off in
+  this build and `/admin/` explains that reports are unavailable (demo preview
+  still works). Use Google Analytics for measurement: after setting
+  `ga4MeasurementId`, update the Content-Security-Policy in `vercel.json` — the
+  build stops with the exact value to paste if it is out of date.
+- **Other static hosts** (Netlify, Cloudflare Pages): `npm run build:static`
+  and upload `dist/` (including `_headers`). Same analytics limits as Vercel.
 
-Nothing has been deployed yet: the production domain, address and other
-launch items are still to be confirmed.
+Nothing has been deployed by this project: the production domain, address and
+other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 88 automated tests passing: six viewports (360–1920 px) with no console
+- 89 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
   serious or critical issues) and source integrity checks.

@@ -123,7 +123,9 @@ touches the server.
    copy the measurement ID (`G-XXXXXXXXXX`).
 2. Set `analytics.ga4MeasurementId` in `js/site-config.js`.
 3. Redeploy. The Node server and the static build both add the Google domains to
-   the Content-Security-Policy automatically when an ID is present.
+   the Content-Security-Policy automatically when an ID is present. On Vercel,
+   also update the Content-Security-Policy in `vercel.json`; `npm run
+   build:vercel` fails and prints the exact value until you do.
 4. Visitors now see a consent banner; GA4 loads only after **Accept**. Consent
    Mode is initialised with ad storage, ad user data and ad personalisation
    denied.
@@ -137,7 +139,8 @@ touches the server.
 | Host | Command | Analytics available |
 |---|---|---|
 | Any Node.js host (VPS, Render, Railway, Fly.io …) | `npm run build` then `NODE_ENV=production STATIC_ROOT=dist npm start` | First-party + dashboard (+ GA4 if configured) |
-| Static host (Netlify, Cloudflare Pages, GitHub Pages …) | `npm run build:static`, upload `dist/` | GA4 only; the collector is switched off and `/admin/` cannot load reports |
+| Vercel | Import the repo; `vercel.json` runs `npm run build:vercel` and publishes `dist/` | GA4 only; the collector is switched off and `/admin/` cannot load reports |
+| Other static hosts (Netlify, Cloudflare Pages, GitHub Pages …) | `npm run build:static`, upload `dist/` | GA4 only; the collector is switched off and `/admin/` cannot load reports |
 
 On a static host the first-party endpoint must stay disabled (the static build
 does this), otherwise every visit would log a failed request.

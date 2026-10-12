@@ -5,6 +5,9 @@
 //   npm run build:static   for a static host (Netlify, Cloudflare Pages, …):
 //                          disables the first-party collector, which needs the
 //                          server, and writes a _headers file with the CSP
+//   npm run build:vercel   static build for Vercel (used by vercel.json); the
+//                          headers live in vercel.json, and the build fails if
+//                          its Content-Security-Policy is out of date
 //
 // Minifies CSS and page scripts with esbuild. The owner-editable data files
 // (js/site-config.js, js/catalogue.js) are copied unminified so they stay
@@ -22,7 +25,8 @@ import { buildCsp } from '../server/server.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DIST = path.join(ROOT, 'dist');
-const STATIC = process.argv.includes('--static');
+const VERCEL = process.argv.includes('--vercel');
+const STATIC = VERCEL || process.argv.includes('--static');
 const UNMINIFIED = new Set(['js/site-config.js', 'js/catalogue.js']);
 
 function readSiteConfig(code) {
@@ -60,10 +64,27 @@ async function walk(dir) {
   return out;
 }
 
+// vercel.json is read by Vercel before the build runs, so it cannot be
+// generated here; instead the build refuses to ship a stale policy (for
+// example after a Google Analytics ID is added to js/site-config.js).
+async function checkVercelConfig(site) {
+  const config = JSON.parse(await readFile(path.join(ROOT, 'vercel.json'), 'utf8'));
+  const expected = buildCsp(site, true);
+  const global = (config.headers || []).find((rule) => rule.source === '/(.*)');
+  const csp = global && global.headers.find((h) => h.key === 'Content-Security-Policy');
+  if (!csp || csp.value !== expected) {
+    throw new Error(
+      `vercel.json Content-Security-Policy does not match js/site-config.js. Set the "/(.*)" Content-Security-Policy value to:\n${expected}`
+    );
+  }
+  if (config.outputDirectory !== 'dist') throw new Error('vercel.json outputDirectory must be "dist".');
+}
+
 async function main() {
   const configSource = await readFile(path.join(ROOT, 'js/site-config.js'), 'utf8');
   const site = readSiteConfig(configSource);
   const siteUrl = validSiteUrl(site.siteUrl);
+  if (VERCEL) await checkVercelConfig(site);
 
   await rm(DIST, { recursive: true, force: true });
   await mkdir(DIST, { recursive: true });
@@ -137,7 +158,7 @@ async function main() {
     );
   }
 
-  if (STATIC) {
+  if (STATIC && !VERCEL) {
     const csp = buildCsp(site, true);
     const security = [
       `  Content-Security-Policy: ${csp}`,
@@ -176,7 +197,7 @@ async function main() {
     if (isText)
       lines.push(`  ${rel.padEnd(28)} ${(size / 1024).toFixed(1).padStart(7)} KB  gzip ${(gzSize / 1024).toFixed(1).padStart(6)} KB`);
   }
-  console.log(`Built ${STATIC ? 'static ' : ''}site → dist/`);
+  console.log(`Built ${VERCEL ? 'Vercel ' : STATIC ? 'static ' : ''}site → dist/`);
   console.log(lines.sort().join('\n'));
   console.log(`  total ${(raw / 1024 / 1024).toFixed(2)} MB (${(gz / 1024 / 1024).toFixed(2)} MB with text gzipped)`);
   console.log(
