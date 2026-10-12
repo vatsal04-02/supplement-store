@@ -1,0 +1,529 @@
+/*
+  Infinite Nutrition — refinement layer
+  -------------------------------------
+  Loaded after css/styles.css (the original design system). Everything here
+  repairs or extends the existing design using its own tokens: the black,
+  red and white palette, display type and spacing stay as designed.
+
+  Contents
+    1. Global behaviour
+    2. Display headings that must not break mid-word
+    3. Review mode and owner approvals
+    4. Product photo stages (including photos awaiting upload)
+    5. Category tiles without a supporting visual
+    6. Catalogue, quantity and order-list feedback
+    7. Toast, consent banner and privacy dialog
+    8. Section fixes (founder portrait, owner checklist, store banner, footer)
+    9. Legibility floor for micro labels on phones
+   10. Motion refinements
+*/
+
+/* 1. Global behaviour ---------------------------------------------------- */
+/* Locking scroll for the order list or a dialog must not shift the page:
+   js/app.js sets --scrollbar-comp to the width of the removed scrollbar. */
+body.lock {
+  padding-right: var(--scrollbar-comp, 0px);
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* 2. Display headings ---------------------------------------------------- */
+/* At wide viewports these headings were larger than their columns, so the
+   cascade's `overflow-wrap: anywhere` split words ("NUTRITI / ON.") and
+   pushed a lone full stop onto its own line. The type now scales with its
+   column; sizes below 1051px are unchanged. */
+.visit-copy,
+.reviews-intro,
+.location-copy,
+.featured-body {
+  container-type: inline-size;
+}
+@media (min-width: 1051px) {
+  .visit-copy h2 {
+    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 17cqi);
+  }
+  .reviews-intro h2 {
+    font-size: min(clamp(3rem, 5vw, 5rem), 16.4cqi);
+  }
+  .location-copy h3 {
+    font-size: min(clamp(2.5rem, 4.5vw, 4.8rem), 14cqi);
+  }
+  .featured-card:first-child .featured-body h3 {
+    font-size: min(2.1rem, 12.2cqi);
+  }
+}
+
+/* 3. Review mode and owner approvals ------------------------------------- */
+/* js/app.js adds .review-mode while `reviewMode` is true in
+   js/site-config.js. Without it, owner-facing notes are hidden. */
+html:not(.review-mode) [data-owner-note] {
+  display: none !important;
+}
+[data-approval][hidden] {
+  display: none !important;
+}
+
+/* 4. Product photo stages ------------------------------------------------ */
+.product-photo-pending {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
+  width: min(78%, 240px);
+  aspect-ratio: 3 / 4;
+  max-height: 84%;
+  padding: 18px 14px;
+  border: 1px dashed rgba(255, 255, 255, 0.22);
+  background:
+    radial-gradient(circle at 50% 38%, rgba(184, 0, 25, 0.16), transparent 64%),
+    rgba(8, 8, 8, 0.6);
+  text-align: center;
+}
+.product-photo-pending .pending-brand {
+  font-family: var(--display);
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.product-photo-pending .pending-note {
+  color: var(--muted);
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.product-photo-pending:before {
+  content: "";
+  width: 28px;
+  height: 3px;
+  background: var(--red);
+}
+.detail-hero > .product-photo-pending {
+  width: 180px;
+  height: 180px;
+  aspect-ratio: auto;
+  max-height: none;
+}
+@media (max-width: 760px) {
+  .detail-hero > .product-photo-pending {
+    width: min(210px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+    margin-inline: auto;
+  }
+}
+
+/* 5. Category tiles ------------------------------------------------------ */
+/* Real store photography as the main image while the supporting visual is
+   not supplied: slightly more overlay so the copy keeps its contrast. */
+.category-store-primary:after {
+  background:
+    linear-gradient(180deg, rgba(8, 8, 8, 0.1) 18%, rgba(8, 8, 8, 0.38) 52%, rgba(8, 8, 8, 0.92) 100%),
+    linear-gradient(90deg, rgba(8, 8, 8, 0.42), transparent 64%);
+}
+.category-store-primary .category-primary > img {
+  filter: saturate(0.92) contrast(1.04) brightness(0.92);
+}
+
+/* Typographic tiles: no image is published until one is supplied. */
+.category-typographic .category-media {
+  background:
+    radial-gradient(circle at 86% 18%, rgba(184, 0, 25, 0.2), transparent 42%),
+    radial-gradient(circle at 12% 110%, rgba(101, 0, 13, 0.28), transparent 46%),
+    linear-gradient(135deg, #111111 0%, #080808 62%);
+}
+.category-typographic .category-media:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(116deg, transparent 0 46px, rgba(255, 255, 255, 0.022) 46px 47px);
+  pointer-events: none;
+}
+.category-tile .category-mark {
+  position: absolute;
+  top: 10px;
+  right: 18px;
+  align-self: auto;
+  text-decoration: none;
+  font-family: var(--display);
+  font-size: clamp(5rem, 10vw, 9rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
+  transition: -webkit-text-stroke-color var(--motion-base, 260ms) ease, transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
+}
+@supports not (-webkit-text-stroke: 1px #fff) {
+  .category-tile .category-mark {
+    color: rgba(255, 255, 255, 0.07);
+  }
+}
+.category-typographic:after {
+  background: linear-gradient(180deg, transparent 40%, rgba(8, 8, 8, 0.55) 100%);
+}
+@media (hover: hover) and (pointer: fine) {
+  .category-typographic:hover .category-mark {
+    -webkit-text-stroke-color: rgba(184, 0, 25, 0.7);
+    transform: translateY(-3px);
+  }
+}
+@media (max-width: 760px) {
+  .category-tile .category-mark {
+    top: 6px;
+    right: 14px;
+    font-size: 5.2rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .category-tile .category-mark {
+    transition: none;
+  }
+  .category-typographic:hover .category-mark {
+    transform: none;
+  }
+}
+
+/* Featured range: with exactly four products the original 4-column grid
+   (first card double width) left the fourth card alone on a second row.
+   A 3-column zigzag keeps the double-width feature card and closes the gap. */
+@media (min-width: 1180px) {
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(4)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .featured-grid > .featured-card:nth-child(4):last-child {
+    grid-column: span 2;
+    display: grid;
+    grid-template-columns: minmax(250px, 0.92fr) minmax(0, 1.08fr);
+  }
+  .featured-grid > .featured-card:nth-child(4):last-child .featured-photo {
+    order: 2;
+    height: 100%;
+    aspect-ratio: auto;
+    border-left: 1px solid var(--hairline-soft);
+  }
+  .featured-grid > .featured-card:nth-child(4):last-child .featured-body {
+    padding: 32px;
+  }
+}
+
+/* The price/availability pair is a two-column grid with a 1px hairline
+   between the cells. A generic `.featured-body > div` flex rule turned it
+   into space-between, so the hairline grew into a grey block on wide cards. */
+.featured-body > div.featured-facts {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+/* 6. Catalogue, quantity and order-list feedback ------------------------- */
+.qty button[disabled],
+.cart-qty-btn[disabled] {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+.card-action.add.is-added {
+  background: var(--white);
+  border-color: var(--white);
+  color: var(--black);
+}
+.detail-purchase {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.detail-purchase .product-qty-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.detail-purchase .card-action.add {
+  min-height: 46px;
+  padding-inline: 16px;
+}
+@media (max-width: 520px) {
+  .detail-purchase {
+    grid-template-columns: auto 1fr;
+  }
+  .detail-purchase .card-action.add {
+    grid-column: 1 / -1;
+  }
+}
+
+/* 7. Toast, consent banner and privacy dialog --------------------------- */
+.toast-region {
+  position: fixed;
+  z-index: 80;
+  right: 24px;
+  bottom: 24px;
+  width: min(420px, calc(100vw - 32px));
+  pointer-events: none;
+}
+.toast {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 12px 14px 18px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-left: 3px solid var(--red);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity var(--motion-fast, 180ms) ease,
+    transform var(--motion-base, 260ms) var(--motion-ease-enter, ease);
+  pointer-events: auto;
+}
+.toast.show {
+  opacity: 1;
+  transform: none;
+}
+.toast p {
+  margin: 0;
+  font-size: 0.86rem;
+  font-weight: 750;
+  line-height: 1.4;
+}
+.toast-action {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--red);
+  background: var(--red);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.toast-action:hover {
+  background: var(--deep);
+}
+.toast-close {
+  width: 36px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+.toast-close:hover {
+  color: var(--white);
+}
+@media (max-width: 760px) {
+  .toast-region {
+    left: 12px;
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+    transform: none;
+  }
+}
+
+.consent-banner {
+  position: fixed;
+  z-index: 75;
+  left: 24px;
+  bottom: 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  width: min(760px, calc(100vw - 48px));
+  padding: 20px 22px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 3px solid var(--red);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.62);
+}
+.consent-banner[hidden] {
+  display: none;
+}
+.consent-copy strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.1rem;
+  text-transform: uppercase;
+}
+.consent-copy p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+.consent-actions {
+  display: flex;
+  gap: 8px;
+}
+.consent-actions .btn {
+  min-height: 46px;
+}
+@media (max-width: 760px) {
+  .consent-banner {
+    left: 12px;
+    right: 12px;
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    width: auto;
+    grid-template-columns: 1fr;
+    padding: 18px;
+  }
+  .consent-actions .btn {
+    flex: 1;
+  }
+}
+
+.privacy-section .btn {
+  margin-top: 6px;
+}
+.privacy-state,
+.privacy-signal {
+  margin-top: 12px;
+  font-size: 0.84rem;
+}
+.privacy-state strong {
+  color: var(--white);
+}
+.footer-privacy {
+  margin: 12px 0 0;
+}
+.footer-privacy .link-button {
+  padding: 0;
+  font-size: 0.74rem;
+}
+
+/* 8. Section fixes ------------------------------------------------------- */
+/* Previously inline styles in index.html. */
+.founder-photo-picture {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.founder-photo-picture img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 24%;
+}
+.founder-cta {
+  align-self: flex-start;
+}
+
+/* Owner checklist: the "Pending" marker and the item text now sit in two
+   clean columns instead of the label floating to the far right. */
+.owner-checklist li {
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+}
+.owner-checklist li > span strong {
+  color: var(--white);
+}
+
+/* The store banner is a 960 × 430 photograph; at desktop its frame was tall
+   enough to enlarge it about 1.7× and crop its own heading. Keep it close to
+   its natural proportion. */
+@media (min-width: 761px) {
+  .authenticity-media {
+    grid-template-rows: auto minmax(220px, 1fr);
+  }
+  .authenticity-photo {
+    aspect-ratio: 960 / 430;
+  }
+  .authenticity-photo img {
+    object-position: center 40%;
+  }
+}
+
+/* Location actions: directions and WhatsApp take full rows so the two call
+   buttons pair up instead of leaving one button alone on the last row. */
+.location-actions > #directionsSlot,
+.location-actions > a[href^="https://wa.me/"] {
+  grid-column: 1 / -1;
+}
+#directionsSlot > .btn {
+  width: 100%;
+}
+
+/* 9. Legibility floor for micro labels on phones ------------------------- */
+@media (max-width: 760px) {
+  .hero-benefit span {
+    font-size: 0.6rem;
+  }
+  .editorial-hero .eyebrow {
+    font-size: 0.62rem;
+  }
+  .product-photo-trust,
+  .editorial-caption {
+    font-size: 0.58rem;
+  }
+}
+
+/* 10. Motion refinements -------------------------------------------------- */
+/* The hero entrance is unchanged. Its ambient layers used to loop forever
+   (product drift, orbit, light sweeps, smoke); they now play a couple of
+   slow cycles and come to rest, so the first viewport settles into a still,
+   art-directed frame. Pointer depth on desktop still responds. */
+@media (prefers-reduced-motion: no-preference) {
+  .editorial-visual > .hero-image-picture > .hero-store-main {
+    animation-iteration-count: 2;
+  }
+  .hero-red-orbit {
+    animation-iteration-count: 2;
+  }
+  .hero-light-beam-one {
+    animation-iteration-count: 1;
+  }
+  .hero-light-beam-two {
+    animation: none;
+    opacity: 0;
+  }
+  .hero-atmosphere:before,
+  .hero-atmosphere:after {
+    animation-iteration-count: 2;
+  }
+
+  body.motion-ready .reveal-target.reveal-done {
+    animation: none;
+  }
+
+  /* Reveal targets wait in their starting pose, so content that scrolls in
+     no longer jumps 18px before animating. */
+  body.motion-ready .reveal-target:not(.in-view) {
+    opacity: 0.94;
+    transform: translate3d(0, 18px, 0);
+  }
+  body.motion-ready .reveal-target.reveal-side:not(.in-view) {
+    transform: translate3d(-16px, 0, 0);
+  }
+  body.motion-ready .reveal-target.reveal-side:nth-child(even):not(.in-view) {
+    transform: translate3d(16px, 0, 0);
+  }
+  @media (max-width: 900px) {
+    body.motion-ready .reveal-target.reveal-side:not(.in-view),
+    body.motion-ready .reveal-target.reveal-side:nth-child(even):not(.in-view) {
+      transform: translate3d(0, 18px, 0);
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "infinite-nutrition-storefront",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Infinite Nutrition sports nutrition storefront (Lucknow) with enquiry-only order list and first-party analytics.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server/server.mjs",
+    "start:dist": "STATIC_ROOT=dist node server/server.mjs",
+    "build": "node scripts/build.mjs",
+    "build:static": "node scripts/build.mjs --static",
+    "lint": "eslint .",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "audit:lighthouse": "node scripts/lighthouse.mjs",
+    "check": "npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.56.1",
+    "esbuild": "0.28.2",
+    "eslint": "10.11.0",
+    "globals": "17.12.0"
+  }
+}

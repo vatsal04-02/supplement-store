@@ -1,5 +1,4 @@
 <!doctype html>
-<!-- Website Design Layout (13) · verified store map destination remains an owner launch dependency. -->
 <html lang="en-IN">
 <head>
   <meta charset="utf-8" />
@@ -19,16 +18,24 @@
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:title" content="Infinite Nutrition | Supplement Store in Lucknow" />
   <meta name="twitter:description" content="Explore sports nutrition and supplements at Infinite Nutrition in Lucknow." />
-  <link rel="icon" type="image/png" href="assets/brand/favicon-32.png" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <link rel="icon" type="image/png" sizes="32x32" href="assets/brand/favicon-32.png" />
+  <link rel="apple-touch-icon" href="assets/brand/logo-192.png" />
   <link rel="preload" as="image" href="assets/hero/hero-1440.webp" imagesrcset="assets/hero/hero-640.webp 640w, assets/hero/hero-960.webp 960w, assets/hero/hero-1440.webp 1440w, assets/hero/hero-1920.webp 1920w" imagesizes="(max-width: 760px) 100vw, 55vw" type="image/webp" fetchpriority="high" />
   <title>Infinite Nutrition | Supplement Store in Lucknow</title>
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="businessJsonLd">
   {
     "@context": "https://schema.org",
     "@type": "SportingGoodsStore",
     "name": "Infinite Nutrition",
     "description": "Sports nutrition and supplement store serving customers in Lucknow, Uttar Pradesh.",
     "telephone": ["+91-88404-27558", "+91-83032-53308"],
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "Lucknow",
+      "addressRegion": "Uttar Pradesh",
+      "addressCountry": "IN"
+    },
     "areaServed": {
       "@type": "City",
       "name": "Lucknow"
@@ -60,6 +67,7 @@
   }
   </script>
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/refinements.css" />
 </head>
 <body>
   <a class="skip" href="#main">Skip to content</a>
@@ -72,10 +80,10 @@
         <a href="#home">Home</a><a href="#featured">Featured</a><a href="#categories">Categories</a><a href="#catalogue" data-open-catalogue>All products</a><a href="#founder">Founder</a><a href="#visit">Visit store</a>
       </nav>
       <div class="nav-tools">
-        <button class="icon-btn" type="button" id="focusSearch" aria-controls="catalogue">Search</button>
+        <button class="icon-btn" type="button" id="focusSearch" aria-controls="catalogue" aria-label="Search products">Search</button>
         <button class="icon-btn cart-open" type="button" aria-haspopup="dialog" aria-controls="cartBackdrop">Order list <b id="cartCount" aria-live="polite" aria-atomic="true">0</b></button>
       </div>
-      <a class="nav-wa" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp enquiry</a>
+      <a class="nav-wa" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp enquiry</a>
     </div>
   </header>
 
@@ -95,7 +103,7 @@
           </div>
           <div class="actions">
             <a class="btn primary" href="#featured">Shop products <span aria-hidden="true">→</span></a>
-            <a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp enquiry</a>
+            <a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp enquiry</a>
           </div>
         </div>
         <figure class="hero-visual editorial-visual">
@@ -138,7 +146,7 @@
       </div>
     </section>
 
-    <section class="flavour-editorial" aria-labelledby="flavourTitle">
+    <section class="flavour-editorial" aria-labelledby="flavourTitle" data-track-source="flavour_cta">
       <div class="wrap flavour-layout">
         <figure class="flavour-media">
           <picture><source type="image/webp" srcset="assets/editorial/chocolate-protein-960.webp 960w, assets/editorial/chocolate-protein-1600.webp 1600w" sizes="(max-width: 900px) 100vw, 58vw" /><img src="assets/editorial/chocolate-protein-2352.jpg" alt="Close-up editorial view of chocolate protein powder in a black scoop under red light" width="2352" height="1008" loading="lazy" fetchpriority="low" decoding="async" /></picture>
@@ -182,7 +190,7 @@
         </div>
         <p class="catalogue-meta" id="catalogueMeta" aria-live="polite"></p>
         <div class="product-grid" id="productGrid"></div>
-        <div class="empty-search" id="emptySearch" role="status" aria-live="polite"><strong id="emptySearchTitle">No products match these filters.</strong><span id="emptySearchCopy">Try a different search, category or brand.</span><div class="empty-search-actions"><button class="reset-filters" type="button" data-reset-filters>Reset all filters</button><a class="small-action" id="emptyEnquiry" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20help%20finding%20a%20product." target="_blank" rel="noopener">Ask the store</a></div></div>
+        <div class="empty-search" id="emptySearch" role="status" aria-live="polite"><strong id="emptySearchTitle">No products match these filters.</strong><span id="emptySearchCopy">Try a different search, category or brand.</span><div class="empty-search-actions"><button class="reset-filters" type="button" data-reset-filters>Reset all filters</button><a class="small-action" id="emptyEnquiry" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20help%20finding%20a%20product." target="_blank" rel="noopener noreferrer">Ask the store</a></div></div>
         <p class="catalogue-note"><strong>About this catalogue:</strong> Every product image is cropped from photography supplied by the store. The order list opens a WhatsApp enquiry; the store must still confirm availability, delivery charges and the final total.</p>
       </div>
     </section>
@@ -198,7 +206,7 @@
             <button class="choice" type="button" aria-pressed="false" data-title="Vitamins & micronutrients" data-copy="Explore the general nutrition category. Ask the team for label and availability information before choosing." data-filter="vitamins">General nutrition</button>
             <button class="choice" type="button" aria-pressed="false" data-title="Ask the store team" data-copy="Tell the team what you are looking for. They can share the current range and help you compare product information." data-filter="contact">Not sure what to choose</button>
           </div>
-          <div class="finder-result" aria-live="polite"><small>Suggested category</small><h3 id="resultTitle">Whey protein &amp; creatine</h3><p id="resultCopy">Start by browsing the whey protein and creatine categories, then compare the current options directly with the store team.</p><div class="finder-actions"><button class="btn primary" id="finderBrowse" type="button">Browse category</button><a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20help%20choosing%20a%20product." target="_blank" rel="noopener">WhatsApp the store</a></div></div>
+          <div class="finder-result" aria-live="polite"><small>Suggested category</small><h3 id="resultTitle">Whey protein &amp; creatine</h3><p id="resultCopy">Start by browsing the whey protein and creatine categories, then compare the current options directly with the store team.</p><div class="finder-actions"><button class="btn primary" id="finderBrowse" type="button">Browse category</button><a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20help%20choosing%20a%20product." target="_blank" rel="noopener noreferrer">WhatsApp the store</a></div></div>
         </div>
       </div>
     </section>
@@ -213,7 +221,7 @@
             <div class="review-standard" role="listitem"><b>02 · Exact wording</b><span>Names, ratings and comments are not rewritten into stronger claims.</span></div>
             <div class="review-standard" role="listitem"><b>03 · Permission first</b><span>Customer feedback is published only after the business confirms it may be shown here.</span></div>
           </div>
-          <div class="review-action"><p>Already shopped with Infinite Nutrition? Share your feedback directly with the store.</p><a class="btn primary" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20share%20feedback." target="_blank" rel="noopener">Share feedback</a></div>
+          <div class="review-action"><p>Already shopped with Infinite Nutrition? Share your feedback directly with the store.</p><a class="btn primary" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20share%20feedback." target="_blank" rel="noopener noreferrer">Share feedback</a></div>
         </div>
       </div>
     </section>
@@ -248,8 +256,8 @@
 
     <section class="founder" id="founder" aria-labelledby="founderTitle">
       <div class="wrap founder-grid">
-        <figure class="founder-photo"><picture style="position:absolute;inset:0;display:block;width:100%;height:100%"><source srcset="assets/founder/anant-prajapati-672.webp 672w, assets/founder/anant-prajapati-1344.webp 1344w" sizes="(max-width: 760px) 100vw, 40vw" type="image/webp" /><img src="assets/founder/anant-prajapati-1070.jpg" alt="Anant Prajapati, founder of Infinite Nutrition" loading="lazy" fetchpriority="low" decoding="async" width="1344" height="1808" style="display:block;width:100%;height:100%;object-fit:cover;object-position:center 24%" /></picture></figure>
-        <div class="founder-copy"><div class="eyebrow">Powerlifter · Founder</div><h2 id="founderTitle">Built on strength. <span class="accent">Driven by purpose.</span></h2><div class="founder-name">Anant Prajapati</div><div class="founder-role">Founder, Infinite Nutrition</div><p>Anant Prajapati is a powerlifter and the founder of Infinite Nutrition, a B2C sports nutrition and supplement business serving customers in Lucknow.</p><div class="founder-facts" aria-label="Founder and business details"><div class="founder-fact"><small>Founder</small><strong>Anant Prajapati</strong></div><div class="founder-fact"><small>Business</small><strong>Sports nutrition &amp; supplements</strong></div><div class="founder-fact"><small>Location</small><strong>Lucknow, Uttar Pradesh</strong></div></div><a class="btn primary" href="#catalogue" data-open-catalogue style="align-self:flex-start">Explore the catalogue</a><div class="powered">Powered by Fit &amp; First<span class="fit-first-note">Owner approval required: confirm Fit &amp; First’s relationship to Infinite Nutrition and permission to publish this wording.</span></div></div>
+        <figure class="founder-photo"><picture class="founder-photo-picture"><source srcset="assets/founder/anant-prajapati-672.webp 672w, assets/founder/anant-prajapati-1344.webp 1344w" sizes="(max-width: 760px) 100vw, 40vw" type="image/webp" /><img src="assets/founder/anant-prajapati-1070.jpg" alt="Anant Prajapati, founder of Infinite Nutrition" loading="lazy" fetchpriority="low" decoding="async" width="1344" height="1808" /></picture></figure>
+        <div class="founder-copy"><div class="eyebrow">Powerlifter · Founder</div><h2 id="founderTitle">Built on strength. <span class="accent">Driven by purpose.</span></h2><div class="founder-name">Anant Prajapati</div><div class="founder-role">Founder, Infinite Nutrition</div><p>Anant Prajapati is a powerlifter and the founder of Infinite Nutrition, a B2C sports nutrition and supplement business serving customers in Lucknow.</p><div class="founder-facts" aria-label="Founder and business details"><div class="founder-fact"><small>Founder</small><strong>Anant Prajapati</strong></div><div class="founder-fact"><small>Business</small><strong>Sports nutrition &amp; supplements</strong></div><div class="founder-fact"><small>Location</small><strong>Lucknow, Uttar Pradesh</strong></div></div><a class="btn primary founder-cta" href="#catalogue" data-open-catalogue>Explore the catalogue</a><div class="powered" data-approval="fitAndFirstCredit">Powered by Fit &amp; First<span class="fit-first-note" data-owner-note>Owner approval required: confirm Fit &amp; First’s relationship to Infinite Nutrition and permission to publish this wording.</span></div></div>
       </div>
       <div class="wrap founder-training">
         <figure class="founder-training-media">
@@ -266,10 +274,10 @@
           <div class="visit-copy"><div class="eyebrow">Visit or enquire</div><h2 id="visitTitle">Visit Infinite Nutrition.</h2><p>Two telephone numbers and matching WhatsApp routes are published from the supplied source. Call or message first: the complete address, opening hours, collection and delivery arrangements are still awaiting owner confirmation.</p></div>
           <div class="contact-side">
             <address class="address"><strong>Address currently supplied</strong>147, Part 1, Lucknow, Uttar Pradesh<br /><span class="verification-label">Incomplete · owner confirmation required</span><small class="contact-context">Street or locality detail, postcode and a verified Google Maps directions URL have not been supplied. No directions link is published until the owner confirms the complete address.</small></address>
-            <div class="contact-row"><strong><a href="tel:+918840427558">08840 427558</a><span class="contact-context">Store contact · tap to call or enquire on WhatsApp</span></strong><span class="contact-actions"><a class="small-action alt" href="tel:+918840427558">Call</a><a class="small-action" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp</a></span></div>
-            <div class="contact-row"><strong><a href="tel:+918303253308">83032 53308</a><span class="contact-context">Store contact · tap to call or enquire on WhatsApp</span></strong><span class="contact-actions"><a class="small-action alt" href="tel:+918303253308">Call</a><a class="small-action" href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp</a></span></div>
+            <div class="contact-row"><strong><a href="tel:+918840427558">08840 427558</a><span class="contact-context">Store contact · tap to call or enquire on WhatsApp</span></strong><span class="contact-actions"><a class="small-action alt" href="tel:+918840427558">Call</a><a class="small-action" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp</a></span></div>
+            <div class="contact-row"><strong><a href="tel:+918303253308">83032 53308</a><span class="contact-context">Store contact · tap to call or enquire on WhatsApp</span></strong><span class="contact-actions"><a class="small-action alt" href="tel:+918303253308">Call</a><a class="small-action" href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp</a></span></div>
             <div class="detail-grid"><div class="detail"><small>Opening hours</small><strong>Not published — owner confirmation required</strong></div><div class="detail"><small>Delivery &amp; collection</small><strong>Coverage, charges and collection process not supplied</strong></div><div class="detail"><small>Payment arrangements</small><strong>Accepted methods and payment timing not supplied</strong></div><div class="detail"><small>Directions</small><strong>Verified Maps URL required</strong></div><div class="detail"><small>Instagram &amp; socials</small><strong>No verified profile URL supplied</strong></div><div class="detail"><small>Returns &amp; refunds</small><strong>Owner-approved policy wording required</strong></div></div>
-            <div class="owner-checklist" role="region" aria-labelledby="ownerChecklistTitle"><h3 id="ownerChecklistTitle">Owner completion checklist</h3><p class="owner-checklist-intro"><strong>Published from the supplied source:</strong> 08840 427558 and 83032 53308, with matching call and WhatsApp links. The items below remain unpublished until the owner supplies or approves them.</p><ul><li><strong>Address &amp; map:</strong> confirm the complete street/locality address and postcode, then provide the exact Google Maps embed and directions URLs—or a verified Google Place ID.</li><li><strong>Opening hours:</strong> supply the days, times, weekly closing day and any holiday-hours process.</li><li><strong>Contact roles:</strong> confirm that both published numbers are current store contacts and whether one should be identified as primary.</li><li><strong>Official social profiles:</strong> supply the exact Instagram and any other genuine profile URLs.</li><li><strong>Delivery &amp; collection:</strong> approve service area, charges, timing, collection procedure and any minimum-order terms.</li><li><strong>Payment arrangements:</strong> approve accepted methods, when payment is due and what invoice or receipt is issued.</li><li><strong>Returns, replacements &amp; refunds:</strong> approve eligibility, exclusions, inspection process, deadlines, refund method and timing.</li><li><strong>Product authenticity:</strong> supply evidence before publishing any authorised-dealer, certification, partnership or guaranteed-authenticity claim.</li><li><strong>Customer reviews:</strong> supply the exact review source, wording, rating, date and publication permission; none are published yet.</li><li><strong>Fit &amp; First:</strong> approve the wording, relationship and permission behind “Powered by Fit &amp; First”.</li></ul></div>
+            <div class="owner-checklist" role="region" aria-labelledby="ownerChecklistTitle" data-owner-note><h3 id="ownerChecklistTitle">Owner completion checklist</h3><p class="owner-checklist-intro"><strong>Published from the supplied source:</strong> 08840 427558 and 83032 53308, with matching call and WhatsApp links. The items below remain unpublished until the owner supplies or approves them.</p><ul><li><span><strong>Address &amp; map:</strong> confirm the complete street/locality address and postcode, then provide the exact Google Maps embed and directions URLs—or a verified Google Place ID.</span></li><li><span><strong>Opening hours:</strong> supply the days, times, weekly closing day and any holiday-hours process.</span></li><li><span><strong>Contact roles:</strong> confirm that both published numbers are current store contacts and whether one should be identified as primary.</span></li><li><span><strong>Official social profiles:</strong> supply the exact Instagram and any other genuine profile URLs.</span></li><li><span><strong>Delivery &amp; collection:</strong> approve service area, charges, timing, collection procedure and any minimum-order terms.</span></li><li><span><strong>Payment arrangements:</strong> approve accepted methods, when payment is due and what invoice or receipt is issued.</span></li><li><span><strong>Returns, replacements &amp; refunds:</strong> approve eligibility, exclusions, inspection process, deadlines, refund method and timing.</span></li><li><span><strong>Product authenticity:</strong> supply evidence before publishing any authorised-dealer, certification, partnership or guaranteed-authenticity claim.</span></li><li><span><strong>Customer reviews:</strong> supply the exact review source, wording, rating, date and publication permission; none are published yet.</span></li><li><span><strong>Fit &amp; First:</strong> approve the wording, relationship and permission behind “Powered by Fit &amp; First”.</span></li></ul></div>
           </div>
         </div>
         <div class="visit-location" id="store-location" aria-labelledby="storeLocationTitle">
@@ -289,7 +297,7 @@
             <div class="location-fragment"><small>Only verified address fragment</small><strong>147, Part 1, Lucknow, Uttar Pradesh</strong></div>
             <div class="location-actions">
               <span id="directionsSlot"><button class="btn primary" type="button" disabled aria-describedby="locationStatus">Get directions · awaiting verified pin</button></span>
-              <a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20please%20share%20the%20exact%20store%20location%20and%20opening%20hours." target="_blank" rel="noopener">Ask location on WhatsApp</a>
+              <a class="btn" href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20please%20share%20the%20exact%20store%20location%20and%20opening%20hours." target="_blank" rel="noopener noreferrer">Ask location on WhatsApp</a>
               <a class="btn" href="tel:+918840427558">Call 08840 427558</a>
               <a class="btn" href="tel:+918303253308">Call 83032 53308</a>
             </div>
@@ -324,24 +332,26 @@
           <details class="faq-item"><summary>How can I check product authenticity?</summary><p>Inspect seals and printed batch details, then follow any verification instructions on the packaging through the manufacturer’s official channel. Keep the invoice and original packaging.</p></details>
           <details class="faq-item"><summary>Does the store offer delivery or collection?</summary><p>Delivery coverage, charges, timing and collection arrangements have not been supplied for publication. Share your location with the store and ask for confirmation before ordering or travelling.</p></details>
           <details class="faq-item"><summary>Which payment methods are accepted?</summary><p>Accepted payment methods have not been confirmed for this website. Ask the store directly before making a payment. This page does not collect card or payment details.</p></details>
-          <details class="faq-item"><summary>How can I reach customer support?</summary><p>Call <a href="tel:+918840427558">08840 427558</a> or <a href="tel:+918303253308">83032 53308</a>. You can also send a WhatsApp message to <a href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20need%20help%20with%20a%20product%20enquiry." target="_blank" rel="noopener">08840 427558</a> or <a href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20need%20help%20with%20a%20product%20enquiry." target="_blank" rel="noopener">83032 53308</a>.</p></details>
+          <details class="faq-item"><summary>How can I reach customer support?</summary><p>Call <a href="tel:+918840427558">08840 427558</a> or <a href="tel:+918303253308">83032 53308</a>. You can also send a WhatsApp message to <a href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20need%20help%20with%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">08840 427558</a> or <a href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20need%20help%20with%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">83032 53308</a>.</p></details>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer"><div class="wrap footer-grid"><img class="footer-logo" src="assets/brand/logo-192.png" srcset="assets/brand/logo-96.webp 96w, assets/brand/logo-192.webp 192w" sizes="66px" alt="Infinite Nutrition official logo" loading="lazy" fetchpriority="low" decoding="async" width="66" height="66" /><div><nav class="footer-links" aria-label="Footer navigation"><a href="#featured">Featured</a><a href="#categories">Categories</a><a href="#catalogue" data-open-catalogue>All products</a><a href="#reviews">Reviews</a><a href="#authenticity">Product checks</a><a href="#founder">Founder</a><a href="#visit">Contact</a><a href="#policies">Policies</a><a href="#faq">FAQ</a></nav><div class="footer-contacts"><span class="footer-contact"><a href="tel:+918840427558">08840 427558</a><a href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp</a></span><span class="footer-contact"><a href="tel:+918303253308">83032 53308</a><a href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener">WhatsApp</a></span></div><p class="social-status">Official social links will be added only after the owner supplies and approves the exact profile URLs.</p></div><small>Address currently supplied: 147, Part 1, Lucknow, Uttar Pradesh<br />Complete address and postcode awaiting owner confirmation<br />© 2026 Infinite Nutrition</small></div></footer>
+  <footer class="footer"><div class="wrap footer-grid"><img class="footer-logo" src="assets/brand/logo-192.png" srcset="assets/brand/logo-96.webp 96w, assets/brand/logo-192.webp 192w" sizes="66px" alt="Infinite Nutrition official logo" loading="lazy" fetchpriority="low" decoding="async" width="66" height="66" /><div><nav class="footer-links" aria-label="Footer navigation"><a href="#featured">Featured</a><a href="#categories">Categories</a><a href="#catalogue" data-open-catalogue>All products</a><a href="#reviews">Reviews</a><a href="#authenticity">Product checks</a><a href="#founder">Founder</a><a href="#visit">Contact</a><a href="#policies">Policies</a><a href="#faq">FAQ</a></nav><div class="footer-contacts"><span class="footer-contact"><a href="tel:+918840427558">08840 427558</a><a href="https://wa.me/918840427558?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp</a></span><span class="footer-contact"><a href="tel:+918303253308">83032 53308</a><a href="https://wa.me/918303253308?text=Hi%20Infinite%20Nutrition%2C%20I%20would%20like%20to%20make%20a%20product%20enquiry." target="_blank" rel="noopener noreferrer">WhatsApp</a></span></div><p class="social-status" data-owner-note>Official social links will be added only after the owner supplies and approves the exact profile URLs.</p><p class="footer-privacy"><button class="text-link link-button" type="button" id="privacySettings" aria-haspopup="dialog" aria-controls="modalBackdrop">Privacy &amp; analytics</button></p></div><small>Address currently supplied: 147, Part 1, Lucknow, Uttar Pradesh<br />Complete address and postcode awaiting owner confirmation<br />© 2026 Infinite Nutrition</small></div></footer>
 
   <div class="mobile-bar" role="group" aria-label="Quick enquiry actions"><button class="cart-open" type="button" aria-haspopup="dialog" aria-controls="cartBackdrop">Review list (<span id="cartCountMobile" aria-live="polite" aria-atomic="true">0</span>)</button><button class="mobile-wa" id="mobileWhatsApp" type="button" aria-label="Open a WhatsApp product enquiry">WhatsApp enquiry</button></div>
   <div class="sr-only" id="siteAnnouncements" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+  <div class="consent-banner" id="consentBanner" role="region" aria-labelledby="consentTitle" hidden><div class="consent-copy"><strong id="consentTitle">Allow Google Analytics?</strong><p>Infinite Nutrition can use Google Analytics cookies to understand which products and pages are useful. Nothing is shared until you accept. Anonymous, cookie-free counts are kept either way unless you switch them off in Privacy &amp; analytics.</p></div><div class="consent-actions"><button class="btn" type="button" data-consent="deny">Decline</button><button class="btn primary" type="button" data-consent="grant">Accept</button></div></div>
 
   <div class="drawer-backdrop" id="cartBackdrop" aria-hidden="true" inert><aside class="drawer" role="dialog" aria-modal="true" aria-labelledby="cartTitle" aria-describedby="cartDisclaimer"><div class="drawer-head"><h2 id="cartTitle">Order list</h2><button class="close-btn" type="button" data-close="cart" aria-label="Close order list">×</button></div><div class="drawer-process"><strong>Review, then enquire</strong><ol><li>Check products, variants and quantities.</li><li>Send the prepared WhatsApp enquiry.</li><li>Confirm availability, final prices, delivery charges and payment with the store.</li></ol></div><div class="cart-summary" id="cartSummary" aria-live="polite"><span><strong>0</strong> product lines</span><span><strong>0</strong> total units</span></div><div class="cart-feedback" id="cartFeedback" aria-live="polite"></div><div id="cartItems" aria-live="polite" aria-relevant="additions removals"></div><div class="cart-total"><strong><span>Estimated subtotal</span><span id="cartSubtotal">Price pending</span></strong><p id="cartPriceNote">A numeric subtotal is shown only when every selected variant has a confirmed selling price. The store will confirm availability, delivery charges and final total.</p></div><div class="drawer-actions"><button class="btn clear-cart" id="clearCart" type="button" disabled>Clear list</button><button class="btn primary" id="sendCart" type="button" disabled>Enquire via 08840 427558</button><button class="btn primary" id="sendCartTwo" type="button" disabled>Enquire via 83032 53308</button></div><p class="cart-disclaimer" id="cartDisclaimer"><strong>This is not a completed purchase or confirmed order.</strong> Sending opens a prepared WhatsApp enquiry. The store must confirm availability, final prices, delivery charges and payment arrangements.</p></aside></div>
   <div class="modal-backdrop" id="modalBackdrop" aria-hidden="true" inert><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalContent"><div class="modal-head"><h2 id="modalTitle">Details</h2><button class="close-btn" type="button" data-close="modal" aria-label="Close details">×</button></div><div id="modalContent"></div></div></div>
 
-  <!-- Store map owner configuration: paste owner-verified values only. Preferred: exact Google Maps embedUrl + directionsUrl. Alternative: a verified Google Place ID in placeId. -->
-  <script type="application/json" id="storeMapConfig">{"embedUrl":"","directionsUrl":"","placeId":"","locationLabel":"Infinite Nutrition"}</script>
-  <script defer src="js/store-map.js"></script>
+  <script defer src="js/site-config.js"></script>
   <script defer src="js/catalogue.js"></script>
+  <script defer src="js/analytics.js"></script>
+  <script defer src="js/store-map.js"></script>
   <script defer src="js/app.js"></script>
 </body>
 </html>
