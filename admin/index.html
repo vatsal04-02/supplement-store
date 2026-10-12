@@ -97,7 +97,7 @@
         <section class="panel" aria-labelledby="funnelTitle">
           <div class="panel-head">
             <h2 id="funnelTitle">Enquiry journey</h2>
-            <p class="panel-note">Visits in the range that reached each step. Each step is counted once per visit.</p>
+            <p class="panel-note">Visits in the range that reached each step, counted once per visit and shown as a share of all visits. Steps can be skipped — for example adding from a catalogue card without opening details.</p>
           </div>
           <div id="funnelChart"></div>
         </section>
@@ -153,7 +153,7 @@
             <div><dt>Units added</dt><dd>Units added to order lists, including quantity increases inside the list. Removals are shown separately in the products table.</dd></div>
             <div><dt>WhatsApp taps</dt><dd>Taps on any WhatsApp link or button. WhatsApp then opens on the customer’s device; whether a message was actually sent cannot be measured, so this is not a count of enquiries or orders.</dd></div>
             <div><dt>Phone taps</dt><dd>Taps on a telephone link. Whether a call was placed cannot be measured.</dd></div>
-            <div><dt>Journey rates</dt><dd>“Opened product details” and “Opened a WhatsApp enquiry” are shares of all visits; “Added to the order list” is a share of visits that opened product details.</dd></div>
+            <div><dt>Journey rates</dt><dd>Each step is the share of all visits in the range that did it at least once. Steps are not strictly sequential, so a later step can exceed an earlier one.</dd></div>
             <div><dt>Searches</dt><dd>Catalogue searches of two or more characters, recorded after typing pauses. E-mail addresses and long numbers are removed before storage.</dd></div>
             <div><dt>Not counted</dt><dd>Visitors who switched statistics off, browsers sending Global Privacy Control or Do Not Track, known bots, and visits where JavaScript did not run. Totals are therefore a lower bound.</dd></div>
           </dl>

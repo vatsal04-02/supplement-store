@@ -51,7 +51,7 @@ Legend: **Where** = the file to edit. `site-config` = `js/site-config.js`,
 2. `npm ci && npm run check` — lint, formatting and the full test suite must pass.
 3. `npm run build` (or `npm run build:static`).
 4. Deploy `dist/`:
-   - Node host: `NODE_ENV=production STATIC_ROOT=dist ANALYTICS_ADMIN_TOKEN=… npm start`, behind HTTPS. Set `TRUST_PROXY=1` only behind a trusted proxy.
+   - Node host: `NODE_ENV=production STATIC_ROOT=dist ANALYTICS_ADMIN_TOKEN=… npm start`, behind HTTPS. Behind one reverse proxy set `TRUST_PROXY=1` (and `ALLOWED_ORIGINS=https://<domain>` if the proxy rewrites `Host`).
    - Static host: upload `dist/` (including `_headers`).
 5. `npm run audit:lighthouse` against the build, then check the live site in
    Google's Rich Results Test and PageSpeed Insights.

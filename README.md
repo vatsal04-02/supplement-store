@@ -80,17 +80,18 @@ without JavaScript — `npm test` fails if they drift from `site-config`.
 
 **Server environment variables** (see `.env.example`):
 
-| Variable                   | Default                                   | Purpose                                                                               |
-| -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| `PORT`                     | `8080`                                    | Listening port                                                                        |
-| `HOST`                     | `127.0.0.1` (dev), `0.0.0.0` (production) | Listening address                                                                     |
-| `NODE_ENV`                 | —                                         | `production` enables HSTS, `upgrade-insecure-requests` and the production event store |
-| `STATIC_ROOT`              | `.`                                       | Folder to serve (`dist` after a build)                                                |
-| `ANALYTICS_ADMIN_TOKEN`    | —                                         | Dashboard access token (≥ 24 characters). Reports are disabled without it             |
-| `ANALYTICS_DATA_DIR`       | `data`                                    | Event storage folder                                                                  |
-| `ANALYTICS_RETENTION_DAYS` | `395`                                     | Days of events kept                                                                   |
-| `ANALYTICS_COLLECT`        | `1`                                       | `0` pauses collection                                                                 |
-| `TRUST_PROXY`              | `0`                                       | `1` behind a trusted reverse proxy (uses `X-Forwarded-For`)                           |
+| Variable                   | Default                                   | Purpose                                                                                                                                                                        |
+| -------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `PORT`                     | `8080`                                    | Listening port                                                                                                                                                                 |
+| `HOST`                     | `127.0.0.1` (dev), `0.0.0.0` (production) | Listening address                                                                                                                                                              |
+| `NODE_ENV`                 | —                                         | `production` enables HSTS, `upgrade-insecure-requests` and the production event store                                                                                          |
+| `STATIC_ROOT`              | `.`                                       | Folder to serve (`dist` after a build)                                                                                                                                         |
+| `ANALYTICS_ADMIN_TOKEN`    | —                                         | Dashboard access token (≥ 24 characters). Reports are disabled without it                                                                                                      |
+| `ANALYTICS_DATA_DIR`       | `data`                                    | Event storage folder                                                                                                                                                           |
+| `ANALYTICS_RETENTION_DAYS` | `395`                                     | Days of events kept                                                                                                                                                            |
+| `ANALYTICS_COLLECT`        | `1`                                       | `0` pauses collection                                                                                                                                                          |
+| `TRUST_PROXY`              | `0`                                       | Number of trusted reverse proxies in front of the server (usually `1`); the client address is read from that position in `X-Forwarded-For`, and `X-Forwarded-Host` is accepted |
+| `ALLOWED_ORIGINS`          | —                                         | Extra comma-separated origins allowed to post analytics (e.g. `https://www.example.in`) when a proxy rewrites `Host`                                                           |
 
 No secret is ever placed in frontend code. The dashboard token is entered by
 the owner and kept only in that browser tab.
@@ -100,7 +101,7 @@ the owner and kept only in that browser tab.
 - **Node host** (keeps first-party analytics and the dashboard):
   `npm ci && npm run build`, then run
   `NODE_ENV=production STATIC_ROOT=dist ANALYTICS_ADMIN_TOKEN=… node server/server.mjs`
-  behind HTTPS, with a persistent volume for `ANALYTICS_DATA_DIR`.
+  behind HTTPS, with a persistent volume for `ANALYTICS_DATA_DIR`. Deploy the whole repository: the server serves `dist/` and reads the shared event schema from `js/analytics-schema.js`.
 - **Static host**: `npm run build:static` and upload `dist/`. Use Google
   Analytics 4 for measurement (set `ga4MeasurementId`); the dashboard needs the
   Node server.
@@ -110,7 +111,7 @@ launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 80 automated tests passing: six viewports (360–1920 px) with no console
+- 88 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
   serious or critical issues) and source integrity checks.

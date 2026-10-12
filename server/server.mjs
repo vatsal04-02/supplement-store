@@ -36,7 +36,13 @@ export function loadConfig(env = process.env) {
     dataDir: path.resolve(REPO_ROOT, env.ANALYTICS_DATA_DIR || 'data'),
     adminToken: env.ANALYTICS_ADMIN_TOKEN || '',
     retentionDays: Math.max(1, Number(env.ANALYTICS_RETENTION_DAYS) || 395),
-    trustProxy: env.TRUST_PROXY === '1',
+    // Number of trusted reverse proxies in front of the server (0 = none).
+    trustProxy: Math.max(0, Math.min(5, Number(env.TRUST_PROXY) || 0)),
+    // Extra origins allowed to post events, e.g. when a proxy rewrites Host.
+    allowedOrigins: String(env.ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean),
     collect: env.ANALYTICS_COLLECT !== '0',
     allowHeadless: env.ANALYTICS_ALLOW_HEADLESS === '1',
     quiet: env.QUIET === '1'
@@ -97,30 +103,49 @@ const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.mjs', '.json', '.svg', '
 // root never exposes server code, analytics data, tests or package files.
 const PUBLIC_ENTRIES = new Set(['index.html', 'admin', 'assets', 'css', 'js', 'robots.txt', 'sitemap.xml', 'favicon.ico']);
 
-function clientIp(req, config) {
+// Each trusted proxy appends the address it received the request from, so
+// the client's address is the entry `trustProxy` positions from the right.
+// Anything further left was supplied by the client and cannot be trusted.
+export function clientIp(req, config) {
   if (config.trustProxy) {
-    const forwarded = String(req.headers['x-forwarded-for'] || '')
-      .split(',')[0]
-      .trim();
-    if (forwarded) return forwarded;
+    const chain = String(req.headers['x-forwarded-for'] || '')
+      .split(',')
+      .map((part) => part.trim())
+      .filter(Boolean);
+    const candidate = chain[chain.length - config.trustProxy];
+    if (candidate) return candidate;
   }
   return req.socket.remoteAddress || '';
 }
 
-function createRateLimiter(limit, windowMs) {
+// Fixed-window limiter. Expired entries are swept at most once per window,
+// and the table is capped so a flood of distinct keys cannot grow it forever.
+export function createRateLimiter(limit, windowMs, maxKeys = 20000) {
   const hits = new Map();
-  return function allow(key, now = Date.now()) {
+  let lastSweep = 0;
+  function current(key, now) {
     const entry = hits.get(key);
-    if (!entry || now - entry.start >= windowMs) {
-      hits.set(key, { start: now, count: 1 });
-      if (hits.size > 10000) {
-        for (const [k, v] of hits) if (now - v.start >= windowMs) hits.delete(k);
-      }
-      return true;
+    return entry && now - entry.start < windowMs ? entry : null;
+  }
+  function record(key, now = Date.now()) {
+    if (now - lastSweep >= windowMs) {
+      for (const [k, v] of hits) if (now - v.start >= windowMs) hits.delete(k);
+      lastSweep = now;
     }
-    entry.count++;
-    return entry.count <= limit;
-  };
+    const entry = current(key, now);
+    if (entry) {
+      entry.count++;
+      return entry.count <= limit;
+    }
+    if (hits.size >= maxKeys) hits.delete(hits.keys().next().value);
+    hits.set(key, { start: now, count: 1 });
+    return true;
+  }
+  function blocked(key, now = Date.now()) {
+    const entry = current(key, now);
+    return !!entry && entry.count >= limit;
+  }
+  return { record, blocked };
 }
 
 const BOT_PATTERN =
@@ -169,6 +194,7 @@ export async function createServer(overrides = {}) {
   const statsConfigured = config.adminToken.length >= 24;
   const collectLimiter = createRateLimiter(120, 60 * 1000);
   const authFailLimiter = createRateLimiter(10, 15 * 60 * 1000);
+  let lastOriginWarning = 0;
   const compressedCache = new Map();
   const log = config.quiet ? () => {} : (...args) => console.log(new Date().toISOString(), ...args);
 
@@ -203,20 +229,32 @@ export async function createServer(overrides = {}) {
     res.end(payload);
   }
 
+  function originAllowed(req, origin) {
+    let parsed;
+    try {
+      parsed = new URL(origin);
+    } catch (error) {
+      return false;
+    }
+    if (config.allowedOrigins.includes(parsed.origin)) return true;
+    const hosts = [req.headers.host];
+    if (config.trustProxy && req.headers['x-forwarded-host']) hosts.push(String(req.headers['x-forwarded-host']).split(',')[0].trim());
+    return hosts.includes(parsed.host);
+  }
+
   async function handleCollect(req, res) {
     if (req.method !== 'POST') return sendJson(res, 405, { error: 'method_not_allowed' }, { Allow: 'POST' });
     const origin = req.headers.origin;
-    if (origin && origin !== 'null') {
-      let originHost;
-      try {
-        originHost = new URL(origin).host;
-      } catch (error) {
-        originHost = '';
+    if (origin && origin !== 'null' && !originAllowed(req, origin)) {
+      const now = Date.now();
+      if (now - lastOriginWarning > 60000) {
+        lastOriginWarning = now;
+        log(`rejected analytics from origin ${origin} (Host: ${req.headers.host}); set ALLOWED_ORIGINS if this is your site`);
       }
-      if (originHost !== req.headers.host) return sendJson(res, 403, { error: 'cross_origin' });
+      return sendJson(res, 403, { error: 'cross_origin' });
     }
     const ip = clientIp(req, config);
-    if (!collectLimiter(ip)) return sendJson(res, 429, { error: 'rate_limited' }, { 'Retry-After': '60' });
+    if (!collectLimiter.record(ip)) return sendJson(res, 429, { error: 'rate_limited' }, { 'Retry-After': '60' });
     let body;
     try {
       body = await readBody(req, 32 * 1024);
@@ -289,16 +327,19 @@ export async function createServer(overrides = {}) {
       });
     }
     const ip = clientIp(req, config);
+    // Checked before the token, so a locked-out client learns nothing from
+    // further guesses, correct or not.
+    if (authFailLimiter.blocked(ip)) return sendJson(res, 429, { error: 'too_many_attempts' }, { 'Retry-After': '900' });
     const header = String(req.headers.authorization || '');
     const token = header.startsWith('Bearer ') ? header.slice(7).trim() : '';
     if (!tokenMatches(token, config.adminToken)) {
-      if (!authFailLimiter(ip)) return sendJson(res, 429, { error: 'too_many_attempts' }, { 'Retry-After': '900' });
+      authFailLimiter.record(ip);
       return sendJson(res, 401, { error: 'unauthorized' }, { 'WWW-Authenticate': 'Bearer' });
     }
-    const today = localDate();
-    const to = url.searchParams.get('to') || today;
+    const to = url.searchParams.get('to') || localDate();
+    if (!isValidDate(to)) return sendJson(res, 400, { error: 'invalid_range' });
     const from = url.searchParams.get('from') || localDate(Date.parse(to + 'T00:00:00Z') - 27 * 86400000);
-    if (!isValidDate(from) || !isValidDate(to) || from > to) return sendJson(res, 400, { error: 'invalid_range' });
+    if (!isValidDate(from) || from > to) return sendJson(res, 400, { error: 'invalid_range' });
     const days = (Date.parse(to) - Date.parse(from)) / 86400000 + 1;
     if (days > 400) return sendJson(res, 400, { error: 'range_too_long', message: 'Choose a range of 400 days or fewer.' });
     try {
@@ -329,12 +370,15 @@ export async function createServer(overrides = {}) {
       res.writeHead(301, baseHeaders({ Location: '/admin/' }));
       return res.end();
     }
+    // Backslashes are path separators on Windows and NUL bytes truncate paths:
+    // neither belongs in a public URL.
+    if (/[\\\0]/.test(pathname)) return notFound(res);
     if (pathname.endsWith('/')) pathname += 'index.html';
     const relative = path.posix.normalize(pathname).replace(/^\/+/, '');
     const segments = relative.split('/');
-    const filePath = path.join(config.staticRoot, relative);
-    const outside = path.relative(config.staticRoot, filePath).startsWith('..');
-    if (outside || !PUBLIC_ENTRIES.has(segments[0]) || segments.some((s) => s.startsWith('.'))) return notFound(res);
+    const filePath = path.resolve(config.staticRoot, relative);
+    const inside = filePath.startsWith(config.staticRoot + path.sep);
+    if (!inside || !PUBLIC_ENTRIES.has(segments[0]) || segments.some((s) => s.startsWith('.'))) return notFound(res);
     let info;
     try {
       info = await stat(filePath);
@@ -360,24 +404,23 @@ export async function createServer(overrides = {}) {
       res.writeHead(304, headers);
       return res.end();
     }
-    let body = await readFile(filePath);
     const accept = String(req.headers['accept-encoding'] || '');
-    if (COMPRESSIBLE.has(ext) && body.length > 1024) {
-      const encoding = /\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : '';
-      if (encoding) {
-        const key = encoding + ':' + filePath + ':' + etag;
-        let compressed = compressedCache.get(key);
-        if (!compressed) {
-          compressed =
-            encoding === 'br'
-              ? await brotli(body, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } })
-              : await gzip(body, { level: 9 });
-          if (compressedCache.size > 200) compressedCache.clear();
-          compressedCache.set(key, compressed);
-        }
-        body = compressed;
-        headers['Content-Encoding'] = encoding;
+    const encoding =
+      COMPRESSIBLE.has(ext) && info.size > 1024 ? (/\bbr\b/.test(accept) ? 'br' : /\bgzip\b/.test(accept) ? 'gzip' : '') : '';
+    let body;
+    if (encoding) {
+      const key = encoding + ':' + filePath + ':' + etag;
+      body = compressedCache.get(key);
+      if (!body) {
+        const raw = await readFile(filePath);
+        body =
+          encoding === 'br' ? await brotli(raw, { params: { [zlib.constants.BROTLI_PARAM_QUALITY]: 9 } }) : await gzip(raw, { level: 9 });
+        if (compressedCache.size > 200) compressedCache.clear();
+        compressedCache.set(key, body);
       }
+      headers['Content-Encoding'] = encoding;
+    } else {
+      body = await readFile(filePath);
     }
     headers['Content-Length'] = body.length;
     res.writeHead(200, headers);
@@ -390,7 +433,14 @@ export async function createServer(overrides = {}) {
   }
 
   const server = http.createServer(async (req, res) => {
-    const url = new URL(req.url, 'http://localhost');
+    let url;
+    try {
+      url = new URL(req.url, 'http://localhost');
+    } catch (error) {
+      res.writeHead(400, baseHeaders({ 'Content-Type': 'text/plain; charset=utf-8' }));
+      res.end('Bad request');
+      return;
+    }
     try {
       if (url.pathname === '/api/collect') return await handleCollect(req, res);
       if (url.pathname === '/api/stats') return await handleStats(req, res, url);

@@ -5,8 +5,8 @@
 
     InfiniteAnalytics.track('add_to_cart', { item_id: 'wellcore-micronised-creatine', quantity: 2 })
 
-  - Only the events in EVENT_SCHEMA are accepted; parameters are checked
-    against PARAM_RULES and anything else is dropped, so personal data cannot
+  - Only the events in js/analytics-schema.js are accepted; parameters are
+    checked against its rules and anything else is dropped, so personal data cannot
     slip into reports by accident (search terms have e-mail addresses and
     long digit runs redacted).
   - Destinations:
@@ -28,50 +28,13 @@
   var SITE = window.INFINITE_SITE || {};
   var cfg = SITE.analytics || {};
 
-  // name -> description (documented in docs/ANALYTICS.md)
-  var EVENT_SCHEMA = {
-    page_view: 'A storefront page was loaded',
-    view_item_list: 'A product list became visible (featured range or catalogue)',
-    select_item: 'A product was chosen from a list',
-    search: 'A catalogue search was made (debounced)',
-    filter_products: 'A category, brand or sort control was applied',
-    view_item: 'A product details dialog was opened',
-    add_to_cart: 'Units were added to the order list',
-    remove_from_cart: 'Units were removed from the order list',
-    view_cart: 'The order list drawer was opened',
-    click_whatsapp: 'A WhatsApp link or button was used (a click, not a sent message)',
-    contact_store: 'A telephone link was used',
-    view_store_location: 'The store location block was viewed, or directions were opened',
-    open_policy: 'A policy dialog was opened'
-  };
-
-  var PARAM_RULES = {
-    item_id: 'id',
-    item_name: 'text',
-    item_brand: 'text',
-    item_category: 'id',
-    item_variant: 'text',
-    item_list_id: 'id',
-    item_list_name: 'text',
-    item_ids: 'idlist',
-    index: 'int',
-    quantity: 'int',
-    value: 'num',
-    price: 'num',
-    currency: 'id',
-    search_term: 'term',
-    results_count: 'int',
-    filter_type: 'id',
-    filter_value: 'text',
-    source: 'id',
-    contact: 'id',
-    context: 'id',
-    items_count: 'int',
-    lines_count: 'int',
-    method: 'id',
-    policy: 'id',
-    action: 'id'
-  };
+  // Allowed events, parameters and sanitising rules: js/analytics-schema.js
+  // (shared with the server so both sides apply identical rules).
+  var SCHEMA = window.InfiniteAnalyticsSchema;
+  if (!SCHEMA) return;
+  var EVENT_SCHEMA = SCHEMA.EVENT_SCHEMA;
+  var sanitizeParams = SCHEMA.sanitizeParams;
+  var cleanId = SCHEMA.cleanId;
 
   var KEYS = {
     optOut: 'infinite-analytics-optout',
@@ -143,12 +106,15 @@
 
   // A random identifier scoped to this browser tab. It is not a cookie, is
   // not persisted after the tab closes and is never linked to a person.
+  // When storage is blocked the id lives in memory for this page instead.
+  var memorySessionId = '';
   function sessionId() {
-    var id = storageGet('sessionStorage', KEYS.session);
+    var id = storageGet('sessionStorage', KEYS.session) || memorySessionId;
     if (!id || !/^[a-f0-9]{16}$/.test(id)) {
       id = randomHex(8);
       storageSet('sessionStorage', KEYS.session, id);
     }
+    memorySessionId = id;
     return id;
   }
 
@@ -184,62 +150,6 @@
   var tabletQuery = window.matchMedia('(max-width: 1099.98px)');
   function deviceClass() {
     return mobileQuery.matches ? 'mobile' : tabletQuery.matches ? 'tablet' : 'desktop';
-  }
-
-  function cleanText(value, max) {
-    // Control characters are stripped on purpose.
-    return (
-      String(value)
-        // eslint-disable-next-line no-control-regex
-        .replace(/[\u0000-\u001f\u007f]/g, ' ')
-        .replace(/\s+/g, ' ')
-        .trim()
-        .slice(0, max || 80)
-    );
-  }
-  function cleanId(value) {
-    return String(value)
-      .toLowerCase()
-      .replace(/[^a-z0-9_.:-]+/g, '-')
-      .replace(/^-+|-+$/g, '')
-      .slice(0, 64);
-  }
-  function cleanTerm(value) {
-    return cleanText(value, 120)
-      .toLowerCase()
-      .replace(/[^\s@]+@[^\s@]+/g, '[email]')
-      .replace(/\+?\d[\d\s-]{5,}\d/g, '[number]')
-      .slice(0, 60);
-  }
-
-  function sanitizeParams(params) {
-    var out = {};
-    if (!params || typeof params !== 'object') return out;
-    Object.keys(params).forEach(function (key) {
-      var rule = PARAM_RULES[key];
-      var value = params[key];
-      if (!rule || value == null || value === '') return;
-      if (rule === 'id') {
-        value = cleanId(value);
-        if (value) out[key] = value;
-      } else if (rule === 'text') {
-        value = cleanText(value);
-        if (value) out[key] = value;
-      } else if (rule === 'term') {
-        value = cleanTerm(value);
-        if (value) out[key] = value;
-      } else if (rule === 'int') {
-        value = Number(value);
-        if (Number.isInteger(value) && value >= 0 && value <= 100000) out[key] = value;
-      } else if (rule === 'num') {
-        value = Number(value);
-        if (Number.isFinite(value) && value >= 0 && value <= 10000000) out[key] = Math.round(value * 100) / 100;
-      } else if (rule === 'idlist' && Array.isArray(value)) {
-        value = value.map(cleanId).filter(Boolean).slice(0, 24);
-        if (value.length) out[key] = value;
-      }
-    });
-    return out;
   }
 
   function log() {
@@ -374,12 +284,19 @@
     window.gtag('event', name, payload);
   }
 
+  // GA sets cookies on the registrable domain (e.g. .example.co.in), which
+  // cannot be derived reliably from label counts, so deletion is attempted for
+  // the host and every parent domain. Browsers ignore domains that do not apply.
+  function cookieDomains(hostname) {
+    var parts = String(hostname).split('.');
+    var domains = [''];
+    for (var i = 0; i < parts.length - 1; i++) domains.push('.' + parts.slice(i).join('.'));
+    return domains;
+  }
+
   function clearGaCookies() {
     try {
-      var host = location.hostname;
-      var parts = host.split('.');
-      var domains = ['', host];
-      if (parts.length > 2) domains.push('.' + parts.slice(-2).join('.'));
+      var domains = cookieDomains(location.hostname);
       document.cookie.split(';').forEach(function (cookie) {
         var name = cookie.split('=')[0].trim();
         if (!/^_ga/.test(name)) return;
@@ -455,6 +372,10 @@
       queue.length = 0;
       if (window.gtag && gaLoaded) window.gtag('consent', 'update', { analytics_storage: 'denied' });
       clearGaCookies();
+    } else if (ga4Active()) {
+      // Turning statistics back on restores an earlier Google Analytics consent.
+      if (gaLoaded && window.gtag) window.gtag('consent', 'update', { analytics_storage: 'granted' });
+      else loadGa4();
     }
     syncBanner();
   }
@@ -495,6 +416,8 @@
 
   function syncBanner() {
     if (!banner) return;
+    var firstPartyNote = document.getElementById('consentFirstPartyNote');
+    if (firstPartyNote) firstPartyNote.hidden = !endpoint;
     var show = !!ga4Id && !state.ga4Consent && measuringAllowed();
     banner.hidden = !show;
     document.documentElement.classList.toggle('consent-open', show);
@@ -517,6 +440,7 @@
     status: function () {
       return { sent: status.sent, failed: status.failed, dropped: status.dropped, lastError: status.lastError, queued: queue.length };
     },
+    cookieDomains: cookieDomains,
     recent: function () {
       return recent.slice();
     },

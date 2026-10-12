@@ -26,9 +26,9 @@ Global Privacy Control or Do Not Track are not measured at all while
 
 ## 2. Event schema
 
-Every event is checked against this list in the browser **and** on the server
-(`server/event-schema.mjs`; a test fails if the two drift). Unknown events and
-parameters are dropped.
+Every event is checked against this list in the browser **and** on the server.
+Both load the same definition, `js/analytics-schema.js`, so the rules cannot
+drift. Unknown events and parameters are dropped.
 
 | Event | Fired when | Parameters |
 |---|---|---|
@@ -84,24 +84,31 @@ and any `utm_source` / `utm_medium` / `utm_campaign` tags.
 - Known bots and crawlers (including Lighthouse) are discarded.
 - Files older than `ANALYTICS_RETENTION_DAYS` (default 395) are deleted
   automatically.
-- `/api/collect` accepts same-origin posts only, max 32 KB and 50 events per
-  request, 120 requests per minute per IP.
+- `/api/collect` accepts same-origin posts only (plus `ALLOWED_ORIGINS`, and
+  `X-Forwarded-Host` behind `TRUST_PROXY`), max 32 KB and 50 events per
+  request, 120 requests per minute per IP. Rejected origins are logged at most
+  once a minute so a proxy misconfiguration is visible.
+- A failed disk write fails only that request; the directory is re-created if
+  it disappears.
 
 ## 4. Owner dashboard
 
 Open `/admin/` and enter `ANALYTICS_ADMIN_TOKEN` (24+ characters; generate one
 with `openssl rand -hex 24`). The token is held in that browser tab only.
-Failed attempts are rate limited (10 per 15 minutes per IP). The page is
+After 10 failed attempts from an IP within 15 minutes, every request from it
+is refused (including one with the right token) until the window passes. The page is
 `noindex` and disallowed in `robots.txt`.
 
 The dashboard shows the selected range against the previous range of equal
-length. Its "How each number is counted" panel defines every metric; the key
-denominators are:
+length. Its "How each number is counted" panel defines every metric. Journey
+steps are not strict subsets (an item can be added from a catalogue card
+without opening details; WhatsApp can be used without a list), so every rate
+uses all visits as its denominator:
 
 | Rate | Numerator | Denominator |
 |---|---|---|
 | Opened product details | visits with ≥ 1 `view_item` | all visits |
-| Added to the order list | visits with ≥ 1 `add_to_cart` | visits that opened product details |
+| Added to the order list | visits with ≥ 1 `add_to_cart` | all visits |
 | Opened a WhatsApp enquiry | visits with ≥ 1 `click_whatsapp` | all visits |
 | Searches with no results | `search` events with `results_count = 0` | all `search` events |
 

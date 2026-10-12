@@ -42,7 +42,7 @@ export function datesBetween(from, to) {
 export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
   const dir = path.join(dataDir, env);
   const salts = new Map();
-  let ready = mkdir(dir, { recursive: true });
+  const ready = mkdir(dir, { recursive: true }).catch(() => {});
   let writeChain = Promise.resolve();
 
   function saltFor(date) {
@@ -70,13 +70,17 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
       if (!byDate.has(date)) byDate.set(date, []);
       byDate.get(date).push(JSON.stringify(record));
     }
-    // Serialise writes so concurrent requests never interleave lines.
-    writeChain = writeChain.then(async () => {
+    // Serialise writes so concurrent requests never interleave lines. The
+    // directory is re-created if it was removed, and a failed write only
+    // fails its own request: the chain itself always recovers.
+    const write = writeChain.then(async () => {
+      await mkdir(dir, { recursive: true });
       for (const [date, lines] of byDate) {
         await appendFile(path.join(dir, date + '.ndjson'), lines.join('\n') + '\n', 'utf8');
       }
     });
-    return writeChain;
+    writeChain = write.catch(() => {});
+    return write;
   }
 
   async function* readRange(from, to) {
@@ -307,7 +311,10 @@ export function createAnalyticsStore({ dataDir, env, retentionDays = 395 }) {
       ],
       rates: {
         productViewRate: rate(withProductView, sessionCount),
-        addToListRate: rate(withAdd, withProductView),
+        // Every journey rate uses all visits as its denominator: visitors can add
+        // from a catalogue card without opening details, or tap WhatsApp
+        // without a list, so the steps are not strict subsets of each other.
+        addToListRate: rate(withAdd, sessionCount),
         whatsappRate: rate(withWhatsapp, sessionCount),
         noResultSearchRate: rate(totals.searchesNoResults, totals.searches)
       },

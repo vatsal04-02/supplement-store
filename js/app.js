@@ -1673,9 +1673,13 @@
         '<section class="detail-section privacy-section"><h3>Website analytics</h3><p>Website analytics is not enabled on this site.</p></section>';
     } else {
       var signal = state.privacySignal && state.respectsPrivacySignals;
+      // Describe only what this deployment actually collects.
+      var intro = state.firstPartyConfigured
+        ? '<h3>Anonymous usage statistics</h3><p>When on, the site counts page views, product views, searches and button use without cookies, names or phone numbers, so the store can see which products and pages are useful.</p>'
+        : '<h3>Website statistics</h3><p>This site measures visits only through Google Analytics, and only if you allow it below. Turning statistics off here stops it entirely.</p>';
       html +=
-        '<section class="detail-section privacy-section"><h3>Anonymous usage statistics</h3>' +
-        '<p>When on, the site counts page views, product views, searches and button use without cookies, names or phone numbers, so the store can see which products and pages are useful.</p>' +
+        '<section class="detail-section privacy-section">' +
+        intro +
         (signal
           ? '<p class="privacy-signal">Your browser is sending a privacy signal (Global Privacy Control or Do Not Track), so analytics stays off.</p>'
           : '<button class="btn' +

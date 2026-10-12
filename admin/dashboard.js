@@ -268,7 +268,7 @@
       ],
       rates: {
         productViewRate: rate(withProductView, totals.sessions),
-        addToListRate: rate(withAdd, withProductView),
+        addToListRate: rate(withAdd, totals.sessions),
         whatsappRate: rate(withWhatsapp, totals.sessions),
         noResultSearchRate: rate(totals.searchesNoResults, totals.searches)
       },
@@ -717,13 +717,7 @@
     host.appendChild(
       barList(
         steps.map(function (s, i) {
-          var note =
-            i === 0
-              ? ''
-              : i === 2
-                ? pct(steps[1].count ? s.count / steps[1].count : null) + ' of visits that opened details'
-                : pct(s.count / visits) + ' of visits';
-          return { label: s.label, value: s.count, note: note };
+          return { label: s.label, value: s.count, note: i === 0 ? '' : pct(s.count / visits) + ' of visits' };
         }),
         { className: 'funnel' }
       )

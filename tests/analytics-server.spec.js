@@ -3,7 +3,6 @@ const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const vm = require('node:vm');
 
 const TOKEN = 'test-admin-token-0123456789abcdef';
 const UA = {
@@ -79,13 +78,16 @@ test('server never serves source, data or package files', async ({ request }) =>
   expect((await request.get('/admin/')).headers()['x-robots-tag']).toBe('noindex, nofollow');
 });
 
-test('event schema is identical in the browser layer and the server', async () => {
-  const code = fs.readFileSync(path.join(__dirname, '..', 'js', 'analytics.js'), 'utf8');
-  const browserEvents = Object.keys(vm.runInNewContext('(' + code.match(/var EVENT_SCHEMA = (\{[\s\S]*?\});/)[1] + ')'));
-  const browserParams = vm.runInNewContext('(' + code.match(/var PARAM_RULES = (\{[\s\S]*?\});/)[1] + ')');
-  const { EVENT_NAMES, PARAM_RULES } = await import('../server/event-schema.mjs');
-  expect(browserEvents).toEqual(EVENT_NAMES);
-  expect(browserParams).toEqual(PARAM_RULES);
+test('browser and server share one event schema module', async () => {
+  const shared = require('../js/analytics-schema.js');
+  const { EVENT_NAMES, PARAM_RULES, sanitizeParams } = await import('../server/event-schema.mjs');
+  expect(EVENT_NAMES).toEqual(Object.keys(shared.EVENT_SCHEMA));
+  expect(PARAM_RULES).toBe(shared.PARAM_RULES);
+  expect(sanitizeParams).toBe(shared.sanitizeParams);
+  // The browser layer must not keep its own copy of the rules.
+  const client = fs.readFileSync(path.join(__dirname, '..', 'js', 'analytics.js'), 'utf8');
+  expect(client).toContain('window.InfiniteAnalyticsSchema');
+  expect(client).not.toMatch(/PARAM_RULES\s*=\s*\{/);
 });
 
 test('report aggregation counts sessions, funnel steps and searches correctly', async () => {
@@ -123,7 +125,7 @@ test('report aggregation counts sessions, funnel steps and searches correctly', 
     searchesNoResults: 2
   });
   expect(report.funnel.map((s) => s.count)).toEqual([3, 2, 1, 1]);
-  expect(report.rates.addToListRate).toEqual({ numerator: 1, denominator: 2, value: 0.5 });
+  expect(report.rates.addToListRate).toEqual({ numerator: 1, denominator: 3, value: 1 / 3 });
   expect(report.searches.noResults).toEqual([{ term: 'whey', count: 2 }]);
   expect(report.sources).toEqual(
     expect.arrayContaining([
@@ -171,4 +173,86 @@ test('a real browser visit reaches the report', async ({ page, request }) => {
       return after.totals.pageViews - before.totals.pageViews;
     })
     .toBeGreaterThanOrEqual(1);
+});
+
+test('a malformed request target does not take the server down', async ({ request }) => {
+  const net = require('node:net');
+  const raw = await new Promise((resolve) => {
+    const socket = net.connect(4173, '127.0.0.1', () => socket.write('GET //[ HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n'));
+    let data = '';
+    socket.on('data', (chunk) => (data += chunk));
+    socket.on('close', () => resolve(data));
+    socket.on('error', () => resolve(data));
+  });
+  expect(raw).toMatch(/^HTTP\/1\.1 400/);
+  expect((await request.get('/api/health')).status()).toBe(200);
+});
+
+test('unusual paths and dates are rejected cleanly', async ({ request }) => {
+  expect((await request.get('/assets/x%5C..%5C..%5Cserver%5Cserver.mjs')).status()).toBe(404);
+  expect((await request.get('/assets/%00.png')).status()).toBe(404);
+  expect((await request.get('/api/stats?to=garbage', { headers: { Authorization: 'Bearer ' + TOKEN } })).status()).toBe(400);
+});
+
+test('locked-out clients are refused even with the right token', async () => {
+  const { createServer } = await import('../server/server.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'in-lockout-'));
+  const { server } = await createServer({ port: 0, host: '127.0.0.1', dataDir: dir, adminToken: TOKEN, quiet: true });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  try {
+    for (let i = 0; i < 10; i++) {
+      expect((await fetch(base + '/api/stats', { headers: { Authorization: 'Bearer wrong-token-wrong-token-' + i } })).status).toBe(401);
+    }
+    expect((await fetch(base + '/api/stats', { headers: { Authorization: 'Bearer ' + TOKEN } })).status).toBe(429);
+  } finally {
+    server.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('behind a proxy the client address comes from the trusted end of X-Forwarded-For', async () => {
+  const { clientIp } = await import('../server/server.mjs');
+  const req = (xff) => ({ headers: { 'x-forwarded-for': xff }, socket: { remoteAddress: '10.0.0.1' } });
+  expect(clientIp(req('6.6.6.6, 203.0.113.7'), { trustProxy: 1 })).toBe('203.0.113.7');
+  expect(clientIp(req('6.6.6.6, 203.0.113.7, 10.0.0.2'), { trustProxy: 2 })).toBe('203.0.113.7');
+  expect(clientIp(req('6.6.6.6'), { trustProxy: 0 })).toBe('10.0.0.1');
+});
+
+test('behind a proxy that rewrites Host, X-Forwarded-Host and ALLOWED_ORIGINS are accepted', async () => {
+  const { createServer } = await import('../server/server.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'in-proxy-'));
+  const { server } = await createServer({ dataDir: dir, quiet: true, trustProxy: 1, allowedOrigins: ['https://other.example'] });
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  const base = `http://127.0.0.1:${server.address().port}`;
+  const post = (headers) =>
+    fetch(base + '/api/collect', {
+      method: 'POST',
+      headers: { ...UA, ...headers },
+      body: JSON.stringify({ v: 1, sid: sid(), events: [{ name: 'page_view', path: '/' }] })
+    });
+  try {
+    expect(
+      (await post({ Origin: 'https://shop.example', 'X-Forwarded-Host': 'shop.example', 'X-Forwarded-For': '203.0.113.5' })).status
+    ).toBe(204);
+    expect((await post({ Origin: 'https://other.example', 'X-Forwarded-For': '203.0.113.5' })).status).toBe(204);
+    expect((await post({ Origin: 'https://evil.example', 'X-Forwarded-For': '203.0.113.5' })).status).toBe(403);
+  } finally {
+    server.close();
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('one failed write does not block later writes', async () => {
+  const { createAnalyticsStore } = await import('../server/analytics-store.mjs');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'in-writes-'));
+  const store = createAnalyticsStore({ dataDir: dir, env: 'test' });
+  const record = { t: new Date().toISOString(), n: 'page_view', p: {}, s: 'a', v: 'b', path: '/', d: 'mobile' };
+  await store.append([record]);
+  fs.rmSync(path.join(dir, 'test'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'test'), 'not a directory');
+  await expect(store.append([record])).rejects.toThrow();
+  fs.rmSync(path.join(dir, 'test'));
+  await expect(store.append([record])).resolves.toBeUndefined();
+  fs.rmSync(dir, { recursive: true, force: true });
 });

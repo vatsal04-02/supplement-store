@@ -104,3 +104,37 @@ test('with a GA4 ID configured, the banner asks first and declining keeps Google
   expect(google).toEqual([]);
   expect(await page.evaluate(() => window.InfiniteAnalytics.getState().ga4Consent)).toBe('denied');
 });
+
+test('a visit keeps one session id even when browser storage is blocked', async ({ page }) => {
+  const batches = [];
+  await page.route('**/api/collect', async (route) => {
+    batches.push(JSON.parse(route.request().postData()));
+    await route.fulfill({ status: 204 });
+  });
+  await page.addInitScript(() => {
+    for (const area of ['sessionStorage', 'localStorage']) {
+      Object.defineProperty(window, area, {
+        get() {
+          throw new Error('blocked');
+        }
+      });
+    }
+  });
+  await page.goto('/');
+  await page.evaluate(() => window.InfiniteAnalytics.flush());
+  await page.locator('.category-creatine').click();
+  await page.evaluate(() => window.InfiniteAnalytics.flush());
+  await expect.poll(() => batches.length).toBeGreaterThanOrEqual(2);
+  expect(new Set(batches.map((b) => b.sid)).size).toBe(1);
+});
+
+test('withdrawing consent targets Google Analytics cookies on every parent domain, including .co.in', async ({ page }) => {
+  await page.goto('/');
+  const domains = await page.evaluate(() => window.InfiniteAnalytics.cookieDomains('www.infinitenutrition.co.in'));
+  expect(domains).toEqual(['', '.www.infinitenutrition.co.in', '.infinitenutrition.co.in', '.co.in']);
+  await page.evaluate(() => {
+    document.cookie = '_ga=GA1.1.123; path=/';
+    window.InfiniteAnalytics.setOptOut(true);
+  });
+  expect(await page.evaluate(() => document.cookie)).not.toContain('_ga=');
+});
