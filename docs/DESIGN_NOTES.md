@@ -4,6 +4,10 @@ The supplied file `Website Design Layout (18).html` (kept unchanged in
 `docs/original/`) is the source of truth for the visual design. This pass
 refined the implementation; it did not redesign the page.
 
+Before/after captures of the most-changed sections are in
+[`docs/screenshots/`](screenshots/) (`compare-*.jpg`), along with the demo
+dashboard (`dashboard-demo.jpg`, labelled sample data).
+
 ## Implementation map of the original page
 
 | Order | Section (`id`) | Content kept |
