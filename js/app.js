@@ -27,8 +27,8 @@
   });
   if (!STORE_CONTACTS.length) {
     STORE_CONTACTS = [
-      { label: '08840 427558', tel: '+918840427558', whatsapp: '918840427558' },
-      { label: '83032 53308', tel: '+918303253308', whatsapp: '918303253308' }
+      { label: '+91 88404 27558', tel: '+918840427558', whatsapp: '918840427558' },
+      { label: '+91 83032 53308', tel: '+918303253308', whatsapp: '918303253308' }
     ];
   }
 
@@ -477,7 +477,7 @@
         esc(category.id) +
         '" data-track-source="category_tile"><div class="category-media" aria-hidden="true">' +
         mediaMarkup +
-        '</div><div class="category-copy"><span class="category-count">' +
+        '</div><span class="category-shine" aria-hidden="true"></span><div class="category-copy"><span class="category-count">' +
         (count ? count + ' listed' : 'Ask in store') +
         '</span><strong>' +
         esc(category.label) +
@@ -1892,12 +1892,11 @@
   else requestAnimationFrame(syncNavHeight);
 
   /* ---------- motion ---------- */
-  // Scroll reveals are a CSS enhancement (css/refinements.css §11): content is
-  // fully visible by default and only drifts a few pixels into place, driven
-  // by the scroll position where the browser supports scroll timelines. No
-  // element ever waits for a script to become visible, so fast scrolling
-  // cannot reveal empty space.
-  [
+  // Scroll reveals (css/refinements.css §12). Content is always visible: a
+  // block waiting to be revealed sits 18px low at 85% opacity, never hidden,
+  // and settles when it scrolls in. Blocks entering together are staggered
+  // by 70ms each. Reduced motion skips all of it.
+  var revealSelectors = [
     '.section-head',
     '.featured-card',
     '.category-tile',
@@ -1917,11 +1916,49 @@
     '.visit-panel > *',
     '.policy-button',
     '.faq-item'
-  ].forEach(function (selector) {
+  ];
+  var revealNodes = [];
+  revealSelectors.forEach(function (selector) {
     document.querySelectorAll(selector).forEach(function (node) {
-      node.classList.add('reveal-target');
+      if (revealNodes.indexOf(node) === -1) revealNodes.push(node);
     });
   });
+  revealNodes.forEach(function (node) {
+    node.classList.add('reveal-target');
+  });
+  var MAX_STAGGER = 8;
+  function startReveals() {
+    if (!('IntersectionObserver' in window) || reducedMotionQuery.matches) return;
+    document.documentElement.classList.add('motion-ok');
+    var revealObserver = new IntersectionObserver(
+      function (entries) {
+        var entering = entries
+          .filter(function (entry) {
+            return entry.isIntersecting;
+          })
+          .map(function (entry) {
+            return entry.target;
+          })
+          .sort(function (a, b) {
+            // Reading order: top to bottom, then left to right.
+            var ra = a.getBoundingClientRect();
+            var rb = b.getBoundingClientRect();
+            return Math.round(ra.top - rb.top) || ra.left - rb.left;
+          });
+        entering.forEach(function (node, index) {
+          node.style.setProperty('--reveal-i', String(Math.min(index, MAX_STAGGER)));
+          node.classList.add('in-view');
+          revealObserver.unobserve(node);
+        });
+      },
+      // No bottom inset: the last blocks on the page must reveal too.
+      { rootMargin: '0px', threshold: 0.06 }
+    );
+    revealNodes.forEach(function (node) {
+      revealObserver.observe(node);
+    });
+  }
+  startReveals();
 
   /* Connected section storytelling and restrained media depth. */
   document.querySelectorAll('.reviews-layout > *,.authenticity-grid > *,.founder-grid > *,.visit-panel > *').forEach(function (node) {
@@ -1945,7 +1982,7 @@
           }
         });
       },
-      { rootMargin: '0px 0px -18% 0px', threshold: 0.04 }
+      { rootMargin: '0px 0px -10% 0px', threshold: 0.04 }
     );
     storySections.forEach(function (section) {
       storyObserver.observe(section);
@@ -1961,7 +1998,9 @@
     new IntersectionObserver(
       function (entries) {
         entries.forEach(function (entry) {
+          // Off-screen hero: every ambient animation pauses and parallax stops.
           heroSection.classList.toggle('motion-paused', !entry.isIntersecting);
+          heroInView = entry.isIntersecting;
         });
       },
       { rootMargin: '120px 0px' }
@@ -2011,15 +2050,24 @@
     );
   }
 
-  // Scroll parallax runs only for media that is on screen.
+  // Scroll parallax runs only for media that is on screen (desktop, fine
+  // pointer, motion allowed). The founder portrait and the scoop photo move
+  // at 0.1x the scroll speed inside their frames, which are over-scanned by
+  // the same distance so no edge is ever exposed; the other editorial images
+  // keep their original ±7px depth. The hero photo frame moves at 0.15x.
+  var EDITORIAL_DEPTH = 0.1;
+  var EDITORIAL_TRAVEL = 0.06; // maximum shift as a share of the frame height
+  var HERO_DEPTH = 0.15;
   var depthMedia = Array.prototype.slice.call(
-    document.querySelectorAll('.featured-editorial-media,.flavour-media,.authenticity-photo,.founder-training-media')
+    document.querySelectorAll('.featured-editorial-media,.flavour-media,.authenticity-photo,.founder-training-media,.founder-photo')
   );
   var visibleDepth = [];
   depthMedia.forEach(function (node) {
     node.classList.add('motion-depth');
+    if (node.matches('.flavour-media,.founder-photo')) node.classList.add('motion-depth-editorial');
   });
   var depthFrame = 0;
+  var heroInView = true;
   function updateMediaDepth() {
     depthFrame = 0;
     var enabled = precisionMotion.matches;
@@ -2028,11 +2076,21 @@
       var offset = 0;
       if (enabled) {
         var rect = node.getBoundingClientRect();
-        var relative = (rect.top + rect.height / 2 - viewport / 2) / (viewport + rect.height);
-        offset = Math.max(-7, Math.min(7, relative * -12));
+        var fromCentre = rect.top + rect.height / 2 - viewport / 2;
+        if (node.classList.contains('motion-depth-editorial')) {
+          var travel = rect.height * EDITORIAL_TRAVEL;
+          offset = Math.max(-travel, Math.min(travel, fromCentre * -EDITORIAL_DEPTH));
+        } else {
+          var relative = fromCentre / (viewport + rect.height);
+          offset = Math.max(-7, Math.min(7, relative * -12));
+        }
       }
       node.style.setProperty('--motion-depth-y', offset.toFixed(2) + 'px');
     });
+    if (heroVisual) {
+      if (!enabled) heroVisual.style.translate = '';
+      else if (heroInView) heroVisual.style.translate = '0 ' + (window.scrollY * HERO_DEPTH).toFixed(1) + 'px';
+    }
   }
   function scheduleMediaDepth() {
     if (!depthFrame) depthFrame = requestAnimationFrame(updateMediaDepth);
@@ -2066,6 +2124,79 @@
   }
   if (precisionMotion.addEventListener) precisionMotion.addEventListener('change', syncMediaDepthTracking);
   syncMediaDepthTracking();
+
+  // Magnetic primary CTAs: with a mouse, a button leans up to 6px toward the
+  // cursor (the independent `translate` property, so hover lifts still
+  // apply) and springs back on leave. Touch and reduced motion: nothing.
+  var MAGNET_PX = 6;
+  document.querySelectorAll('main .btn.primary, .nav-wa').forEach(function (button) {
+    var frame = 0;
+    var mx = 0;
+    var my = 0;
+    function commit() {
+      frame = 0;
+      button.style.translate = mx.toFixed(2) + 'px ' + my.toFixed(2) + 'px';
+    }
+    button.addEventListener(
+      'pointermove',
+      function (event) {
+        if (event.pointerType !== 'mouse' || !precisionMotion.matches) return;
+        var rect = button.getBoundingClientRect();
+        mx = Math.max(-1, Math.min(1, ((event.clientX - rect.left) / rect.width) * 2 - 1)) * MAGNET_PX;
+        my = Math.max(-1, Math.min(1, ((event.clientY - rect.top) / rect.height) * 2 - 1)) * MAGNET_PX;
+        button.classList.add('is-magnetic');
+        if (!frame) frame = requestAnimationFrame(commit);
+      },
+      { passive: true }
+    );
+    button.addEventListener(
+      'pointerleave',
+      function () {
+        if (frame) cancelAnimationFrame(frame);
+        frame = 0;
+        button.classList.remove('is-magnetic');
+        button.style.translate = '';
+      },
+      { passive: true }
+    );
+  });
+
+  // While the page is being scrolled, the hero's ambient loops (glow pulse
+  // and embers) hold still, so scrolling never pays for them; they resume
+  // 200ms after scrolling stops.
+  var scrollIdleTimer = 0;
+  window.addEventListener(
+    'scroll',
+    function () {
+      if (!scrollIdleTimer) document.documentElement.classList.add('is-scrolling');
+      clearTimeout(scrollIdleTimer);
+      scrollIdleTimer = setTimeout(function () {
+        scrollIdleTimer = 0;
+        document.documentElement.classList.remove('is-scrolling');
+      }, 200);
+    },
+    { passive: true }
+  );
+
+  // Hero embers: 16 slow red particles drifting up over the photo side.
+  // Desktop with motion allowed only; CSS hides them otherwise, and they
+  // pause with the rest of the hero when it leaves the viewport.
+  if (heroSection && precisionMotion.matches) {
+    var embers = document.createElement('div');
+    embers.className = 'hero-embers';
+    embers.setAttribute('aria-hidden', 'true');
+    for (var e = 0; e < 16; e++) {
+      var ember = document.createElement('i');
+      ember.style.setProperty('--ember-x', ((e * 37 + 11) % 100) + '%');
+      ember.style.setProperty('--ember-size', 2 + (e % 3) + 'px');
+      ember.style.setProperty('--ember-opacity', (0.22 + (e % 4) * 0.08).toFixed(2));
+      ember.style.setProperty('--ember-duration', 11 + ((e * 7) % 8) + 's');
+      ember.style.setProperty('--ember-delay', (-(e * 1.4)).toFixed(1) + 's');
+      ember.style.setProperty('--ember-drift', ((e * 13) % 34) - 17 + 'px');
+      embers.appendChild(ember);
+    }
+    heroSection.appendChild(embers);
+  }
 
   /* Image failures show the description instead of a broken icon. */
   document.addEventListener(

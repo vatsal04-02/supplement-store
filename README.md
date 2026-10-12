@@ -122,14 +122,18 @@ other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 99 automated tests passing: six viewports (360–1920 px) with no console
+- 111 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
-  serious or critical issues), source integrity checks, and the layout rules
-  (three light sections, uniform category tiles, headings clear of the
-  sticky header, no unfinished content on the public page, reveals that
-  never hide content).
+  serious or critical issues), source integrity checks, the layout rules
+  (three light sections, uniform category tiles, one section padding, one
+  phone format, headings clear of the sticky header, no unfinished content
+  on the public page) and the motion rules (hover states, masked hero lines,
+  dividers, 70ms stagger, parallax and magnetic buttons on desktop only,
+  nothing animating off-screen, reduced motion fully static).
 - Lighthouse 13.5 on the production build, local server (two runs):
   mobile Performance 97–100, Accessibility 100, Best Practices 100, SEO 100
-  (LCP 1.8–1.9 s, CLS 0); desktop 100 / 100 / 100 / 100 (LCP 0.4 s, CLS 0).
+  (LCP 1.8–1.9 s; CLS 0, with one run reporting a 0.023 shift of the hero
+  benefits row that did not reproduce); desktop 100 / 100 / 100 / 100
+  (LCP 0.4 s, CLS 0).
   Field performance on a real host and network will differ.

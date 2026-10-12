@@ -31,6 +31,16 @@ test('every tel: and wa.me link uses a published store number from js/site-confi
   expect(ldPhones.sort()).toEqual([...tel].sort());
 });
 
+test('phone numbers are displayed in one format: +91 XXXXX XXXXX', () => {
+  for (const contact of SITE.contacts) expect(contact.label).toMatch(/^\+91 \d{5} \d{5}$/);
+  const text = html.replace(/<[^>]+>/g, ' ');
+  // Any visible run of 10+ digits (with spaces) must be one of the published labels.
+  const shown = [...text.matchAll(/\+?\d[\d ]{9,}\d/g)].map((m) => m[0].trim());
+  expect(shown.length).toBeGreaterThan(0);
+  const labels = new Set(SITE.contacts.map((c) => c.label));
+  expect(shown.filter((n) => !labels.has(n))).toEqual([]);
+});
+
 test('links that open a new tab are isolated from the page', () => {
   for (const source of [html, adminHtml, read('js/app.js'), read('js/store-map.js')]) {
     const blanks = [...source.matchAll(/<a\b[^>]*target="_blank"[^>]*>/g)].map((m) => m[0]);

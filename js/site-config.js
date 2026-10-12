@@ -35,8 +35,8 @@ window.INFINITE_SITE = {
   // Published store numbers. The first entry is used for single-button
   // WhatsApp enquiries; both are offered for the order list.
   contacts: [
-    { label: '08840 427558', tel: '+918840427558', whatsapp: '918840427558' },
-    { label: '83032 53308', tel: '+918303253308', whatsapp: '918303253308' }
+    { label: '+91 88404 27558', tel: '+918840427558', whatsapp: '918840427558' },
+    { label: '+91 83032 53308', tel: '+918303253308', whatsapp: '918303253308' }
   ],
 
   address: {

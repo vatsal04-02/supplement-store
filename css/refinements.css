@@ -574,7 +574,7 @@ input::placeholder {
   --hairline: rgba(8, 8, 8, 0.14);
   --hairline-soft: rgba(8, 8, 8, 0.09);
   --muted: #3d3d3d;
-  --dim: #555555;
+  --dim: #4d4d4d;
   --ink: #0b0b0b;
   --premium-shadow: 0 18px 46px rgba(8, 8, 8, 0.08);
   color-scheme: light;
@@ -883,11 +883,8 @@ html:not(.review-mode) .visit-location[data-map="pending"] {
   }
 }
 
-/* C13: scroll reveals never hide content. Everything is fully visible by
-   default; where the browser supports scroll-driven animations, blocks
-   drift up to 18px into place in step with the scroll position (the
-   independent `translate` property leaves hover transforms untouched).
-   Images are never animated. */
+/* C13: scroll reveals never hide content (see section 12 for the reveal
+   itself). */
 /* Image frames show a dark brand surface (not a black hole) for the moment
    a lazily loaded photo is still arriving during a fast scroll. */
 .featured-editorial-media,
@@ -900,48 +897,569 @@ html:not(.review-mode) .visit-location[data-map="pending"] {
   background-color: #141414;
   background-image: radial-gradient(circle at 72% 28%, rgba(184, 0, 25, 0.2), transparent 62%);
 }
+
+/* 12. Visual appeal and motion upgrade --------------------------------- */
+/* Every effect here animates transform, translate or opacity only. Hover
+   effects run on fine pointers; parallax, magnetic buttons and embers run
+   only on desktop (≥901px, fine pointer); reduced motion turns all of it
+   off and leaves content static and fully visible. */
+
+/* A2: one vertical padding value for every section. */
+:root {
+  --section-pad: clamp(56px, 5.5vw, 80px);
+}
+main > section:not(.hero) {
+  padding-block: var(--section-pad);
+}
+
+/* B4: product cards lift 6px, the product photo scales to 1.06 and a red
+   border glow fades in (a pre-drawn ring whose opacity changes). */
+.featured-card:before,
+.product-card:before {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  inset: 0;
+  box-shadow:
+    inset 0 0 0 1px rgba(225, 29, 46, 0.9),
+    inset 0 0 28px rgba(184, 0, 25, 0.3);
+  opacity: 0;
+  pointer-events: none;
+}
+.featured-card .product-packshot,
+.product-card .product-packshot {
+  filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.48));
+}
+@media (hover: hover) and (pointer: fine) {
+  .featured-card,
+  .product-card {
+    transition-property: transform, opacity;
+    transition-duration: 250ms;
+    transition-timing-function: ease-out;
+  }
+  .featured-card:before,
+  .product-card:before {
+    transition: opacity 250ms ease-out;
+  }
+  .featured-card .product-packshot,
+  .product-card .product-packshot {
+    transition: transform 250ms ease-out;
+  }
+  .featured-card:hover,
+  .product-card:hover {
+    transform: translateY(-6px);
+  }
+  .featured-card:hover:before,
+  .product-card:hover:before {
+    opacity: 1;
+  }
+  .featured-card:hover .featured-photo .product-packshot,
+  .product-card:hover .product-photo .product-packshot {
+    transform: scale(1.06);
+    filter: drop-shadow(0 14px 16px rgba(0, 0, 0, 0.48));
+  }
+}
+
+/* B5: outlined buttons fill with a red sweep from the left; solid buttons
+   lift 2px and a soft red glow fades in beneath them. */
+.btn:before,
+.card-action:before,
+.small-action:before,
+.order-list-btn:before,
+.icon-btn:before,
+.reset-filters:before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--red);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 250ms ease-out;
+}
+.icon-btn,
+.reset-filters {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+/* Solid buttons keep their colour: no sweep, a glow instead. */
+.btn.primary,
+.nav-wa,
+.small-action,
+.order-list-btn,
+.card-action.add {
+  position: relative;
+  overflow: visible;
+  isolation: isolate;
+}
+.btn.primary:before,
+.small-action:before,
+.order-list-btn:before,
+.card-action.add:before {
+  display: none;
+}
+.btn.primary:after,
+.nav-wa:after,
+.small-action:after,
+.order-list-btn:after,
+.card-action.add:after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  box-shadow:
+    0 10px 28px rgba(184, 0, 25, 0.55),
+    0 0 0 1px rgba(225, 29, 46, 0.45);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .btn,
+  .card-action,
+  .small-action,
+  .order-list-btn,
+  .icon-btn,
+  .reset-filters,
+  .nav-wa {
+    transition-property: transform, translate, opacity;
+    transition-duration: 250ms, 450ms, 250ms;
+    transition-timing-function: ease-out, cubic-bezier(0.3, 1.6, 0.5, 1), ease-out;
+  }
+  .btn:not(.primary):hover,
+  .card-action:not(.add):hover,
+  .icon-btn:hover,
+  .reset-filters:hover {
+    background: transparent;
+    border-color: var(--red);
+    color: #ffffff;
+  }
+  .btn:not(.primary):hover:before,
+  .card-action:not(.add):hover:before,
+  .icon-btn:hover:before,
+  .reset-filters:hover:before {
+    transform: scaleX(1);
+  }
+  .btn.primary:hover,
+  .nav-wa:hover,
+  .small-action:hover,
+  .order-list-btn:hover,
+  .card-action.add:hover {
+    transform: translateY(-2px);
+    background: var(--red);
+    border-color: var(--red);
+  }
+  .small-action.alt:hover {
+    background: var(--deep);
+    border-color: var(--deep);
+  }
+  .btn.primary:after,
+  .nav-wa:after,
+  .small-action:after,
+  .order-list-btn:after,
+  .card-action.add:after {
+    transition: opacity 250ms ease-out;
+  }
+  .btn.primary:hover:after,
+  .nav-wa:hover:after,
+  .small-action:hover:after,
+  .order-list-btn:hover:after,
+  .card-action.add:hover:after {
+    opacity: 1;
+  }
+  /* E15: while the cursor is over a magnetic button it follows quickly;
+     on leave it springs back (the 450ms overshoot curve above). */
+  .btn.primary.is-magnetic,
+  .nav-wa.is-magnetic {
+    transition-duration: 250ms, 120ms, 250ms;
+    transition-timing-function: ease-out, ease-out, ease-out;
+  }
+}
+.btn[disabled]:before,
+.btn[disabled]:after {
+  display: none;
+}
+
+/* FAQ rows: a red ring fades in and the + turns. */
+.faq-item {
+  position: relative;
+}
+.faq-item:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  box-shadow: inset 0 0 0 1px rgba(225, 29, 46, 0.75);
+  opacity: 0;
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) {
+  .faq-item:before {
+    transition: opacity 250ms ease-out;
+  }
+  .faq-item:hover:before {
+    opacity: 1;
+  }
+  .faq-item:not([open]) summary:hover:after {
+    transform: rotate(90deg);
+  }
+}
+
+/* Interactive elements animate transform, translate and opacity only;
+   colour and border changes on hover switch instantly. */
+.btn,
+.small-action,
+.order-list-btn,
+.card-action,
+.filter,
+.choice,
+.policy-button,
+.reset-filters,
+.icon-btn,
+.menu-toggle,
+.category-tile,
+.featured-card,
+.product-card,
+.faq-item summary,
+.faq-item summary:after,
+.nav-links a,
+.text-link,
+.footer-links a,
+.nav-wa {
+  transition-property: transform, translate, opacity;
+}
+
+.category-tile:after {
+  transition-property: opacity;
+}
+/* An off-screen hero pauses every animation inside it (including the
+   section's own light cue), not only the listed ambient layers. */
+.editorial-hero.motion-paused,
+.editorial-hero.motion-paused::before,
+.editorial-hero.motion-paused::after,
+.editorial-hero.motion-paused *,
+.editorial-hero.motion-paused *::before,
+.editorial-hero.motion-paused *::after {
+  animation-play-state: paused !important;
+}
+
+/* B6: nav underline slides in from the left. */
+@media (min-width: 1051px) {
+  .nav-links a:after {
+    right: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 200ms ease-out;
+  }
+  .nav-links a:hover:after,
+  .nav-links a:focus-visible:after,
+  .nav-links a.active:after,
+  .nav-links a[aria-current]:after {
+    right: 0;
+    transform: scaleX(1);
+  }
+}
+
+/* B7: a diagonal shine crosses a category card on hover (600ms). It only
+   travels forwards; leaving the card resets it off-canvas instantly. */
+.category-shine {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgba(255, 255, 255, 0.05) 42%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.05) 58%,
+    transparent 68%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .category-tile:hover .category-shine {
+    transform: translateX(110%);
+    transition: transform 600ms ease-out;
+  }
+}
+
+/* C8: masked headline reveal: each line rises out of its own clip. */
+.editorial-hero h1 .hero-line,
+.editorial-hero h1 .hero-line.accent-line {
+  overflow-x: visible;
+  overflow-y: clip;
+}
 @media (prefers-reduced-motion: no-preference) {
-  @supports (animation-timeline: view()) {
-    .reveal-target {
-      animation: revealDrift linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 80%;
+  .editorial-hero h1 .hero-line > span {
+    opacity: 1;
+    animation: heroMaskRise 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .editorial-hero h1 .hero-line:nth-child(2) > span {
+    animation-delay: 90ms;
+  }
+}
+@keyframes heroMaskRise {
+  from {
+    transform: translate3d(0, 105%, 0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* C9: the red glow behind the hero photo breathes slowly between 0.5 and
+   0.8 of full strength (eased, 4s each way) and pauses with the hero when
+   off-screen. The gradient is drawn at the 0.8 level, so the glow rests at
+   opacity 1 (no extra blending layer) and dips to 0.625 (= 0.5). The photo
+   frame's 0.15x scroll parallax is set by js/app.js through `translate`. */
+.editorial-hero .hero-grid:before {
+  background: radial-gradient(closest-side, rgba(184, 0, 25, 0.58), rgba(101, 0, 13, 0.3) 52%, rgba(101, 0, 13, 0) 100%);
+}
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .editorial-hero .editorial-visual {
+    will-change: translate;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .editorial-hero .hero-grid:before {
+    animation: heroGlowPulse 8s ease-in-out infinite;
+  }
+  .editorial-hero.motion-paused .hero-grid:before {
+    animation-play-state: paused;
+  }
+  /* During an active scroll the glow rests at full strength as part of the
+     page (no animated layer to composite); the loop starts again from that
+     same value, so pausing and resuming never jumps. */
+  .is-scrolling .editorial-hero .hero-grid:before {
+    animation: none;
+  }
+}
+@keyframes heroGlowPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.625;
+  }
+}
+
+/* D10: each section's top divider draws across the content width when the
+   section scrolls in (2px, 700ms). */
+main > section.story-section > .story-rail {
+  left: 50%;
+  width: min(var(--max), calc(100% - 48px));
+  height: 2px;
+  background: transparent;
+  transform: translateX(-50%);
+}
+main > section.story-section > .story-rail:after {
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+main > section.story-section.story-active > .story-rail:after {
+  transform: scaleX(1);
+}
+@media (max-width: 760px) {
+  main > section.story-section > .story-rail {
+    width: calc(100% - 24px);
+  }
+}
+
+/* D11: scroll reveals with a stagger. Content waiting below the fold sits
+   18px low at 85% opacity (never hidden); blocks that enter together settle
+   70ms apart. */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-ok .reveal-target:not(.in-view) {
+    translate: 0 18px;
+    opacity: 0.85;
+  }
+  .motion-ok .reveal-target.in-view {
+    animation: revealIn 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    animation-delay: calc(var(--reveal-i, 0) * 70ms);
+  }
+  @media (min-width: 901px) {
+    .motion-ok .reveal-target.reveal-side:not(.in-view) {
+      translate: -14px 0;
     }
-    .reveal-target.reveal-side {
-      animation-name: revealDriftSide;
+    .motion-ok .reveal-target.reveal-side:nth-child(even):not(.in-view) {
+      translate: 14px 0;
     }
-    .reveal-target.reveal-side:nth-child(even) {
-      animation-name: revealDriftSideAlt;
+    .motion-ok .reveal-target.reveal-side.in-view {
+      animation-name: revealInSide;
     }
-    @media (max-width: 900px) {
-      .reveal-target.reveal-side,
-      .reveal-target.reveal-side:nth-child(even) {
-        animation-name: revealDrift;
-      }
+    .motion-ok .reveal-target.reveal-side:nth-child(even).in-view {
+      animation-name: revealInSideAlt;
     }
   }
 }
-@keyframes revealDrift {
+@keyframes revealIn {
   from {
     translate: 0 18px;
+    opacity: 0.85;
   }
   to {
     translate: none;
+    opacity: 1;
   }
 }
-@keyframes revealDriftSide {
+@keyframes revealInSide {
   from {
     translate: -14px 0;
+    opacity: 0.85;
   }
   to {
     translate: none;
+    opacity: 1;
   }
 }
-@keyframes revealDriftSideAlt {
+@keyframes revealInSideAlt {
   from {
     translate: 14px 0;
+    opacity: 0.85;
   }
   to {
     translate: none;
+    opacity: 1;
+  }
+}
+
+/* D13: the founder portrait and the scoop photo move at 0.1× scroll speed
+   (js/app.js clamps the shift to 6% of the frame; 1.13 scale covers it). */
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .motion-depth-editorial img,
+  .motion-depth-editorial:hover img {
+    transform: translate3d(0, var(--motion-depth-y, 0px), 0) scale(1.13);
+    transition: none;
+  }
+}
+
+/* D14: ghost typography: a huge outlined word behind three headlines,
+   the same stroke-only treatment as the outlined numerals. */
+.section-head {
+  position: relative;
+  isolation: isolate;
+}
+.section-head > span.ghost-type {
+  position: absolute;
+  z-index: -1;
+  grid-column: 1 / -1;
+  grid-row: 1 / span 2;
+  bottom: -0.1em;
+  left: -0.05em;
+  font-family: var(--display);
+  font-size: clamp(5rem, 13vw, 12rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.09);
+  pointer-events: none;
+  user-select: none;
+}
+@supports not (-webkit-text-stroke: 1px #fff) {
+  .section-head > span.ghost-type {
+    color: rgba(255, 255, 255, 0.05);
+  }
+}
+main > section {
+  overflow-x: clip;
+}
+
+/* E16: hero embers (created by js/app.js on desktop only). */
+.hero-embers {
+  display: none;
+}
+@media (min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .hero-embers {
+    position: absolute;
+    z-index: 2;
+    inset: 0 0 0 46%;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .hero-embers i {
+    position: absolute;
+    left: var(--ember-x);
+    bottom: -12px;
+    width: var(--ember-size);
+    height: var(--ember-size);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 140, 110, 0.95), rgba(225, 29, 46, 0.65) 55%, transparent 72%);
+    opacity: 0;
+    animation: emberRise var(--ember-duration) linear var(--ember-delay) infinite;
+  }
+  .editorial-hero.motion-paused .hero-embers i {
+    animation-play-state: paused;
+  }
+  /* Embers leave the render tree while the page scrolls and fade back in
+     when it stops. */
+  .is-scrolling .hero-embers {
+    display: none;
+  }
+  .hero-embers {
+    animation: emberFieldIn 600ms ease-out both;
+  }
+}
+@keyframes emberFieldIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes emberRise {
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  14% {
+    opacity: var(--ember-opacity);
+  }
+  78% {
+    opacity: var(--ember-opacity);
+  }
+  100% {
+    transform: translate3d(var(--ember-drift), -680px, 0);
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: everything static and fully visible. */
+@media (prefers-reduced-motion: reduce) {
+  .editorial-hero .hero-grid:before {
+    animation: none;
+  }
+  main > section.story-section > .story-rail:after {
+    transform: scaleX(1);
+    transition: none;
+  }
+  .btn:before,
+  .card-action:before,
+  .small-action:before,
+  .order-list-btn:before,
+  .icon-btn:before,
+  .reset-filters:before,
+  .featured-card,
+  .product-card,
+  .featured-card .product-packshot,
+  .product-card .product-packshot,
+  .nav-links a:after {
+    transition: none;
+  }
+  /* Hover states still show (sweep, glow, underline) but nothing moves. */
+  .featured-card:hover,
+  .product-card:hover,
+  .category-tile:hover,
+  .btn:hover,
+  .nav-wa:hover,
+  .small-action:hover,
+  .order-list-btn:hover,
+  .card-action:hover,
+  .featured-card:hover .featured-photo .product-packshot,
+  .product-card:hover .product-photo .product-packshot {
+    transform: none !important;
   }
 }

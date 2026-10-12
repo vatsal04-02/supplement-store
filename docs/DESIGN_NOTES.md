@@ -104,11 +104,58 @@ Requested fixes, applied without changing the palette (`#080808`, `#B80019`,
   published (featured range, catalogue and category counts). Customer copy
   no longer refers to the owner. The footer link reads "Privacy Policy" and
   opens the privacy summary with the statistics controls.
-- **Scroll reveals:** content is never hidden. The script-driven reveal (which
-  held blocks in a start pose until an observer fired) is replaced by a CSS
-  scroll-driven drift of at most 18 px using the `translate` property, in
-  browsers that support scroll timelines; images are never animated, and
-  image frames show a dark brand surface while a lazy photo arrives.
+- **Scroll reveals:** content is never hidden (the later motion pass below
+  describes the current reveal); image frames show a dark brand surface while
+  a lazy photo arrives.
+
+## Visual appeal and motion pass
+
+Every effect animates `transform`, `translate` or `opacity` only. Reduced
+motion turns all of it off (content static and fully visible); touch and
+narrow screens keep reveals and hover-free styling but get no parallax,
+magnetic buttons or embers.
+
+- **Spacing:** one vertical padding for every section
+  (`--section-pad: clamp(56px, 5.5vw, 80px)`), closing the uneven gaps.
+- **Phones:** one display format everywhere, `+91 88404 27558` and
+  `+91 83032 53308` (links unchanged).
+- **No colour flash:** no section or section pseudo-element animates its
+  background; a test checks Goal Finder and Store Policies. (No full-section
+  flash existed in the code; the reveals are translate/opacity only.)
+- **Hover (fine pointers):** product cards lift 6px, the photo scales to
+  1.06 and a pre-drawn red ring fades in (250ms ease-out); outlined buttons
+  fill with a red sweep from the left; solid buttons lift 2px with a red glow;
+  nav underlines grow from the left (200ms); category cards get a 600ms
+  diagonal shine; FAQ rows get a red ring and a turning "+". Colour and
+  border changes switch instantly rather than animating.
+- **Hero:** headline lines rise out of a mask (`overflow-y: clip`), 90ms
+  apart; the photo frame moves at 0.15× scroll speed on desktop; the red
+  glow behind it breathes between 0.5 and 0.8 of full strength (4s each way);
+  16 slow red embers drift up over the photo side on desktop.
+- **Scroll:** a 2px red divider draws across each section's top on scroll-in
+  (700ms); blocks entering together are staggered 70ms apart (waiting
+  content sits 18px low at 85% opacity, never hidden); the founder portrait
+  and the scoop photo move at 0.1× scroll speed on desktop, inside frames
+  over-scanned so no edge shows.
+- **Ghost type:** outlined "RANGE", "SHOP" and "ASK" (stroke only, ~9%
+  white) behind the Featured, Categories and FAQ headlines, hidden from
+  assistive technology.
+- **Magnetic CTAs:** primary buttons lean up to 6px toward a mouse cursor and
+  spring back on leave.
+- **Off-screen and scrolling:** the hero pauses every animation when it
+  leaves the viewport; while the page is actively scrolling, the glow rests
+  at full strength and the embers leave the render tree, then resume.
+- **Not added:** counters (the page has no stat block, so none was invented).
+  The request also mentioned a scroll-progress bar, a marquee and a category
+  gradient sweep; none of these exist in this codebase, so there was nothing
+  to preserve or change.
+
+Measured in headless Chromium without a GPU (instant scroll steps at
+~1,200 px/s, 1440 × 900): 60 fps below the hero, ~58 fps averaged over the
+page, the same as before this pass; the hero region itself runs ~30 fps there
+because of the original design's blurred and screen-blended layers. A real
+browser with GPU compositing is expected to do better; measure on target
+devices with DevTools before launch.
 
 ## Architecture decision
 

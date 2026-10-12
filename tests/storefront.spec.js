@@ -221,20 +221,41 @@ test('unfinished content stays hidden on the public site', async ({ page }) => {
   await expect(page.locator('.location-actions a[href^="https://wa.me/"]')).toBeVisible();
 });
 
-test('the hero settles: no infinite decorative animation remains', async ({ page }) => {
+test('the hero loops only its glow pulse and embers, and pauses them off-screen', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  const infinite = await page.evaluate(() => {
-    const out = [];
-    for (const el of document.querySelectorAll('.editorial-hero *')) {
-      for (const pseudo of [null, '::before', '::after']) {
-        const cs = getComputedStyle(el, pseudo);
-        if (cs.animationName !== 'none' && cs.animationIterationCount.includes('infinite'))
-          out.push((el.className || el.tagName) + (pseudo || ''));
+  const infinite = () =>
+    page.evaluate(() => {
+      const out = [];
+      for (const el of document.querySelectorAll('.editorial-hero, .editorial-hero *')) {
+        for (const pseudo of [null, '::before', '::after']) {
+          const cs = getComputedStyle(el, pseudo);
+          if (cs.animationName !== 'none' && cs.animationIterationCount.includes('infinite'))
+            out.push({ name: cs.animationName, state: cs.animationPlayState });
+        }
       }
-    }
-    return out;
-  });
-  expect(infinite).toEqual([]);
+      return out;
+    });
+  const atTop = await infinite();
+  expect([...new Set(atTop.map((a) => a.name))].sort()).toEqual(['emberRise', 'heroGlowPulse']);
+  expect(atTop.filter((a) => a.name === 'emberRise').length).toBeLessThanOrEqual(20);
+  await page.evaluate(() => window.scrollTo({ top: document.getElementById('categories').offsetTop, behavior: 'instant' }));
+  await expect(page.locator('.editorial-hero')).toHaveClass(/motion-paused/);
+  // Off-screen (and not mid-scroll): every loop is paused.
+  await expect.poll(async () => (await infinite()).filter((a) => a.state !== 'paused').length).toBe(0);
+});
+
+test('every section uses one vertical padding value', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const paddings = await page.evaluate(() =>
+      [...document.querySelectorAll('main > section:not(.hero)')]
+        .filter((s) => !s.hidden)
+        .map((s) => getComputedStyle(s).paddingTop + '/' + getComputedStyle(s).paddingBottom)
+    );
+    expect(new Set(paddings).size, `paddings at ${width}px: ${paddings}`).toBe(1);
+  }
 });
 
 test.describe('reduced motion', () => {
@@ -247,10 +268,20 @@ test.describe('reduced motion', () => {
           .length
     );
     expect(running).toBe(0);
-    const shifted = await page.evaluate(
-      () => [...document.querySelectorAll('.reveal-target')].filter((el) => getComputedStyle(el).translate !== 'none').length
-    );
-    expect(shifted).toBe(0);
+    const state = await page.evaluate(() => ({
+      shifted: [...document.querySelectorAll('.reveal-target')].filter(
+        (el) => getComputedStyle(el).translate !== 'none' || getComputedStyle(el).opacity !== '1'
+      ).length,
+      running: document.getAnimations().filter((a) => a.playState === 'running').length,
+      heroLines: [...document.querySelectorAll('.hero-line > span')].map((s) => getComputedStyle(s).transform),
+      dividersDrawn: [...document.querySelectorAll('.story-rail')].every(
+        (r) =>
+          getComputedStyle(r, '::after').transform === 'none' || getComputedStyle(r, '::after').transform === 'matrix(1, 0, 0, 1, 0, 0)'
+      ),
+      embers: document.querySelectorAll('.hero-embers').length,
+      glow: getComputedStyle(document.querySelector('.editorial-hero .hero-grid'), '::before').animationName
+    }));
+    expect(state).toEqual({ shifted: 0, running: 0, heroLines: ['none', 'none'], dividersDrawn: true, embers: 0, glow: 'none' });
   });
 });
 
