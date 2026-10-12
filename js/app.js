@@ -189,8 +189,8 @@
     });
   }
 
-  function photoTrust(p) {
-    return p.image ? '<span class="product-photo-trust">Store-supplied photo</span>' : '';
+  function photoTrust(p, decorative) {
+    return p.image ? '<span class="product-photo-trust"' + (decorative ? ' aria-hidden="true"' : '') + '>Store-supplied photo</span>' : '';
   }
 
   function priceMarkup(variant) {
@@ -255,12 +255,12 @@
     var label = p.brand + ' ' + p.name;
     return '<article class="featured-card" data-id="' + esc(p.id) + '" data-index="' + index + '">' +
       '<a class="featured-photo" href="#catalogue" data-open-catalogue data-category-link="' + esc(p.category) + '" data-select-item="' + esc(p.id) + '" aria-label="' + esc('View ' + label + ' in the catalogue') + '">' +
-      productImageMarkup(p, 'lazy') + photoTrust(p) + '</a>' +
+      productImageMarkup(p, 'lazy') + photoTrust(p, true) + '</a>' +
       '<div class="featured-body"><span>' + esc(p.brand) + '</span><h3>' + esc(p.name) + '</h3><p>' + esc(category + (variant ? ' · ' + variantLabel(variant) : '')) + '</p>' +
       '<div class="featured-facts"><div class="featured-fact"><small>Selling price</small><strong>' + esc(featuredPrice) + '</strong></div>' +
       '<div class="featured-fact"><small>Availability</small><strong>' + esc(featuredStock) + '</strong></div></div>' +
       '<div><a class="text-link" href="#catalogue" data-open-catalogue data-category-link="' + esc(p.category) + '" data-select-item="' + esc(p.id) + '">View catalogue</a>' +
-      '<a class="small-action" href="' + esc(enquiryUrl(p, variant)) + '" target="_blank" rel="noopener noreferrer" data-wa-context="product" data-item-id="' + esc(p.id) + '" aria-label="' + esc('Prepare a WhatsApp enquiry about ' + label) + '">Prepare enquiry</a></div></div></article>';
+      '<a class="small-action" href="' + esc(enquiryUrl(p, variant)) + '" target="_blank" rel="noopener noreferrer" data-wa-context="product" data-item-id="' + esc(p.id) + '" aria-label="' + esc('Prepare enquiry on WhatsApp about ' + label) + '">Prepare enquiry</a></div></div></article>';
   }
 
   var featuredGrid = byId('featuredGrid');
@@ -768,7 +768,8 @@
     });
     var mobile = byId('mobileWhatsApp');
     mobile.textContent = count ? 'Send list on WhatsApp' : 'WhatsApp enquiry';
-    mobile.setAttribute('aria-label', count ? 'Send ' + count + ' selected ' + (count === 1 ? 'item' : 'items') + ' as a WhatsApp enquiry' : 'Open a WhatsApp product enquiry');
+    if (count) mobile.setAttribute('aria-label', 'Send list on WhatsApp: ' + count + ' selected ' + (count === 1 ? 'item' : 'items'));
+    else mobile.removeAttribute('aria-label');
     previousCartCount = count;
   }
 
@@ -1297,7 +1298,8 @@
       requestAnimationFrame(syncNavSurface);
     }
   }, { passive: true });
-  syncNavSurface();
+  // First read after the initial render, in a frame, so it never forces a synchronous layout.
+  requestAnimationFrame(syncNavSurface);
 
   /* ---------- motion ---------- */
   if ('IntersectionObserver' in window && !reducedMotionQuery.matches) {

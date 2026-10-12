@@ -19,6 +19,11 @@
 */
 
 /* 1. Global behaviour ---------------------------------------------------- */
+/* `hidden` must win over component display rules (for example the product
+   grid, which is display: grid, is hidden when no products match). */
+[hidden] {
+  display: none !important;
+}
 /* Locking scroll for the order list or a dialog must not shift the page:
    js/app.js sets --scrollbar-comp to the width of the removed scrollbar. */
 body.lock {

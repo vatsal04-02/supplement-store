@@ -132,18 +132,26 @@ function tokenMatches(provided, expected) {
 
 function readBody(req, limit) {
   return new Promise((resolve, reject) => {
+    if (Number(req.headers['content-length']) > limit) {
+      req.resume(); // discard the body so the 413 response can be delivered
+      reject(Object.assign(new Error('Payload too large'), { status: 413 }));
+      return;
+    }
     let size = 0;
+    let tooLarge = false;
     const chunks = [];
     req.on('data', (chunk) => {
+      if (tooLarge) return;
       size += chunk.length;
       if (size > limit) {
+        tooLarge = true;
+        chunks.length = 0;
         reject(Object.assign(new Error('Payload too large'), { status: 413 }));
-        req.destroy();
         return;
       }
       chunks.push(chunk);
     });
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
+    req.on('end', () => { if (!tooLarge) resolve(Buffer.concat(chunks).toString('utf8')); });
     req.on('error', reject);
   });
 }
@@ -186,7 +194,7 @@ export async function createServer(overrides = {}) {
     if (req.method !== 'POST') return sendJson(res, 405, { error: 'method_not_allowed' }, { Allow: 'POST' });
     const origin = req.headers.origin;
     if (origin && origin !== 'null') {
-      let originHost = '';
+      let originHost;
       try { originHost = new URL(origin).host; } catch (error) { originHost = ''; }
       if (originHost !== req.headers.host) return sendJson(res, 403, { error: 'cross_origin' });
     }
@@ -196,7 +204,7 @@ export async function createServer(overrides = {}) {
     try {
       body = await readBody(req, 32 * 1024);
     } catch (error) {
-      return sendJson(res, error.status || 400, { error: error.status === 413 ? 'payload_too_large' : 'bad_request' });
+      return sendJson(res, error.status || 400, { error: error.status === 413 ? 'payload_too_large' : 'bad_request' }, error.status === 413 ? { Connection: 'close' } : {});
     }
     if (!config.collect) {
       res.writeHead(204, baseHeaders({ 'Cache-Control': 'no-store' }));

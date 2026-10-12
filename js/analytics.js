@@ -135,12 +135,16 @@
     return ctx;
   }
 
+  // Media queries rather than innerWidth, so tracking never forces a layout.
+  var mobileQuery = window.matchMedia('(max-width: 767.98px)');
+  var tabletQuery = window.matchMedia('(max-width: 1099.98px)');
   function deviceClass() {
-    var w = window.innerWidth || document.documentElement.clientWidth || 0;
-    return w < 768 ? 'mobile' : w < 1100 ? 'tablet' : 'desktop';
+    return mobileQuery.matches ? 'mobile' : tabletQuery.matches ? 'tablet' : 'desktop';
   }
 
   function cleanText(value, max) {
+    // Control characters are stripped on purpose.
+    // eslint-disable-next-line no-control-regex
     return String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max || 80);
   }
   function cleanId(value) {

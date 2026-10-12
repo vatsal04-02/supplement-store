@@ -28,6 +28,8 @@ export const PARAM_RULES = {
 const EVENT_SET = new Set(EVENT_NAMES);
 
 function cleanText(value, max = 80) {
+  // Control characters are stripped on purpose.
+  // eslint-disable-next-line no-control-regex
   return String(value).replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
 }
 function cleanId(value) {

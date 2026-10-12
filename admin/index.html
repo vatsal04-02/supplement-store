@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en-IN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="no-referrer" />
+  <meta name="color-scheme" content="dark" />
+  <meta name="theme-color" content="#080808" />
+  <title>Store Analytics · Infinite Nutrition</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="../assets/brand/favicon-32.png" />
+  <link rel="stylesheet" href="dashboard.css" />
+</head>
+<body>
+  <a class="skip" href="#dashMain">Skip to content</a>
+  <header class="dash-header">
+    <div class="dash-wrap dash-header-inner">
+      <a class="dash-brand" href="../" aria-label="Back to the Infinite Nutrition storefront">
+        <img src="../assets/brand/logo-96.webp" alt="" width="40" height="40" />
+        <span><strong>Infinite Nutrition</strong><small>Store analytics · owner area</small></span>
+      </a>
+      <div class="dash-header-tools">
+        <span class="env-badge" id="envBadge" hidden></span>
+        <button class="dash-btn ghost" type="button" id="signOut" hidden>Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="demo-banner" id="demoBanner" role="region" aria-label="Demo data notice" hidden>
+    <div class="dash-wrap">
+      <strong>Demo preview — illustrative numbers.</strong>
+      <span>Generated in this browser to show the layout. These are not Infinite Nutrition visits, enquiries or sales.</span>
+      <button class="dash-btn small" type="button" id="exitDemo">Leave demo</button>
+    </div>
+  </div>
+
+  <main id="dashMain" class="dash-wrap" tabindex="-1">
+    <section class="connect" id="connectPanel" aria-labelledby="connectTitle">
+      <div class="connect-copy">
+        <p class="dash-eyebrow">Owner sign-in</p>
+        <h1 id="connectTitle">Store analytics</h1>
+        <p>Website behaviour recorded by this site’s own cookie-free analytics: visits, product views, order-list activity, searches and WhatsApp or phone taps. It does not record orders, payments or revenue — a WhatsApp tap is a click, not a confirmed enquiry or sale.</p>
+      </div>
+      <form class="connect-form" id="connectForm" novalidate>
+        <label for="tokenInput">Dashboard access token</label>
+        <input id="tokenInput" name="token" type="password" autocomplete="current-password" spellcheck="false" required minlength="24" aria-describedby="tokenHelp connectError" />
+        <p class="field-help" id="tokenHelp">The value of <code>ANALYTICS_ADMIN_TOKEN</code> set on the server. It is kept only for this browser tab.</p>
+        <p class="form-error" id="connectError" role="alert"></p>
+        <div class="connect-actions">
+          <button class="dash-btn primary" type="submit" id="connectButton">Open dashboard</button>
+          <button class="dash-btn" type="button" id="demoButton">Preview with demo data</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="report" id="reportPanel" aria-labelledby="reportTitle" hidden>
+      <div class="report-head">
+        <div>
+          <p class="dash-eyebrow">Store analytics</p>
+          <h1 id="reportTitle">Website performance</h1>
+        </div>
+        <p class="range-summary" id="rangeSummary" role="status" aria-live="polite"></p>
+      </div>
+
+      <form class="filter-row" id="rangeForm" aria-label="Date range">
+        <fieldset class="preset-group">
+          <legend class="sr-only">Date range preset</legend>
+          <label><input type="radio" name="preset" value="0" /> <span>Today</span></label>
+          <label><input type="radio" name="preset" value="6" /> <span>Last 7 days</span></label>
+          <label><input type="radio" name="preset" value="27" checked /> <span>Last 28 days</span></label>
+          <label><input type="radio" name="preset" value="89" /> <span>Last 90 days</span></label>
+          <label><input type="radio" name="preset" value="custom" /> <span>Custom</span></label>
+        </fieldset>
+        <div class="custom-range" id="customRange" hidden>
+          <label>From <input type="date" id="fromDate" required /></label>
+          <label>To <input type="date" id="toDate" required /></label>
+          <button class="dash-btn small primary" type="submit">Apply</button>
+        </div>
+      </form>
+
+      <div class="report-message" id="reportMessage" role="alert" hidden></div>
+
+      <div class="report-body" id="reportBody">
+        <section class="kpi-row" id="kpiRow" aria-label="Headline numbers"></section>
+
+        <section class="panel" aria-labelledby="trendTitle">
+          <div class="panel-head">
+            <h2 id="trendTitle">Daily trends</h2>
+            <ul class="legend" aria-label="Legend">
+              <li><span class="key key-current" aria-hidden="true"></span>Selected period</li>
+              <li><span class="key key-previous" aria-hidden="true"></span>Previous period</li>
+            </ul>
+          </div>
+          <div class="multiples" id="trendCharts"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="funnelTitle">
+          <div class="panel-head">
+            <h2 id="funnelTitle">Enquiry journey</h2>
+            <p class="panel-note">Visits in the range that reached each step. Each step is counted once per visit.</p>
+          </div>
+          <div id="funnelChart"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="productsTitle">
+          <div class="panel-head"><h2 id="productsTitle">Products</h2></div>
+          <div id="productsTable"></div>
+        </section>
+
+        <div class="panel-grid three">
+          <section class="panel" aria-labelledby="categoriesTitle">
+            <div class="panel-head">
+              <h2 id="categoriesTitle">Category interest</h2>
+              <p class="panel-note">Times a category filter, tile or goal-finder route was used.</p>
+            </div>
+            <div id="categoriesChart"></div>
+          </section>
+          <section class="panel" aria-labelledby="searchTitle">
+            <div class="panel-head"><h2 id="searchTitle">Catalogue searches</h2></div>
+            <div id="searchTable"></div>
+          </section>
+          <section class="panel" aria-labelledby="noResultTitle">
+            <div class="panel-head">
+              <h2 id="noResultTitle">Searches with no results</h2>
+              <p class="panel-note">Terms customers looked for that the listed catalogue could not match — candidates for new listings.</p>
+            </div>
+            <div id="noResultTable"></div>
+          </section>
+        </div>
+
+        <div class="panel-grid three">
+          <section class="panel" aria-labelledby="sourcesTitle">
+            <div class="panel-head"><h2 id="sourcesTitle">Traffic sources</h2><p class="panel-note">Visits by referring site or campaign tag.</p></div>
+            <div id="sourcesChart"></div>
+          </section>
+          <section class="panel" aria-labelledby="devicesTitle">
+            <div class="panel-head"><h2 id="devicesTitle">Devices</h2><p class="panel-note">Visits by screen size.</p></div>
+            <div id="devicesChart"></div>
+          </section>
+          <section class="panel" aria-labelledby="waTitle">
+            <div class="panel-head"><h2 id="waTitle">WhatsApp taps by place</h2><p class="panel-note">Where on the page the WhatsApp button was used.</p></div>
+            <div id="whatsappChart"></div>
+          </section>
+        </div>
+
+        <section class="panel definitions" aria-labelledby="definitionsTitle">
+          <div class="panel-head"><h2 id="definitionsTitle">How each number is counted</h2></div>
+          <dl>
+            <div><dt>Visits</dt><dd>Distinct browser-tab sessions that sent at least one event. A session ends when the tab is closed.</dd></div>
+            <div><dt>Visitors</dt><dd>Anonymous visitors counted per day, then added across the range. Someone who visits on three days counts three times; people cannot be followed across days by design.</dd></div>
+            <div><dt>Page views</dt><dd>Storefront page loads.</dd></div>
+            <div><dt>Product detail views</dt><dd>Times a product details dialog was opened.</dd></div>
+            <div><dt>Units added</dt><dd>Units added to order lists, including quantity increases inside the list. Removals are shown separately in the products table.</dd></div>
+            <div><dt>WhatsApp taps</dt><dd>Taps on any WhatsApp link or button. WhatsApp then opens on the customer’s device; whether a message was actually sent cannot be measured, so this is not a count of enquiries or orders.</dd></div>
+            <div><dt>Phone taps</dt><dd>Taps on a telephone link. Whether a call was placed cannot be measured.</dd></div>
+            <div><dt>Journey rates</dt><dd>“Opened product details” and “Opened a WhatsApp enquiry” are shares of all visits; “Added to the order list” is a share of visits that opened product details.</dd></div>
+            <div><dt>Searches</dt><dd>Catalogue searches of two or more characters, recorded after typing pauses. E-mail addresses and long numbers are removed before storage.</dd></div>
+            <div><dt>Not counted</dt><dd>Visitors who switched statistics off, browsers sending Global Privacy Control or Do Not Track, known bots, and visits where JavaScript did not run. Totals are therefore a lower bound.</dd></div>
+          </dl>
+        </section>
+
+        <p class="data-notes" id="dataNotes"></p>
+      </div>
+    </section>
+  </main>
+
+  <div class="chart-tooltip" id="chartTooltip" role="presentation" hidden></div>
+
+  <script defer src="../js/site-config.js"></script>
+  <script defer src="../js/catalogue.js"></script>
+  <script defer src="dashboard.js"></script>
+</body>
+</html>
