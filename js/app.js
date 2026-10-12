@@ -2028,6 +2028,86 @@
     ).observe(heroSection);
   }
 
+  /* Mobile hero video. Sources are attached only on phones that allow motion,
+     so desktop and reduced-motion visitors never download the clip. Any
+     failure (missing file, decode error, autoplay refused) hands over to the
+     poster, which zooms slowly instead of leaving a black box. */
+  (function heroVideo() {
+    var video = heroSection && heroSection.querySelector('.hero-video');
+    if (!video) return;
+    var figure = video.parentElement;
+    var phone = window.matchMedia('(max-width: 760px)');
+    var sources = [
+      ['assets/hero-bg.webm', 'video/webm'],
+      ['assets/hero-bg.mp4', 'video/mp4']
+    ];
+    var loaded = false;
+    var failed = false;
+    var visible = true;
+
+    function fallback() {
+      failed = true;
+      video.pause();
+      figure.classList.add('hero-video-fallback');
+    }
+    function play() {
+      if (failed || !loaded || !visible || !video.paused) return;
+      var attempt = video.play();
+      if (attempt && attempt.catch) {
+        attempt.catch(function (error) {
+          // A pause() racing play() is harmless; a refused autoplay is not.
+          if (!error || error.name !== 'AbortError') fallback();
+        });
+      }
+    }
+    function load() {
+      if (loaded) return;
+      loaded = true;
+      video.muted = true;
+      sources.forEach(function (entry) {
+        if (entry[1] === 'video/webm' && !video.canPlayType('video/webm; codecs="vp9"')) return;
+        var source = document.createElement('source');
+        source.src = entry[0];
+        source.type = entry[1];
+        video.appendChild(source);
+      });
+      var last = video.querySelector('source:last-of-type');
+      if (last) last.addEventListener('error', fallback);
+      else fallback();
+      video.addEventListener('error', fallback);
+      video.load();
+    }
+    function sync() {
+      var on = phone.matches;
+      figure.classList.toggle('hero-video-on', on);
+      if (!on) {
+        video.pause();
+        return;
+      }
+      if (!video.hasAttribute('poster')) video.setAttribute('poster', video.getAttribute('data-poster'));
+      var still = reducedMotionQuery.matches;
+      figure.classList.toggle('hero-video-static', still);
+      if (still) {
+        video.pause();
+        return;
+      }
+      load();
+      play();
+    }
+
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (entries) {
+        visible = entries[entries.length - 1].isIntersecting;
+        if (visible) play();
+        else video.pause();
+      }).observe(heroSection);
+    }
+    [phone, reducedMotionQuery].forEach(function (query) {
+      if (query.addEventListener) query.addEventListener('change', sync);
+    });
+    sync();
+  })();
+
   /* Fine-pointer depth only: tiny offsets preserve sharpness and never run on touch or reduced-motion devices. */
   var precisionMotion = window.matchMedia(
     '(min-width: 901px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference)'

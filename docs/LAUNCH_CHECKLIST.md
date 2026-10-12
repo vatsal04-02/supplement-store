@@ -50,6 +50,7 @@ Legend: **Where** = the file to edit. `site-config` = `js/site-config.js`,
 | C7 | Social profiles | Exact Instagram and other official profile URLs. | Footer in `index.html`; JSON-LD `sameAs` |
 | C9 | "100% original" | The hero line can start with "100% original" only once the store can document it (supplier invoices or brand authorisation). It is hidden until then. | `site-config` → `approvals.originalClaim` |
 | C8 | Transparent logo | No transparent logo was supplied, so the header, hero and footer use a background-removed cut of the supplied 380 px logo (`assets/brand/logo-mark-*`) on a #0a0a0a container. Supply an official transparent PNG or SVG to replace it. | `assets/brand/` |
+| C10 | Hero video (TEMP) | The mobile hero loop (`assets/hero-bg.webm`, `assets/hero-bg.mp4`) is a temporary clip rendered from the hero photo. Replace it with real store footage under the same names: dark, slow motion, red accent, 9:16, no audio, 3 MB or less in total. Update `assets/hero-poster.jpg` to its first frame. | `assets/`, `TEMP-REPLACE` comment in `index.html` |
 
 ## D. Technical go-live steps
 

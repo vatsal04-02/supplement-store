@@ -94,6 +94,8 @@ const MIME = {
   '.webp': 'image/webp',
   '.avif': 'image/avif',
   '.ico': 'image/x-icon',
+  '.webm': 'video/webm',
+  '.mp4': 'video/mp4',
   '.txt': 'text/plain; charset=utf-8',
   '.xml': 'application/xml; charset=utf-8',
   '.webmanifest': 'application/manifest+json'
@@ -421,6 +423,23 @@ export async function createServer(overrides = {}) {
       headers['Content-Encoding'] = encoding;
     } else {
       body = await readFile(filePath);
+      headers['Accept-Ranges'] = 'bytes';
+      // Single byte ranges, which Safari requires before it will play a video.
+      const range = /^bytes=(\d*)-(\d*)$/.exec(String(req.headers.range || '').trim());
+      if (range && (range[1] || range[2])) {
+        const size = body.length;
+        const start = range[1] ? Number(range[1]) : Math.max(0, size - Number(range[2]));
+        const end = range[1] && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
+        if (start >= size || start > end) {
+          res.writeHead(416, baseHeaders({ 'Content-Range': 'bytes */' + size }));
+          return res.end();
+        }
+        body = body.subarray(start, end + 1);
+        headers['Content-Range'] = 'bytes ' + start + '-' + end + '/' + size;
+        headers['Content-Length'] = body.length;
+        res.writeHead(206, headers);
+        return res.end(req.method === 'HEAD' ? undefined : body);
+      }
     }
     headers['Content-Length'] = body.length;
     res.writeHead(200, headers);

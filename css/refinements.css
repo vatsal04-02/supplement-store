@@ -1854,3 +1854,132 @@ h2.heading-secondary,
 .nav-tools .icon-btn.icon-only:before {
   border-radius: 0;
 }
+
+/* 15. Mobile hero: cinematic looping video --------------------------------- */
+/* Phones only. js/app.js adds .hero-video-on to the hero figure at ≤760px and
+   only then gives the <video> its sources, so desktop keeps the photo hero
+   exactly as before and downloads nothing extra. The poster layer sits under
+   the video, so a slow network, a blocked autoplay or a missing file never
+   leaves a black box: on failure the poster takes over with a slow Ken Burns
+   zoom; under reduced motion it stays still. */
+.hero-poster,
+.hero-video,
+.hero-video-shade {
+  display: none;
+}
+@media (max-width: 760px) {
+  .editorial-visual.hero-video-on > .hero-poster,
+  .editorial-visual.hero-video-on > .hero-video,
+  .editorial-visual.hero-video-on > .hero-video-shade {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .editorial-visual.hero-video-on > .hero-poster {
+    z-index: 1;
+    background: #080808 url("../assets/hero-poster.jpg") center / cover no-repeat;
+    transform-origin: 50% 45%;
+  }
+  .editorial-visual.hero-video-on > .hero-video {
+    z-index: 1;
+    object-fit: cover;
+    object-position: center;
+    background: transparent;
+  }
+  /* No play glyph or controls, ever (iOS shows one when autoplay is refused). */
+  .hero-video::-webkit-media-controls,
+  .hero-video::-webkit-media-controls-start-playback-button,
+  .hero-video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+    -webkit-appearance: none;
+  }
+  .editorial-visual.hero-video-fallback > .hero-video,
+  .editorial-visual.hero-video-static > .hero-video {
+    display: none;
+  }
+  /* Readability: dark at the top and bottom edges, clear through the middle,
+     a soft lift behind the copy column and a faint red vignette in two
+     corners. 10% stronger than the 0.72 desktop value. */
+  .editorial-visual.hero-video-on {
+    --hero-shade: 0.79;
+  }
+  .editorial-visual.hero-video-on::before {
+    display: none;
+  }
+  .editorial-visual.hero-video-on > .hero-video-shade {
+    z-index: 2;
+    background:
+      linear-gradient(
+        180deg,
+        rgba(0, 0, 0, var(--hero-shade)) 0%,
+        rgba(0, 0, 0, 0.18) 24%,
+        rgba(0, 0, 0, 0) 40%,
+        rgba(0, 0, 0, 0) 64%,
+        rgba(0, 0, 0, 0.3) 80%,
+        rgba(0, 0, 0, var(--hero-shade)) 100%
+      ),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.42) 0%, rgba(0, 0, 0, 0.16) 58%, rgba(0, 0, 0, 0) 82%),
+      radial-gradient(120% 60% at 0% 0%, rgba(184, 0, 25, 0.22), rgba(184, 0, 25, 0) 55%),
+      radial-gradient(110% 55% at 100% 100%, rgba(184, 0, 25, 0.2), rgba(184, 0, 25, 0) 55%);
+  }
+  /* The proof line wraps to the lede's measure so it stays over the dark side
+     of the frame, clear of the tub's bright emblem. */
+  .editorial-hero .hero-copy > .hero-proof {
+    max-width: 250px;
+  }
+  .editorial-hero:has(.hero-video-on) .hero-copy :is(.hero-lede, .hero-proof) {
+    text-shadow:
+      0 1px 2px rgba(0, 0, 0, 0.6),
+      0 2px 16px rgba(0, 0, 0, 0.55);
+  }
+
+  /* Height: never more than 92svh, copy centred in it, so there is no dead
+     band under the CTA on any phone. */
+  .editorial-hero,
+  .editorial-hero .hero-grid,
+  .editorial-hero .hero-copy {
+    min-height: min(690px, 92svh);
+  }
+  .editorial-hero .hero-copy {
+    justify-content: center;
+  }
+  .editorial-hero h1 {
+    font-size: clamp(2.6rem, 12vw, 4.5rem);
+  }
+  /* The red underline keeps its weight at the smaller headline size. */
+  .editorial-hero h1 .hero-line.accent-line {
+    text-decoration-thickness: max(3px, 0.07em);
+    padding-bottom: 0.14em;
+  }
+  .editorial-hero .actions {
+    justify-items: center;
+  }
+  .editorial-hero .actions .btn.primary {
+    width: 100%;
+    max-width: 340px;
+    margin-inline: auto;
+  }
+}
+@media (max-width: 420px) {
+  .editorial-hero,
+  .editorial-hero .hero-grid,
+  .editorial-hero .hero-copy {
+    min-height: min(654px, 92svh);
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .editorial-visual.hero-video-fallback > .hero-poster {
+    animation: heroKenBurns 18s ease-in-out infinite alternate;
+  }
+}
+@keyframes heroKenBurns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.12);
+  }
+}

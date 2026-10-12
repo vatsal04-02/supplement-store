@@ -122,12 +122,13 @@ other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 117 automated tests passing: six viewports (360–1920 px) with no console
+- 130 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
   serious or critical issues), source integrity checks, the layout rules
   (three light sections, uniform category tiles, one section padding, one
-  phone format, headings clear of the sticky header, no unfinished content
+  phone format, headings clear of the sticky header, the mobile hero video
+  and its poster fallbacks, no unfinished content
   on the public page) and the motion rules (hover states, masked hero lines,
   dividers, 70ms stagger, parallax and magnetic buttons on desktop only,
   nothing animating off-screen, reduced motion fully static).

@@ -105,6 +105,13 @@
             <source type="image/webp" srcset="assets/hero/hero-640.webp 640w, assets/hero/hero-960.webp 960w, assets/hero/hero-1440.webp 1440w, assets/hero/hero-1920.webp 1920w" sizes="(max-width: 760px) 100vw, 55vw" />
             <img class="hero-store-main" src="assets/hero/hero-1920.jpg" alt="Five Infinite Nutrition branded supplement containers, including a protein tub, bottle, jar and shaker, under red studio lighting" width="1920" height="1280" loading="eager" fetchpriority="high" decoding="async" />
           </picture>
+          <!-- Mobile-only looping background. js/app.js adds the sources (hero-bg.webm, then hero-bg.mp4) on phones
+               without reduced motion, so desktop never downloads them.
+               TEMP-REPLACE: hero-bg.webm / hero-bg.mp4 are a temporary 8s loop rendered from the hero photo.
+               Replace them with real store footage (dark, slow motion, red accent, ≤3MB total) and keep the file names. -->
+          <div class="hero-poster" aria-hidden="true"></div>
+          <video class="hero-video" autoplay muted loop playsinline preload="metadata" data-poster="assets/hero-poster.jpg" aria-hidden="true" tabindex="-1" disablepictureinpicture disableremoteplayback></video>
+          <div class="hero-video-shade" aria-hidden="true"></div>
           <div class="hero-depth-scene" aria-hidden="true">
             <span class="hero-red-orbit"></span>
             <span class="hero-light-beam hero-light-beam-one"></span>

@@ -198,6 +198,38 @@ devices with DevTools before launch.
 - **Header:** Search and Order list are icon buttons (with accessible names
   and a count badge); all six nav links stay.
 
+## Mobile hero video
+
+- **Phones only (≤760 px).** A muted, looping, inline `<video>` sits behind
+  the hero copy. `js/app.js` attaches its sources (`assets/hero-bg.webm`,
+  then `assets/hero-bg.mp4`) and poster only on phones that allow motion,
+  so desktop and tablet keep the photo hero pixel-for-pixel and download
+  nothing extra.
+- **TEMP-REPLACE.** The current clip is an 8 s seamless loop rendered from
+  the existing hero photo (slow push-in, drifting red mist, a soft red glow
+  pulse). It is not stock footage. Replace it with real store footage,
+  keeping the same file names: dark, slow motion, a red accent, 9:16, about
+  540 × 960, no audio, 3 MB or less for both files. Re-export
+  `assets/hero-poster.jpg` from the first frame.
+- **Fallbacks.** A poster layer sits under the video. If both files fail,
+  the video errors or autoplay is refused (for example iOS Low Power Mode),
+  the video hides and the poster takes over with a slow Ken Burns zoom
+  (1 → 1.12, 18 s, alternating). Under reduced motion the poster stays still
+  and the clip is never downloaded. Controls and the iOS play glyph are
+  suppressed.
+- **Readability.** The overlay is clear through the middle and
+  rgba(0,0,0,0.79) at the top and bottom edges (0.72 + 10% for phones),
+  with a soft lift behind the copy column, a faint red vignette in two
+  corners and a light text shadow on the lede and proof line. The old
+  full-height black wash is off while the video runs.
+- **Layout.** The hero is capped at 92svh with the copy centred. The
+  headline is `clamp(2.6rem, 12vw, 4.5rem)` with a thicker red underline.
+  The CTA is full width up to 340 px, centred. The proof line wraps to the
+  lede's measure so it stays clear of the tub's emblem.
+- **Performance.** The clip pauses when the hero scrolls out of view and
+  resumes on return. The local Node server now sends `video/*` types and
+  byte ranges, which Safari needs to play video; Vercel does this already.
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The
