@@ -3,7 +3,8 @@
 The original design shows a cinematic "supporting category visual" on each
 category tile. Those image files were referenced by the design but were not
 included in the supplied single-file export, so the tiles currently use real
-store photography (whey, mass gainers, creatine) or a typographic treatment.
+store photography (whey, mass gainers, creatine) or the same card with a red
+gradient and a category icon.
 
 To restore a visual, copy its files here and replace `visual: null` with the
 commented object for that category in `js/catalogue.js`.

@@ -10,12 +10,14 @@
     2. Display headings that must not break mid-word
     3. Review mode and owner approvals
     4. Product photo stages (including photos awaiting upload)
-    5. Category tiles without a supporting visual
+    5. Category tiles: one card design
     6. Catalogue, quantity and order-list feedback
     7. Toast, consent banner and privacy dialog
     8. Section fixes (founder portrait, owner checklist, store banner, footer)
     9. Legibility floor for micro labels on phones
    10. Motion refinements
+   11. Darkness and layout pass (light sections, hero glow, logo, headings,
+       anchors, hidden unfinished content, scroll reveals)
 */
 
 /* 1. Global behaviour ---------------------------------------------------- */
@@ -36,10 +38,10 @@ body.lock {
 }
 
 /* 2. Display headings ---------------------------------------------------- */
-/* At wide viewports these headings were larger than their columns, so the
+/* At wide viewports some headings were larger than their columns, so the
    cascade's `overflow-wrap: anywhere` split words ("NUTRITI / ON.") and
-   pushed a lone full stop onto its own line. The type now scales with its
-   column; sizes below 1051px are unchanged. */
+   pushed a lone full stop onto its own line. Headings in these columns are
+   capped by their container width (see the unified sizes in section 11). */
 .visit-copy,
 .reviews-intro,
 .location-copy,
@@ -48,18 +50,6 @@ body.lock {
   container-type: inline-size;
 }
 @media (min-width: 1051px) {
-  .visit-copy h2 {
-    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 16.2cqi);
-  }
-  .reviews-intro h2 {
-    font-size: min(clamp(3rem, 5vw, 5rem), 15.6cqi);
-  }
-  .location-copy h3 {
-    font-size: min(clamp(2.5rem, 4.5vw, 4.8rem), 13.4cqi);
-  }
-  .founder-copy h2 {
-    font-size: min(clamp(3rem, 5.2vw, 5.6rem), 16.2cqi);
-  }
   .featured-card:first-child .featured-body h3 {
     font-size: min(2.1rem, 12.2cqi);
   }
@@ -138,9 +128,56 @@ html:not(.review-mode) [data-owner-note] {
   }
 }
 
-/* 5. Category tiles ------------------------------------------------------ */
-/* Real store photography as the main image while the supporting visual is
-   not supplied: slightly more overlay so the copy keeps its contrast. */
+/* 5. Category tiles: one card design ------------------------------------- */
+/* All seven tiles are the same card in an even grid: four per row on
+   desktop with the last row centred, two on tablets, one on phones. A tile
+   shows a real store photo when one exists; otherwise the brand's red
+   gradient with a category icon. (The old 7/5 bento with a full-width
+   seventh tile and outlined numerals is retired.) */
+.category-grid {
+  --tile-gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--tile-gap);
+}
+.category-grid > .category-tile:nth-child(n) {
+  flex: 0 0 calc((100% - 3 * var(--tile-gap)) / 4);
+  grid-column: auto;
+  min-height: 0;
+  aspect-ratio: 4 / 5;
+  container-type: inline-size;
+}
+@media (max-width: 1050px) {
+  .category-grid > .category-tile:nth-child(n) {
+    flex-basis: calc((100% - var(--tile-gap)) / 2);
+    aspect-ratio: 4 / 3;
+  }
+}
+@media (max-width: 760px) {
+  .category-grid {
+    --tile-gap: 12px;
+  }
+  .category-grid > .category-tile:nth-child(n) {
+    flex-basis: 100%;
+    aspect-ratio: 16 / 10;
+  }
+}
+.category-grid .category-copy {
+  padding: 22px 22px 20px;
+}
+.category-grid .category-copy strong {
+  max-width: none;
+  font-size: clamp(1.45rem, 10.5cqi, 2.35rem);
+  overflow-wrap: normal;
+  word-break: normal;
+}
+.category-grid .category-visual-note {
+  font-size: 0.62rem;
+}
+
+/* Real store photography as the main image: slightly more overlay so the
+   copy keeps its contrast. */
 .category-store-primary:after {
   background:
     linear-gradient(180deg, rgba(8, 8, 8, 0.1) 18%, rgba(8, 8, 8, 0.38) 52%, rgba(8, 8, 8, 0.92) 100%),
@@ -150,66 +187,33 @@ html:not(.review-mode) [data-owner-note] {
   filter: saturate(0.92) contrast(1.04) brightness(0.92);
 }
 
-/* Typographic tiles: no image is published until one is supplied. */
-.category-typographic .category-media {
+/* No photo yet: Deep Blood Red gradient with a line icon. */
+.category-gradient .category-media {
   background:
-    radial-gradient(circle at 86% 18%, rgba(184, 0, 25, 0.2), transparent 42%),
-    radial-gradient(circle at 12% 110%, rgba(101, 0, 13, 0.28), transparent 46%), linear-gradient(135deg, #111111 0%, #080808 62%);
+    radial-gradient(120% 90% at 82% 8%, rgba(184, 0, 25, 0.62), transparent 60%),
+    linear-gradient(160deg, #65000d 0%, #3d0008 46%, #140204 100%);
 }
-.category-typographic .category-media:after {
-  content: "";
+.category-gradient:after {
+  background: linear-gradient(180deg, transparent 36%, rgba(8, 8, 8, 0.62) 100%);
+}
+.category-icon {
   position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(116deg, transparent 0 46px, rgba(255, 255, 255, 0.022) 46px 47px);
-  pointer-events: none;
+  z-index: 1;
+  top: 22px;
+  right: 22px;
+  width: clamp(52px, 28cqi, 96px);
+  height: auto;
+  aspect-ratio: 1;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.92);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
 }
-.category-tile .category-mark {
-  position: absolute;
-  top: 10px;
-  right: 18px;
-  align-self: auto;
-  text-decoration: none;
-  font-family: var(--display);
-  font-size: clamp(5rem, 10vw, 9rem);
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.04em;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.16);
-  transition:
-    -webkit-text-stroke-color var(--motion-base, 260ms) ease,
-    transform var(--motion-slow, 520ms) var(--motion-ease-enter, ease);
-}
-.category-tile .category-mark:before {
-  content: attr(data-mark);
-}
-@supports not (-webkit-text-stroke: 1px #fff) {
-  .category-tile .category-mark {
-    color: rgba(255, 255, 255, 0.07);
-  }
-}
-.category-typographic:after {
-  background: linear-gradient(180deg, transparent 40%, rgba(8, 8, 8, 0.55) 100%);
-}
-@media (hover: hover) and (pointer: fine) {
-  .category-typographic:hover .category-mark {
-    -webkit-text-stroke-color: rgba(184, 0, 25, 0.7);
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .category-gradient:hover .category-icon {
     transform: translateY(-3px);
-  }
-}
-@media (max-width: 760px) {
-  .category-tile .category-mark {
-    top: 6px;
-    right: 14px;
-    font-size: 5.2rem;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .category-tile .category-mark {
-    transition: none;
-  }
-  .category-typographic:hover .category-mark {
-    transform: none;
   }
 }
 
@@ -233,6 +237,20 @@ html:not(.review-mode) [data-owner-note] {
   }
   .featured-grid > .featured-card:nth-child(4):last-child .featured-body {
     padding: 32px;
+  }
+}
+
+/* Two featured products (products without a photo are not published): the
+   first keeps its double-width feature layout and the second fills the row,
+   so no empty grid cell is left. */
+@media (min-width: 1180px) {
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(2)) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (min-width: 761px) and (max-width: 1179px) {
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(2)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -530,36 +548,400 @@ html:not(.review-mode) [data-owner-note] {
   .hero-atmosphere:after {
     animation-iteration-count: 2;
   }
+}
 
-  body.motion-ready .reveal-target.reveal-done {
-    animation: none;
+/* 11. Darkness and layout pass ------------------------------------------ */
+/* A3: grey copy never drops below #B5B5B5 on the dark sections. */
+:root {
+  --dim: #b5b5b5;
+  --nav-h: 77px;
+}
+input::placeholder {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* A1: three light sections (Reviews, Why Infinite Nutrition, Visit) break
+   the black page into an alternating rhythm. Same type, same red accents;
+   near-black text on #F4F4F4. Tokens are re-pointed inside the section so
+   hairlines, cards and secondary text follow automatically. */
+.section-light {
+  --bg: #f4f4f4;
+  --surface: #f4f4f4;
+  --surface-raised: #ffffff;
+  --card: #ffffff;
+  --card-2: #ebebeb;
+  --line: #d4d4d4;
+  --hairline: rgba(8, 8, 8, 0.14);
+  --hairline-soft: rgba(8, 8, 8, 0.09);
+  --muted: #3d3d3d;
+  --dim: #555555;
+  --ink: #0b0b0b;
+  --premium-shadow: 0 18px 46px rgba(8, 8, 8, 0.08);
+  color-scheme: light;
+  color: var(--ink);
+}
+main > section.section-light {
+  background: #f4f4f4;
+  border-bottom-color: rgba(8, 8, 8, 0.08);
+}
+.section-light :is(h2, h3, strong, b, .accent, .trust-num, .trust-item a, .location-fragment strong, .contact-row strong a) {
+  color: var(--ink);
+}
+.section-light .review-empty,
+.section-light .trust-item,
+.section-light .trust-evidence,
+.section-light .contact-side,
+.section-light .visit-panel,
+.section-light .visit-location {
+  background: #ffffff;
+  box-shadow: var(--premium-shadow);
+}
+.section-light .trust-item {
+  box-shadow: none;
+}
+.section-light .contact-side {
+  box-shadow: none;
+  border-left: 1px solid var(--hairline-soft);
+}
+.section-light .trust-evidence-actions {
+  background: #ebebeb;
+}
+.section-light .btn:not(.primary) {
+  border-color: rgba(8, 8, 8, 0.32);
+  color: var(--ink);
+}
+.section-light .btn:not(.primary):hover,
+.section-light .btn:not(.primary):focus-visible {
+  border-color: var(--deep);
+  color: #ffffff;
+}
+.section-light :where(a, button, input, select, summary, [tabindex]):focus-visible {
+  outline-color: var(--ink);
+}
+@media (max-width: 1050px) {
+  .section-light .contact-side {
+    border-left: 0;
   }
-  /* The designed hover lift for featured cards and category tiles was always
-     overridden by the more specific `body.motion-ready .reveal-target` rule.
-     It applies again once a card's reveal has finished. */
-  @media (hover: hover) and (pointer: fine) {
-    body.motion-ready .featured-card.reveal-done:hover,
-    body.motion-ready .category-tile.reveal-done:hover {
-      transform: translateY(-4px);
+}
+/* Review mode only: owner notes inside the light Visit section. The pending
+   map box stays a dark panel. */
+.section-light .verification-label,
+.section-light .owner-checklist li:before {
+  color: var(--ink);
+}
+.section-light .location-map-shell .map-placeholder,
+.section-light .location-map-shell .map-placeholder strong {
+  color: #ffffff;
+}
+.section-light .map-placeholder p {
+  color: #bdbdbd;
+}
+.section-light .location-actions button[disabled] {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* A2: a soft red glow behind the hero photograph (the photo is unchanged). */
+.editorial-hero .hero-grid {
+  position: relative;
+  isolation: isolate;
+}
+.editorial-hero .hero-grid:before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: -3%;
+  width: min(74%, 1040px);
+  aspect-ratio: 1.35;
+  transform: translateY(-50%);
+  background: radial-gradient(closest-side, rgba(184, 0, 25, 0.56), rgba(101, 0, 13, 0.3) 52%, rgba(101, 0, 13, 0) 100%);
+  pointer-events: none;
+}
+@media (max-width: 1050px) {
+  .editorial-hero .hero-grid:before {
+    top: auto;
+    right: 50%;
+    bottom: -6%;
+    width: 130%;
+    transform: translateX(50%);
+  }
+}
+
+/* A4: the logo mark has a transparent background and sits on a solid
+   #0a0a0a container instead of a white box (nav, hero and footer). */
+.brand img,
+.hero-brandlock img,
+.editorial-hero .hero-brandlock img,
+.footer-logo {
+  background: #0a0a0a;
+}
+
+/* B7: "Explore by format" now follows the product grid. */
+.featured-editorial {
+  margin: 24px 0 0;
+}
+@media (max-width: 760px) {
+  .featured-editorial {
+    margin-top: 16px;
+  }
+}
+
+/* B8: anchored sections stop below the sticky header. js/app.js keeps
+   --nav-h equal to the header's height; these are its fallbacks. */
+@media (max-width: 1050px) {
+  :root {
+    --nav-h: 69px;
+  }
+}
+@media (max-width: 760px) {
+  :root {
+    --nav-h: 63px;
+  }
+}
+main > section,
+main [id] {
+  scroll-margin-top: calc(var(--nav-h) + 16px);
+}
+
+/* B9: one heading pattern everywhere: a small-caps red kicker over a bold
+   headline (white on dark sections, near-black on light ones). The kicker is
+   a red label with white text so it stays legible on black. */
+.eyebrow,
+.editorial-hero .eyebrow {
+  display: inline-flex;
+  align-self: flex-start;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  gap: 0;
+  margin: 0;
+  padding: 6px 10px 5px;
+  background: var(--red);
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1.25;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.eyebrow:before,
+.editorial-hero .eyebrow:before {
+  display: none;
+}
+.section-head h2,
+.finder-copy h2,
+.founder-copy h2,
+.visit-copy h2,
+.reviews h2,
+.authenticity-copy h2,
+.enquiry-process-head h2,
+.flavour-copy h2 {
+  max-width: 15ch;
+  font-family: var(--display);
+  font-size: clamp(2.3rem, 3.9vw, 3.75rem);
+  font-weight: 800;
+  line-height: 0.98;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  overflow-wrap: normal;
+}
+.featured-editorial-copy h3,
+.location-copy h3,
+.founder-training-copy h3 {
+  max-width: 15ch;
+  font-family: var(--display);
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  overflow-wrap: normal;
+}
+/* Column-width caps so a long word never splits (section 2). */
+@media (min-width: 1051px) {
+  .visit-copy h2,
+  .founder-copy h2 {
+    font-size: min(clamp(2.3rem, 3.9vw, 3.75rem), 16.2cqi);
+  }
+  .reviews-intro h2 {
+    font-size: min(clamp(2.3rem, 3.9vw, 3.75rem), 15.6cqi);
+  }
+  .location-copy h3 {
+    font-size: min(clamp(1.75rem, 2.5vw, 2.5rem), 13.4cqi);
+  }
+}
+@media (max-width: 760px) {
+  .section-head h2,
+  .finder-copy h2,
+  .founder-copy h2,
+  .visit-copy h2,
+  .reviews h2,
+  .authenticity-copy h2,
+  .enquiry-process-head h2,
+  .flavour-copy h2 {
+    font-size: clamp(1.95rem, 8.6vw, 2.6rem);
+  }
+  .featured-editorial-copy h3,
+  .location-copy h3,
+  .founder-training-copy h3 {
+    font-size: clamp(1.6rem, 7vw, 2.1rem);
+  }
+}
+.eyebrow + h2,
+.eyebrow + h3 {
+  margin-top: 18px;
+}
+.accent {
+  color: inherit;
+  text-decoration: none;
+}
+/* Section heads: kicker and headline stack in the first column; the intro
+   stays in the second column, aligned to the headline's baseline area. */
+.section-head {
+  row-gap: 0;
+}
+.section-head > .eyebrow {
+  grid-column: 1;
+  grid-row: 1;
+}
+.section-head > h2 {
+  grid-column: 1;
+  grid-row: 2;
+}
+.section-head > :not(.eyebrow, h2) {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: end;
+}
+@media (max-width: 760px) {
+  .section-head > :nth-child(n) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .section-head > :not(.eyebrow, h2) {
+    margin-top: 16px;
+  }
+}
+.enquiry-process-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+  column-gap: 32px;
+  row-gap: 0;
+  align-items: end;
+}
+.enquiry-process-head > .eyebrow {
+  grid-column: 1;
+  grid-row: 1;
+}
+.enquiry-process-head > h2 {
+  grid-column: 1;
+  grid-row: 2;
+}
+.enquiry-process-head > p {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+}
+@media (max-width: 760px) {
+  .enquiry-process-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .enquiry-process-head > :nth-child(n) {
+    grid-column: 1;
+    grid-row: auto;
+  }
+  .enquiry-process-head > p {
+    margin-top: 16px;
+  }
+}
+
+/* C11: unfinished content is not shown on the public site. Owner notes use
+   [data-owner-note] (section 3); the store map, directions button and its
+   status line appear once js/store-map.js has a verified destination. */
+html:not(.review-mode) .visit-location[data-map="pending"] > #storeMapShell,
+html:not(.review-mode) .visit-location[data-directions="pending"] #directionsSlot,
+html:not(.review-mode) .visit-location[data-directions="pending"] #locationStatus {
+  display: none !important;
+}
+html:not(.review-mode) .visit-location[data-map="pending"] {
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+@media (min-width: 1051px) {
+  html:not(.review-mode) .visit-location[data-map="pending"] .location-copy {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(340px, 0.85fr);
+    column-gap: clamp(32px, 5vw, 72px);
+    align-items: end;
+  }
+  html:not(.review-mode) .visit-location[data-map="pending"] .location-copy > * {
+    grid-column: 1;
+  }
+  html:not(.review-mode) .visit-location[data-map="pending"] .location-copy > .location-actions {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    margin-top: 0;
+  }
+}
+
+/* C13: scroll reveals never hide content. Everything is fully visible by
+   default; where the browser supports scroll-driven animations, blocks
+   drift up to 18px into place in step with the scroll position (the
+   independent `translate` property leaves hover transforms untouched).
+   Images are never animated. */
+/* Image frames show a dark brand surface (not a black hole) for the moment
+   a lazily loaded photo is still arriving during a fast scroll. */
+.featured-editorial-media,
+.flavour-media,
+.authenticity-photo,
+.store-proof-grid figure,
+.founder-photo,
+.founder-training-media,
+.category-photo .category-media {
+  background-color: #141414;
+  background-image: radial-gradient(circle at 72% 28%, rgba(184, 0, 25, 0.2), transparent 62%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .reveal-target {
+      animation: revealDrift linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 80%;
+    }
+    .reveal-target.reveal-side {
+      animation-name: revealDriftSide;
+    }
+    .reveal-target.reveal-side:nth-child(even) {
+      animation-name: revealDriftSideAlt;
+    }
+    @media (max-width: 900px) {
+      .reveal-target.reveal-side,
+      .reveal-target.reveal-side:nth-child(even) {
+        animation-name: revealDrift;
+      }
     }
   }
-
-  /* Reveal targets wait in their starting pose, so content that scrolls in
-     no longer jumps 18px before animating. */
-  body.motion-ready .reveal-target:not(.in-view) {
-    opacity: 0.94;
-    transform: translate3d(0, 18px, 0);
+}
+@keyframes revealDrift {
+  from {
+    translate: 0 18px;
   }
-  body.motion-ready .reveal-target.reveal-side:not(.in-view) {
-    transform: translate3d(-16px, 0, 0);
+  to {
+    translate: none;
   }
-  body.motion-ready .reveal-target.reveal-side:nth-child(even):not(.in-view) {
-    transform: translate3d(16px, 0, 0);
+}
+@keyframes revealDriftSide {
+  from {
+    translate: -14px 0;
   }
-  @media (max-width: 900px) {
-    body.motion-ready .reveal-target.reveal-side:not(.in-view),
-    body.motion-ready .reveal-target.reveal-side:nth-child(even):not(.in-view) {
-      transform: translate3d(0, 18px, 0);
-    }
+  to {
+    translate: none;
+  }
+}
+@keyframes revealDriftSideAlt {
+  from {
+    translate: 14px 0;
+  }
+  to {
+    translate: none;
   }
 }

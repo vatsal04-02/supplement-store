@@ -1,6 +1,6 @@
 // Navigation, overlays, policies, privacy controls and contact links.
 const { test, expect } = require('@playwright/test');
-const { instrument, events } = require('./helpers');
+const { instrument, events, useReviewMode } = require('./helpers');
 
 test.beforeEach(async ({ page }) => {
   await instrument(page);
@@ -42,22 +42,32 @@ test('skip link moves focus to the main content', async ({ page }) => {
   await expect(page).toHaveURL(/#main$/);
 });
 
-test('policy dialogs state that terms await owner approval', async ({ page }) => {
+test('policy dialogs mark unapproved terms as provisional', async ({ page }) => {
   await page.goto('/');
   const button = page.locator('.policy-button[data-policy="refunds"]');
   await button.click();
-  await expect(page.locator('#modalTitle')).toHaveText('Refunds — owner-review draft');
-  await expect(page.locator('#modalContent .status')).toHaveText('Owner review required');
+  await expect(page.locator('#modalTitle')).toHaveText('Refunds');
+  await expect(page.locator('#modalContent .status')).toHaveText('Provisional · confirm with the store');
   await page.locator('#modalBackdrop .close-btn').click();
   await expect(button).toBeFocused();
   const [policy] = await events(page, 'open_policy');
   expect(policy.params.policy).toBe('refunds');
 });
 
+test('in review mode policy dialogs say the terms await owner approval', async ({ page }) => {
+  await useReviewMode(page);
+  await page.goto('/');
+  await page.locator('.policy-button[data-policy="refunds"]').click();
+  await expect(page.locator('#modalTitle')).toHaveText('Refunds — owner-review draft');
+  await expect(page.locator('#modalContent .status')).toHaveText('Owner review required');
+});
+
 test('privacy dialog lets a visitor switch statistics off, which stops all events', async ({ page }) => {
   await page.goto('/');
+  await expect(page.locator('#privacySettings')).toHaveText('Privacy Policy');
   await page.locator('#privacySettings').click();
-  await expect(page.locator('#modalTitle')).toHaveText('Privacy & analytics');
+  await expect(page.locator('#modalTitle')).toHaveText('Privacy policy');
+  await expect(page.locator('#modalContent')).toContainText('Your order list is kept only in this browser');
   await expect(page.locator('.privacy-state')).toContainText('on');
   await page.locator('[data-privacy="toggle-optout"]').click();
   await expect(page.locator('.privacy-state')).toContainText('off');
@@ -72,23 +82,21 @@ test('privacy dialog lets a visitor switch statistics off, which stops all event
   expect(await events(page)).toEqual([]);
 });
 
-test('owner notes are visible in review mode and hidden when reviewMode is false', async ({ page }) => {
+test('owner notes are hidden on the public site and shown in review mode', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.owner-checklist')).toBeVisible();
-  await expect(page.locator('.powered')).toBeVisible();
-
-  await page.route('**/js/site-config.js', async (route) => {
-    const response = await route.fetch();
-    const body = (await response.text()).replace('reviewMode: true', 'reviewMode: false');
-    await route.fulfill({ response, body });
-  });
-  await page.reload();
   await expect(page.locator('.owner-checklist')).toBeHidden();
   await expect(page.locator('.fit-first-note')).toBeHidden();
-  // Not approved, so the unconfirmed credit is withheld at launch.
+  // Not approved, so the unconfirmed credit is withheld.
   await expect(page.locator('.powered')).toBeHidden();
   // Customer-facing honesty notes remain.
   await expect(page.locator('.trust-caveat')).toBeVisible();
+
+  await useReviewMode(page);
+  await page.reload();
+  await expect(page.locator('.owner-checklist')).toBeVisible();
+  await expect(page.locator('.verification-label')).toBeVisible();
+  await expect(page.locator('.detail-grid')).toBeVisible();
+  await expect(page.locator('.powered')).toBeVisible();
 });
 
 test('telephone and WhatsApp links are tracked with the right contact role', async ({ page }) => {
@@ -107,7 +115,20 @@ test('telephone and WhatsApp links are tracked with the right contact role', asy
   expect(wa.params).toMatchObject({ source: 'header', contact: 'primary', context: 'general' });
 });
 
-test('store location stays an honest empty state without a verified map', async ({ page }) => {
+test('without a verified map no map box or directions button is shown', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#storeMapShell')).toBeHidden();
+  await expect(page.locator('#directionsSlot')).toBeHidden();
+  await expect(page.locator('#locationStatus')).toBeHidden();
+  // The remaining location copy and contact routes take the full panel.
+  const panel = await page.locator('#store-location').boundingBox();
+  const copy = await page.locator('#store-location .location-copy').boundingBox();
+  expect(Math.abs(panel.width - copy.width)).toBeLessThanOrEqual(1);
+  await expect(page.locator('.location-actions a[href^="https://wa.me/"]')).toBeVisible();
+});
+
+test('review mode still shows the pending map state to the owner', async ({ page }) => {
+  await useReviewMode(page);
   await page.goto('/');
   await expect(page.locator('#storeMapFrame')).toBeHidden();
   await expect(page.locator('#storeMapPlaceholder')).toBeVisible();
@@ -125,8 +146,62 @@ test('a verified map configuration shows the map and a safe directions link', as
   });
   await page.goto('/');
   await expect(page.locator('#storeMapFrame')).toBeVisible();
+  await expect(page.locator('#store-location')).toHaveAttribute('data-map', 'ready');
   const link = page.locator('#directionsSlot a');
+  await expect(link).toBeVisible();
   await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
   expect(await link.getAttribute('href')).toContain('https://www.google.com/maps/dir/');
   await expect(page.locator('#directionsSlot script')).toHaveCount(0);
+});
+
+for (const viewport of [
+  { width: 1440, height: 900 },
+  { width: 390, height: 844 }
+]) {
+  test(`anchored headings stop below the sticky header at ${viewport.width}px`, async ({ page }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const clipped = [];
+    for (const id of [
+      'featured',
+      'categories',
+      'enquiry-process',
+      'finder',
+      'reviews',
+      'authenticity',
+      'why',
+      'founder',
+      'visit',
+      'store-location',
+      'policies',
+      'faq'
+    ]) {
+      await page.evaluate((target) => document.getElementById(target).scrollIntoView({ behavior: 'instant', block: 'start' }), id);
+      const gap = await page.evaluate((target) => {
+        const header = document.querySelector('.site-nav').getBoundingClientRect().bottom;
+        const kicker = document.getElementById(target).querySelector('.eyebrow').getBoundingClientRect().top;
+        const section = document.getElementById(target).getBoundingClientRect().top;
+        return { kicker: kicker - header, section: section - header };
+      }, id);
+      if (gap.kicker < 0 || gap.section < 15) clipped.push(id + ' ' + JSON.stringify(gap));
+    }
+    expect(clipped).toEqual([]);
+  });
+}
+
+test('the nav link to categories lands with the heading in view', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  await page.locator('#mainNav a[href="#categories"]').click();
+  // Smooth scrolling: wait until the section settles 16px below the header.
+  const offset = () =>
+    page.evaluate(() => {
+      const header = document.querySelector('.site-nav').getBoundingClientRect().bottom;
+      return Math.round(document.getElementById('categories').getBoundingClientRect().top - header);
+    });
+  await expect.poll(offset).toBeLessThanOrEqual(20);
+  expect(await offset()).toBeGreaterThanOrEqual(14);
+  const heading = await page.locator('#categoriesTitle').boundingBox();
+  const header = await page.locator('.site-nav').boundingBox();
+  expect(heading.y).toBeGreaterThan(header.y + header.height);
 });

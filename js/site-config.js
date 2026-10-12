@@ -18,10 +18,13 @@ window.INFINITE_SITE = {
   // sitemap.xml and absolute JSON-LD URLs once this is set.
   siteUrl: '',
 
-  // Pre-launch review mode shows owner-facing notes (the owner completion
-  // checklist, the Fit & First approval note, the social-profile note).
-  // Set to false for launch; customer-facing honesty notes stay visible.
-  reviewMode: true,
+  // Review mode is for the owner, not for customers. When true the page also
+  // shows everything that is still unfinished: the owner completion
+  // checklist, approval notes, the address/contact detail grid, the pending
+  // map box and disabled directions button, policy draft labels, and
+  // products that have no photo yet (as "Store photo coming soon" cards).
+  // Keep it false on the public site; switch it on locally to review.
+  reviewMode: false,
 
   // Owner approvals for wording that must not be published by default.
   approvals: {
@@ -72,8 +75,9 @@ window.INFINITE_SITE = {
     debug: 'auto'
   },
 
-  // Policy wording. Each entry stays an owner-review draft until the owner
-  // supplies approved terms; set `approved: true` with the final text.
+  // Policy wording. Each entry is shown as a provisional draft (and, in
+  // review mode, labelled for owner review) until the owner supplies approved
+  // terms; set `approved: true` with the final text.
   policies: {
     shipping: {
       title: 'Delivery & collection',
@@ -88,7 +92,7 @@ window.INFINITE_SITE = {
     refunds: {
       title: 'Refunds',
       approved: false,
-      body: 'Refund eligibility, method and timelines require owner-approved wording. Contact the store about the specific item before relying on a refund.'
+      body: 'Refund eligibility, method and timelines have not been confirmed for publication. Contact the store about the specific item before relying on a refund.'
     },
     cancellation: {
       title: 'Order cancellation',
@@ -103,12 +107,12 @@ window.INFINITE_SITE = {
     privacy: {
       title: 'Privacy policy',
       approved: false,
-      body: 'This website does not use forms, accounts or advertising cookies and does not collect names, phone numbers or payment details. If website analytics is enabled, it records anonymous usage events — such as pages viewed, products viewed, searches and buttons used — without cookies, and visitors can switch it off under “Privacy & analytics” in the footer. Your order list is kept only in this browser. Opening WhatsApp transfers the prepared enquiry to WhatsApp under the customer’s control. The owner must approve a complete privacy policy before launch.'
+      body: 'This website does not use forms, accounts or advertising cookies and does not collect names, phone numbers or payment details. If website analytics is enabled, it records anonymous usage events — such as pages viewed, products viewed, searches and buttons used — without cookies, and visitors can switch it off under “Privacy Policy” in the footer. Your order list is kept only in this browser. Opening WhatsApp transfers the prepared enquiry to WhatsApp under the customer’s control. This is a summary; the store’s complete privacy policy has not been published yet.'
     },
     terms: {
       title: 'Terms & conditions',
       approved: false,
-      body: 'Product availability, exact price, delivery charges and final total must be confirmed directly by the store through the published contact channels. A WhatsApp enquiry is not an order confirmation. Complete owner-approved terms are still required.'
+      body: 'Product availability, exact price, delivery charges and final total must be confirmed directly by the store through the published contact channels. A WhatsApp enquiry is not an order confirmation. Complete terms have not been published yet.'
     }
   }
 };

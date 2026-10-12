@@ -1,6 +1,6 @@
 // Order list (enquiry cart): quantities, persistence, drawer behaviour and WhatsApp messages.
 const { test, expect } = require('@playwright/test');
-const { instrument, events, openCatalogue, decodeWhatsApp } = require('./helpers');
+const { instrument, events, openCatalogue, decodeWhatsApp, useReviewMode } = require('./helpers');
 
 const CART_KEY = 'infinite-order-list-v1';
 
@@ -46,7 +46,7 @@ test('drawer: quantity controls, removal, clear, focus trap and Escape', async (
   await page.goto('/');
   await openCatalogue(page);
   await (await card(page, 'muscleblaze-micronised-creatine')).locator('[data-add]').click();
-  await (await card(page, 'pintola-high-protein-peanut-butter')).locator('[data-add]').click();
+  await (await card(page, 'wellcore-micronised-creatine')).locator('[data-add]').click();
   const opener = page.locator('.toast-action');
   await opener.click();
   const drawer = page.locator('#cartBackdrop');
@@ -54,7 +54,7 @@ test('drawer: quantity controls, removal, clear, focus trap and Escape', async (
   await expect(page.locator('#cartBackdrop .close-btn')).toBeFocused();
   await expect(page.locator('main')).toHaveAttribute('inert', '');
   await expect(page.locator('#cartSummary')).toContainText('2 product lines');
-  await expect(page.locator('#cartSubtotal')).toHaveText('Price pending');
+  await expect(page.locator('#cartSubtotal')).toHaveText('Price to be confirmed');
 
   const plus = page.locator('[data-cart-qty="plus"]').first();
   await plus.click();
@@ -124,6 +124,8 @@ test('order list survives a reload and rejects tampered storage', async ({ page 
 });
 
 test('the WhatsApp list message carries every line, quantity and the enquiry disclaimer', async ({ page }) => {
+  // Review mode lists the multi-variant Pintola entry and the variant-less QNT entry.
+  await useReviewMode(page);
   await page.goto('/');
   await openCatalogue(page);
   const pintola = await card(page, 'pintola-high-protein-peanut-butter');

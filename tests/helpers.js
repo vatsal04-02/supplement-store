@@ -64,9 +64,20 @@ async function scrollThrough(page) {
   });
 }
 
+// Serves js/site-config.js with reviewMode on: the owner preview, which also
+// lists products that have no photo yet and shows unfinished content.
+async function useReviewMode(page) {
+  await page.route('**/js/site-config.js', async (route) => {
+    const response = await route.fetch();
+    const source = await response.text();
+    if (!source.includes('reviewMode: false')) throw new Error('reviewMode: false not found in js/site-config.js');
+    await route.fulfill({ response, body: source.replace('reviewMode: false', 'reviewMode: true') });
+  });
+}
+
 function decodeWhatsApp(url) {
   const parsed = new URL(url);
   return { number: parsed.pathname.slice(1), text: parsed.searchParams.get('text') || '' };
 }
 
-module.exports = { VIEWPORTS, watchProblems, instrument, events, openCatalogue, scrollThrough, decodeWhatsApp };
+module.exports = { VIEWPORTS, watchProblems, instrument, events, openCatalogue, scrollThrough, decodeWhatsApp, useReviewMode };

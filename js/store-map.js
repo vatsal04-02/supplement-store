@@ -1,6 +1,10 @@
 /*
-  Store map: stays an honest empty state until the owner supplies a verified
-  Google Maps embed URL, directions URL or Place ID in js/site-config.js.
+  Store map: stays hidden until the owner supplies a verified Google Maps
+  embed URL, directions URL or Place ID in js/site-config.js. The location
+  panel's data-map / data-directions attributes switch from "pending" to
+  "ready"; css/refinements.css hides the pending map box, the disabled
+  directions button and its status line on the public site (review mode
+  still shows them to the owner).
 */
 (function () {
   'use strict';
@@ -10,6 +14,7 @@
   var directionsSlot = document.getElementById('directionsSlot');
   var status = document.getElementById('locationStatus');
   if (!frame || !placeholder || !shell || !directionsSlot || !status) return;
+  var panel = shell.closest('.visit-location');
 
   var config = (window.INFINITE_SITE && window.INFINITE_SITE.map) || {};
 
@@ -45,6 +50,7 @@
     frame.hidden = false;
     placeholder.hidden = true;
     shell.dataset.mapState = 'ready';
+    if (panel) panel.setAttribute('data-map', 'ready');
   }
 
   if (directionsUrl) {
@@ -56,6 +62,7 @@
     link.dataset.directions = '';
     link.textContent = 'Get directions';
     directionsSlot.replaceChildren(link);
+    if (panel) panel.setAttribute('data-directions', 'ready');
     status.textContent = embedUrl
       ? 'Map and directions use the owner-verified Google Maps destination.'
       : 'Directions use the owner-verified Google Maps destination; the embedded map is still awaiting configuration.';

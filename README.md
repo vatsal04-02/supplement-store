@@ -74,9 +74,12 @@ Tests use Chromium via Playwright. On a new machine run
 ## Configuration
 
 **Business content** lives in `js/site-config.js` and `js/catalogue.js`. Only
-confirmed values belong there; empty values keep the site's "awaiting
-confirmation" states. Phone links in `index.html` are plain HTML so they work
-without JavaScript — `npm test` fails if they drift from `site-config`.
+confirmed values belong there; anything still empty is left off the public
+page (for example the map, directions, and products without a photo). Set
+`reviewMode: true` on a local copy to preview everything that is unfinished,
+including the owner completion checklist. Phone links in `index.html` are
+plain HTML so they work without JavaScript — `npm test` fails if they drift
+from `site-config`.
 
 **Server environment variables** (see `.env.example`):
 
@@ -119,11 +122,14 @@ other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 89 automated tests passing: six viewports (360–1920 px) with no console
+- 99 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
-  serious or critical issues) and source integrity checks.
-- Lighthouse 13.5 on the production build, local server:
-  mobile Performance 99–100, Accessibility 100, Best Practices 100, SEO 100
-  (LCP 1.8 s, CLS 0); desktop 100 / 100 / 100 / 100 (LCP 0.4 s, CLS 0).
+  serious or critical issues), source integrity checks, and the layout rules
+  (three light sections, uniform category tiles, headings clear of the
+  sticky header, no unfinished content on the public page, reveals that
+  never hide content).
+- Lighthouse 13.5 on the production build, local server (two runs):
+  mobile Performance 97–100, Accessibility 100, Best Practices 100, SEO 100
+  (LCP 1.8–1.9 s, CLS 0); desktop 100 / 100 / 100 / 100 (LCP 0.4 s, CLS 0).
   Field performance on a real host and network will differ.

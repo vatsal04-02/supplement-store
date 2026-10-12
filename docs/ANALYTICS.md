@@ -19,7 +19,7 @@ Owner (admin/) ──Bearer token──▶ GET /api/stats ──▶ aggregated r
 | Google Analytics 4 | Only if a measurement ID is set **and** the visitor accepts the banner | Yes (`_ga*`) | `analytics.ga4MeasurementId` |
 | `window.dataLayer` | Only if a Google Tag Manager container is installed separately (and gtag.js is not) | Depends on GTM | — |
 
-Visitors can switch statistics off under **Privacy & analytics** in the footer
+Visitors can switch statistics off under **Privacy Policy** in the footer
 (stored in `localStorage` as `infinite-analytics-optout`). Browsers that send
 Global Privacy Control or Do Not Track are not measured at all while
 `respectPrivacySignals` is `true`.

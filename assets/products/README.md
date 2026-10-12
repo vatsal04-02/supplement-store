@@ -10,6 +10,10 @@ their natural size and never enlarged.
 | Pintola High Protein Peanut Butter          | `pintola-high-protein-peanut-butter-single.jpg/.webp` (175 × 260) | **Missing from the export** — add the files, then set `image`/`imageWebp` in `js/catalogue.js` |
 | QNT L-Carnitine Liquid Formula              | `qnt-l-carnitine-single.jpg/.webp` (105 × 240)                    | **Missing from the export** — add the files, then set `image`/`imageWebp` in `js/catalogue.js` |
 
+A product without a photo is not published on the public site; review mode
+(`reviewMode: true` in `js/site-config.js`) lists it with a "Store photo coming
+soon" placeholder so the owner can see what is missing.
+
 A larger, sharper photo of each pack (for example 600 px tall on a plain
 background) would improve the catalogue considerably; update `imageWidth` and
 `imageHeight` to match.

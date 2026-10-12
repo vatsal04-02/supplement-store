@@ -1,6 +1,6 @@
 // Page integrity at the six required viewport sizes.
 const { test, expect } = require('@playwright/test');
-const { VIEWPORTS, watchProblems, scrollThrough } = require('./helpers');
+const { VIEWPORTS, watchProblems, scrollThrough, useReviewMode } = require('./helpers');
 
 const ORIGINAL_SECTIONS = [
   'home',
@@ -118,7 +118,26 @@ test('hero heading and calls to action are visible immediately', async ({ page }
   await expect(page.locator('.editorial-hero .actions .btn.primary')).toBeVisible();
 });
 
-test('products without a supplied photo show a placeholder stage, not a broken image', async ({ page }) => {
+test('the featured range shows only photographed products, then the format panel', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#featuredGrid .featured-card')).toHaveCount(2);
+  await expect(page.locator('#featuredGrid .product-photo-pending')).toHaveCount(0);
+  await expect(page.locator('#featuredGrid .product-photo-trust')).toHaveCount(2);
+  // "Explore by format" follows the product grid.
+  const order = await page.evaluate(() => [...document.querySelector('#featured .wrap').children].map((el) => el.className.split(' ')[0]));
+  expect(order.indexOf('featured-grid')).toBeLessThan(order.indexOf('featured-editorial'));
+  // Two cards fill their row: no empty grid column beside them.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const widths = await page.evaluate(() => {
+    const grid = document.querySelector('#featuredGrid').getBoundingClientRect();
+    const cards = [...document.querySelectorAll('#featuredGrid .featured-card')].map((c) => c.getBoundingClientRect());
+    return { grid: Math.round(grid.right), last: Math.round(cards.at(-1).right) };
+  });
+  expect(Math.abs(widths.grid - widths.last)).toBeLessThanOrEqual(1);
+});
+
+test('review mode shows products awaiting a photo as a placeholder stage, not a broken image', async ({ page }) => {
+  await useReviewMode(page);
   await page.goto('/');
   const pending = page.locator('#featuredGrid .product-photo-pending');
   await expect(pending).toHaveCount(2);
@@ -127,12 +146,79 @@ test('products without a supplied photo show a placeholder stage, not a broken i
   await expect(page.locator('#featuredGrid .featured-card:has(.product-photo-pending) .product-photo-trust')).toHaveCount(0);
 });
 
-test('category tiles use real store photos or a typographic treatment', async ({ page }) => {
+test('all seven category tiles share one card design and never show "0 listed"', async ({ page }) => {
   await page.goto('/');
-  await expect(page.locator('.category-tile')).toHaveCount(7);
-  await expect(page.locator('.category-store-primary')).toHaveCount(3);
-  await expect(page.locator('.category-typographic')).toHaveCount(4);
+  const tiles = page.locator('.category-tile');
+  await expect(tiles).toHaveCount(7);
+  await expect(page.locator('.category-photo.category-store-primary')).toHaveCount(3);
+  await expect(page.locator('.category-gradient .category-icon')).toHaveCount(4);
+  await expect(page.locator('.category-mark, .category-typographic')).toHaveCount(0);
   await expect(page.locator('.category-whey img')).toHaveAttribute('alt', /protein shelves inside Infinite Nutrition/);
+  const counts = await page.locator('.category-count').allTextContents();
+  expect(counts.filter((text) => /^0\b/.test(text))).toEqual([]);
+  expect(counts).toContain('2 listed');
+  expect(counts.filter((text) => text === 'Ask in store')).toHaveLength(6);
+  for (const width of [1440, 900, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    const sizes = await tiles.evaluateAll((list) => list.map((t) => Math.round(t.offsetWidth) + 'x' + Math.round(t.offsetHeight)));
+    expect(new Set(sizes).size, `tile sizes at ${width}px: ${sizes}`).toBe(1);
+  }
+});
+
+test('exactly three sections are light: reviews, why and visit', async ({ page }) => {
+  await page.goto('/');
+  const light = await page.evaluate(() =>
+    [...document.querySelectorAll('main > section')]
+      .filter((s) => !s.hidden && getComputedStyle(s).backgroundColor === 'rgb(244, 244, 244)')
+      .map((s) => s.id)
+  );
+  expect(light).toEqual(['reviews', 'why', 'visit']);
+});
+
+test('every section heading uses the red kicker and one headline style', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(() => {
+    const sections = [...document.querySelectorAll('main > section:not(.hero)')].filter((s) => !s.hidden);
+    const missing = sections.filter((s) => !s.querySelector('.eyebrow')).map((s) => s.id || s.className);
+    const kickers = [...new Set([...document.querySelectorAll('main .eyebrow')].map((k) => getComputedStyle(k).backgroundColor))];
+    const sizes = [...new Set(sections.map((s) => getComputedStyle(s.querySelector('h2')).fontSize))];
+    return { missing, kickers, sizes };
+  });
+  expect(result.missing).toEqual([]);
+  expect(result.kickers).toEqual(['rgb(184, 0, 25)']);
+  // Column-width caps (to keep long words whole) may shave a few pixels.
+  const px = result.sizes.map(parseFloat);
+  expect(Math.max(...px) - Math.min(...px)).toBeLessThanOrEqual(8);
+});
+
+test('unfinished content stays hidden on the public site', async ({ page }) => {
+  await page.goto('/');
+  const visible = await page.evaluate(() => {
+    const out = [];
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while ((node = walker.nextNode())) {
+      const text = node.textContent.trim();
+      if (/owner|pending|coming soon|awaiting/i.test(text) && node.parentElement.checkVisibility()) out.push(text.slice(0, 60));
+    }
+    return out;
+  });
+  expect(visible).toEqual([]);
+  for (const selector of [
+    '.owner-checklist',
+    '.verification-label',
+    '.detail-grid',
+    '#storeMapShell',
+    '#directionsSlot',
+    '#locationStatus',
+    '.location-pending-note'
+  ]) {
+    await expect(page.locator(selector)).toBeHidden();
+  }
+  await expect(page.locator('.product-photo-pending')).toHaveCount(0);
+  await expect(page.locator('#privacySettings')).toHaveText('Privacy Policy');
+  // The location panel closes up around what remains.
+  await expect(page.locator('.location-actions a[href^="https://wa.me/"]')).toBeVisible();
 });
 
 test('the hero settles: no infinite decorative animation remains', async ({ page }) => {
@@ -161,7 +247,10 @@ test.describe('reduced motion', () => {
           .length
     );
     expect(running).toBe(0);
-    await expect(page.locator('body')).not.toHaveClass(/motion-ready/);
+    const shifted = await page.evaluate(
+      () => [...document.querySelectorAll('.reveal-target')].filter((el) => getComputedStyle(el).translate !== 'none').length
+    );
+    expect(shifted).toBe(0);
   });
 });
 
@@ -173,7 +262,7 @@ test('index.html opened directly from disk works without errors', async ({ page 
   page.on('pageerror', (error) => problems.push(error.message));
   await page.goto('file://' + require('node:path').join(__dirname, '..', 'index.html'));
   await page.locator('#mainNav a[href="#catalogue"]').evaluate((link) => link.click());
-  await expect(page.locator('#productGrid .product-card')).toHaveCount(4);
+  await expect(page.locator('#productGrid .product-card')).toHaveCount(2);
   await page.locator('.product-card [data-add]').first().click();
   await expect(page.locator('#cartCount')).toHaveText('1');
   expect(problems).toEqual([]);

@@ -14,8 +14,8 @@ dashboard (`dashboard-demo.jpg`, labelled sample data).
 |---|---|---|
 | — | Utility bar, sticky header | Logo lock-up, nav (Home, Featured, Categories, All products, Founder, Visit store), Search, Order list counter, WhatsApp enquiry |
 | 1 | Hero (`home`) | "Fuel the beast." headline, brand lock, four service benefits, Shop products / WhatsApp CTAs, red-lit product artwork with depth layers |
-| 2 | Featured range (`featured`) | Editorial "More than a single tub." panel, four product cards |
-| 3 | Shop by category (`categories`) | Seven-tile bento grid |
+| 2 | Featured range (`featured`) | Photographed product cards, then the editorial "More than a single tub." panel |
+| 3 | Shop by category (`categories`) | Seven tiles, one card design |
 | 4 | Flavour editorial | "Read the label. Then choose." with chocolate-protein image |
 | 5 | Enquiry process (`enquiry-process`) | Five steps, enquiry-not-purchase statement |
 | 6 | Catalogue (`catalogue`, opens on demand) | Proof line, search, category chips, brand and sort, product grid, empty state, catalogue note |
@@ -24,8 +24,8 @@ dashboard (`dashboard-demo.jpg`, labelled sample data).
 | 9 | Product checks (`authenticity`) | Store banner and shelf photos, four verification steps, caveat |
 | 10 | Why Infinite Nutrition (`why`) | Six trust points, evidence panel |
 | 11 | Founder (`founder`) | Anant Prajapati portrait, facts, training editorial |
-| 12 | Visit (`visit`, `store-location`) | Address as supplied, two numbers with call/WhatsApp, detail grid, owner checklist, map placeholder |
-| 13 | Policies (`policies`) | Seven owner-review policy dialogs |
+| 12 | Visit (`visit`, `store-location`) | Address as supplied, two numbers with call/WhatsApp, location panel (map and directions once verified); detail grid, owner checklist and map placeholder in review mode |
+| 13 | Policies (`policies`) | Seven provisional policy dialogs |
 | 14 | FAQ (`faq`) | Six questions |
 | — | Footer, mobile quick bar, order list drawer, details dialog | As designed |
 
@@ -55,15 +55,15 @@ reveal, staged copy, frame entrance, scroll reveals, story rails, pointer depth)
 
 ### Refinements
 - **Motion:** the hero's ambient loops (product drift, red orbit, light sweeps,
-  smoke) now play two slow cycles and settle instead of looping forever;
-  scroll-reveal targets wait in their start pose (no 18 px jump); toast feedback
-  and an "Added to list ✓" state replace silently opening the drawer. Reduced
-  motion disables all of it.
+  smoke) now play two slow cycles and settle instead of looping forever; toast
+  feedback and an "Added to list ✓" state replace silently opening the drawer.
+  Scroll reveals are described below. Reduced motion disables all of it.
 - **Discovery:** a category with nothing listed explains why and offers a
   prepared WhatsApp question; search terms, filters and contacts are measured.
 - **Details dialog:** quantity stepper and "Add to enquiry list".
 - **Review mode:** owner-facing notes carry `data-owner-note` and hide when
-  `reviewMode` is false; the unapproved Fit & First credit is withheld at launch.
+  `reviewMode` is false (the default); the unapproved Fit & First credit is
+  withheld.
 - **Accessibility:** names include visible text (WCAG 2.5.3), regions for the
   utility bar and quick bar, focus returns to the opener, focus stays inside the
   drawer after removing rows.
@@ -73,6 +73,42 @@ reveal, staged copy, frame entrance, scroll reveals, story rails, pointer depth)
 - **Performance:** the 5.9 MB single file became cached, separately loaded
   assets; 720 w editorial variants; minified build (CSS 28 KB, app 14 KB gzip);
   no forced synchronous layout at start-up; parallax only for on-screen media.
+
+## Darkness and layout pass
+
+Requested fixes, applied without changing the palette (`#080808`, `#B80019`,
+`#65000D`, white), typography, logo, navigation, sections or flows:
+
+- **Light rhythm:** Reviews, Why Infinite Nutrition and Visit are light
+  sections (`#F4F4F4`, near-black text, red accents) between dark ones. The
+  section tokens are re-pointed inside `.section-light`, so hairlines, cards
+  and secondary text follow.
+- **Hero:** a soft red radial glow sits behind the (unchanged) product photo.
+- **Grey floor:** secondary copy on dark backgrounds is at least `#B5B5B5`.
+- **Logo:** no transparent logo was supplied; a background-removed cut of the
+  supplied 380 px logo sits on a solid `#0a0a0a` container (no white box).
+- **Categories:** all seven tiles are the same card in an even grid (four per
+  row, last row centred). Tiles without a store photo use a Deep Blood Red
+  gradient and a line icon; the outlined numerals and the full-width seventh
+  tile are gone. Counts are real; an empty category says "Ask in store".
+- **Order:** "Explore by format" follows the featured product grid. Reviews →
+  Product checks → Why → Founder were already consecutive and are unchanged.
+- **Anchors:** sections stop 16 px below the sticky header (`--nav-h`, kept
+  exact by `js/app.js`).
+- **Headings:** one pattern everywhere: a red small-caps kicker label (white
+  text on Power Red, legible on black) over one bold headline size. The red
+  underline accent was dropped for consistency.
+- **Unfinished content:** the owner checklist, "Incomplete" address label,
+  detail grid, empty map box, disabled directions button and policy draft
+  labels appear only in review mode. Products without a photo are not
+  published (featured range, catalogue and category counts). Customer copy
+  no longer refers to the owner. The footer link reads "Privacy Policy" and
+  opens the privacy summary with the statistics controls.
+- **Scroll reveals:** content is never hidden. The script-driven reveal (which
+  held blocks in a start pose until an observer fired) is replaced by a CSS
+  scroll-driven drift of at most 18 px using the `translate` property, in
+  browsers that support scroll timelines; images are never animated, and
+  image frames show a dark brand surface while a lazy photo arrives.
 
 ## Architecture decision
 

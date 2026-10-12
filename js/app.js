@@ -15,6 +15,8 @@
 
   /* ---------- configuration ---------- */
   var SITE = window.INFINITE_SITE || {};
+  // Review mode (owner preview) also shows unfinished content; see site-config.
+  var reviewMode = SITE.reviewMode === true;
   var MAX_QTY = 99;
   var CART_KEY = 'infinite-order-list-v1';
   var STOCK_LABELS = { 'in-stock': 'In stock', 'low-stock': 'Low stock', 'out-of-stock': 'Out of stock' };
@@ -97,6 +99,11 @@
         stock: STOCK_LABELS[p.stock] ? p.stock : null,
         order: index
       };
+    })
+    // A product without a supplied photo is not published: customers would
+    // only see a "photo coming soon" stage. Review mode still lists it.
+    .filter(function (p) {
+      return reviewMode || p.image;
     });
   var productById = {};
   products.forEach(function (p) {
@@ -171,7 +178,6 @@
   }
 
   /* ---------- review mode & owner approvals ---------- */
-  var reviewMode = SITE.reviewMode !== false;
   document.documentElement.classList.toggle('review-mode', reviewMode);
   document.querySelectorAll('[data-approval]').forEach(function (node) {
     var approved = SITE.approvals && SITE.approvals[node.getAttribute('data-approval')] === true;
@@ -418,37 +424,62 @@
     }).length;
   }
 
+  // Line icons for tiles that have no photograph (decorative; the tile's
+  // name comes from its visible copy).
+  var CATEGORY_ICONS = {
+    whey: '<path d="M13 11h22v6H13z"/><path d="M14.5 17h19L32 40H16z"/><path d="M19 27h10"/>',
+    mass: '<path d="M5 20v8M10 15v18M38 15v18M43 20v8M10 24h28"/>',
+    creatine:
+      '<path d="M7 21h20a9 9 0 0 1-9 9h-2a9 9 0 0 1-9-9z"/><path d="M27 23l14-6"/><path d="M12 16c1.5-2.5 3.5-3.5 5-3.5s3.5 1 5 3.5"/>',
+    preworkout: '<path d="M27 4 12 27h11l-3 17 16-24H25z"/>',
+    amino:
+      '<circle cx="13" cy="15" r="4.5"/><circle cx="35" cy="13" r="4.5"/><circle cx="24" cy="35" r="4.5"/><path d="M17.5 14.6l13-1.2M15.3 19l6.4 12M32.8 17.2l-6.6 13.7"/>',
+    vitamins:
+      '<path d="M16.6 31.4 31.4 16.6a7 7 0 0 1 9.9 9.9L26.5 41.3a7 7 0 0 1-9.9-9.9z"/><path d="m24 24 9.9 9.9"/><circle cx="12" cy="12" r="5"/>',
+    other: '<path d="M8 8h13v13H8zM27 8h13v13H27zM8 27h13v13H8z"/><path d="M33.5 27v13M27 33.5h13"/>'
+  };
+  function categoryIcon(id) {
+    return (
+      '<svg class="category-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false">' +
+      (CATEGORY_ICONS[id] || CATEGORY_ICONS.other) +
+      '</svg>'
+    );
+  }
+
+  // Every tile uses the same card: a store photograph when one exists,
+  // otherwise the brand's red gradient with a category icon. Counts are
+  // real catalogue entries; a category with none says "Ask in store".
   var categoryGrid = byId('categoryGrid');
   categoryGrid.innerHTML = categories
-    .map(function (category, index) {
+    .map(function (category) {
       var count = listedCount(category.id);
       var media = categoryMedia[category.id] || {};
       var visual = media.visual && media.visual.srcset ? media.visual : null;
       var store = media.store && media.store.srcset ? media.store : null;
       var primary = visual || store;
-      var tileSizes = '(max-width: 760px) calc(100vw - 24px), (max-width: 1050px) 50vw, 58vw';
+      var tileSizes = '(max-width: 760px) calc(100vw - 24px), (max-width: 1050px) 50vw, 25vw';
       var note;
       if (visual) note = store ? 'Supporting category visual · inset shows the real store range' : 'Supporting category visual';
       else if (store) note = 'Real Infinite Nutrition store photo';
-      else note = count ? 'Browse the listed products' : 'On the store shelves · ask for current options';
+      else note = count ? 'Browse the listed products' : 'On the store shelves';
       var mediaMarkup = primary
         ? categoryPicture(primary, 'category-primary', tileSizes) +
           (visual && store ? categoryPicture(store, 'category-store-proof', '112px') : '')
-        : '<span class="category-mark" data-mark="' + String(index + 1).padStart(2, '0') + '"></span>';
+        : categoryIcon(category.id);
       // The tile's name comes from its visible copy (WCAG 2.5.3 label in name);
       // the image layer is decorative here because the note says what it shows.
       return (
         '<a class="category-tile category-' +
         esc(category.id) +
-        (primary ? '' : ' category-typographic') +
+        (primary ? ' category-photo' : ' category-gradient') +
         (!visual && store ? ' category-store-primary' : '') +
         '" href="#catalogue" data-open-catalogue data-category-link="' +
         esc(category.id) +
         '" data-track-source="category_tile"><div class="category-media" aria-hidden="true">' +
         mediaMarkup +
-        '</div><div class="category-copy"><span>' +
-        count +
-        ' listed</span><strong>' +
+        '</div><div class="category-copy"><span class="category-count">' +
+        (count ? count + ' listed' : 'Ask in store') +
+        '</span><strong>' +
         esc(category.label) +
         '</strong><small class="category-visual-note">' +
         esc(note) +
@@ -1177,7 +1208,7 @@
       '</strong> ' +
       (totalUnits === 1 ? 'total unit' : 'total units') +
       '</span>';
-    byId('cartSubtotal').textContent = priced ? money(subtotal) : 'Price pending';
+    byId('cartSubtotal').textContent = priced ? money(subtotal) : 'Price to be confirmed';
     byId('cartPriceNote').textContent = priced
       ? 'Calculated from the confirmed prices displayed above. Delivery charges and final availability are confirmed by the store.'
       : 'A numeric subtotal is shown only when every selected variant has a confirmed selling price. The store will confirm variants, availability, final prices, delivery charges and final total.';
@@ -1569,7 +1600,7 @@
         esc(STOCK_LABELS[p.stock] || 'Store confirmation required') +
         '</dd></div></dl></div></div>' +
         sections.join('') +
-        '<p class="detail-confirmation-note">Only store-confirmed details are shown as facts. Ask the store to confirm any pending product information before travelling or ordering.</p>' +
+        '<p class="detail-confirmation-note">Only store-confirmed details are shown as facts. Ask the store to confirm any other product information before travelling or ordering.</p>' +
         '<div class="detail-purchase" data-detail-id="' +
         esc(p.id) +
         '" data-variant-id="' +
@@ -1650,9 +1681,13 @@
       var id = button.getAttribute('data-policy');
       var data = policies[id];
       if (!data) return;
+      // Unapproved wording is a provisional draft; the owner-review labels
+      // appear only in review mode.
+      var draftTitle = reviewMode ? ' — owner-review draft' : '';
+      var draftStatus = reviewMode ? 'Owner review required' : 'Provisional · confirm with the store';
       setModal(
-        data.title + (data.approved ? '' : ' — owner-review draft'),
-        (data.approved ? '' : '<span class="status">Owner review required</span>') + '<p>' + esc(data.body) + '</p>',
+        data.title + (data.approved ? '' : draftTitle),
+        (data.approved ? '' : '<span class="status">' + draftStatus + '</span>') + '<p>' + esc(data.body) + '</p>',
         'policy'
       );
       openLayer(modalBackdrop);
@@ -1662,7 +1697,11 @@
 
   function renderPrivacy() {
     var state = window.InfiniteAnalytics ? window.InfiniteAnalytics.getState() : null;
-    var html = '<p>This website does not use accounts, forms or advertising cookies, and it never asks for card or payment details.</p>';
+    var privacyPolicy = policies.privacy;
+    var html =
+      privacyPolicy && privacyPolicy.body
+        ? '<p>' + esc(privacyPolicy.body) + '</p>'
+        : '<p>This website does not use accounts, forms or advertising cookies, and it never asks for card or payment details.</p>';
     html +=
       '<section class="detail-section privacy-section"><h3>Your order list</h3><p>Products you add are kept only in this browser so the list survives a page reload. Nothing is sent until you choose to open WhatsApp.</p>' +
       '<button class="btn" type="button" data-privacy="clear-list"' +
@@ -1699,7 +1738,7 @@
           '</button></section>';
       }
     }
-    setModal('Privacy & analytics', html, 'privacy');
+    setModal('Privacy policy', html, 'privacy');
   }
 
   byId('privacySettings').addEventListener('click', function () {
@@ -1844,66 +1883,45 @@
   // First read after the initial render, in a frame, so it never forces a synchronous layout.
   requestAnimationFrame(syncNavSurface);
 
-  /* ---------- motion ---------- */
-  if ('IntersectionObserver' in window && !reducedMotionQuery.matches) {
-    var revealSelectors = [
-      '.section-head',
-      '.featured-editorial > *',
-      '.featured-card',
-      '.category-tile',
-      '.flavour-layout > *',
-      '.enquiry-process-head',
-      '.enquiry-step',
-      '.enquiry-process-actions',
-      '.finder-copy',
-      '.finder-panel',
-      '.reviews-layout > *',
-      '.authenticity-grid > *',
-      '.trust-item',
-      '.trust-evidence > *',
-      '.founder-grid > *',
-      '.founder-training > *',
-      '.visit-panel > *',
-      '.policy-button',
-      '.faq-item',
-      '.footer-grid > *'
-    ];
-    var revealNodes = [];
-    var imageRevealSelector = '.featured-editorial-media,.flavour-media,.authenticity-media,.founder-photo,.founder-training-media';
-    revealSelectors.forEach(function (selector) {
-      document.querySelectorAll(selector).forEach(function (node) {
-        if (revealNodes.indexOf(node) === -1) revealNodes.push(node);
-      });
-    });
-    revealNodes.forEach(function (node, index) {
-      node.classList.add('reveal-target');
-      if (node.matches(imageRevealSelector)) node.classList.add('reveal-image');
-      node.style.setProperty('--reveal-delay', String(index % 4));
-    });
-    document.body.classList.add('motion-ready');
-    var revealObserver = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) {
-            var node = entry.target;
-            node.classList.add('in-view');
-            revealObserver.unobserve(node);
-            // Release the finished animation so its fill no longer overrides
-            // hover transforms on cards and tiles.
-            node.addEventListener('animationend', function done(event) {
-              if (event.target !== node) return;
-              node.removeEventListener('animationend', done);
-              node.classList.add('reveal-done');
-            });
-          }
-        });
-      },
-      { rootMargin: '0px 0px -8% 0px', threshold: 0.08 }
-    );
-    revealNodes.forEach(function (node) {
-      revealObserver.observe(node);
-    });
+  // Anchored sections stop below the sticky header: CSS uses --nav-h (with
+  // per-breakpoint fallbacks) for scroll-margin-top, kept exact here.
+  function syncNavHeight() {
+    document.documentElement.style.setProperty('--nav-h', Math.round(siteNav.getBoundingClientRect().height) + 'px');
   }
+  if ('ResizeObserver' in window) new ResizeObserver(syncNavHeight).observe(siteNav);
+  else requestAnimationFrame(syncNavHeight);
+
+  /* ---------- motion ---------- */
+  // Scroll reveals are a CSS enhancement (css/refinements.css §11): content is
+  // fully visible by default and only drifts a few pixels into place, driven
+  // by the scroll position where the browser supports scroll timelines. No
+  // element ever waits for a script to become visible, so fast scrolling
+  // cannot reveal empty space.
+  [
+    '.section-head',
+    '.featured-card',
+    '.category-tile',
+    '.featured-editorial-copy',
+    '.flavour-copy',
+    '.enquiry-process-head',
+    '.enquiry-step',
+    '.enquiry-process-actions',
+    '.finder-copy',
+    '.finder-panel',
+    '.reviews-layout > *',
+    '.authenticity-copy',
+    '.trust-item',
+    '.trust-evidence > *',
+    '.founder-copy',
+    '.founder-training-copy',
+    '.visit-panel > *',
+    '.policy-button',
+    '.faq-item'
+  ].forEach(function (selector) {
+    document.querySelectorAll(selector).forEach(function (node) {
+      node.classList.add('reveal-target');
+    });
+  });
 
   /* Connected section storytelling and restrained media depth. */
   document.querySelectorAll('.reviews-layout > *,.authenticity-grid > *,.founder-grid > *,.visit-panel > *').forEach(function (node) {

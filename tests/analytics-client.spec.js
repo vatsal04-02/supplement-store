@@ -5,10 +5,13 @@ const { instrument, events, openCatalogue, watchProblems } = require('./helpers'
 test('page_view fires exactly once and featured list views are recorded once', async ({ page }) => {
   await instrument(page);
   await page.goto('/');
-  await page.mouse.wheel(0, 1800);
+  // Bring the featured grid into view, scroll away, then back again.
+  const grid = page.locator('#featuredGrid');
+  await grid.scrollIntoViewIfNeeded();
   await page.waitForTimeout(400);
-  await page.mouse.wheel(0, -1800);
-  await page.mouse.wheel(0, 1800);
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.waitForTimeout(200);
+  await grid.scrollIntoViewIfNeeded();
   await page.waitForTimeout(400);
   expect(await events(page, 'page_view')).toHaveLength(1);
   expect((await events(page, 'view_item_list')).filter((e) => e.params.item_list_id === 'featured')).toHaveLength(1);

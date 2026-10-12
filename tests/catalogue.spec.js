@@ -1,22 +1,32 @@
 // Product discovery: catalogue opening, category/brand filters, search, sort and empty states.
 const { test, expect } = require('@playwright/test');
-const { instrument, events, openCatalogue, decodeWhatsApp, watchProblems } = require('./helpers');
+const { instrument, events, openCatalogue, decodeWhatsApp, watchProblems, useReviewMode } = require('./helpers');
 
 test.beforeEach(async ({ page }) => {
   await instrument(page);
 });
 
-test('catalogue opens from navigation and lists every catalogued product', async ({ page }) => {
+test('catalogue opens from navigation and lists every photographed product', async ({ page }) => {
   const problems = watchProblems(page);
   await page.goto('/');
   await expect(page.locator('#catalogue')).toBeHidden();
   await openCatalogue(page);
   await expect(page).toHaveURL(/#catalogue$/);
-  await expect(page.locator('#productGrid .product-card')).toHaveCount(4);
-  await expect(page.locator('#catalogueMeta')).toContainText('4 products shown');
+  // Products without a supplied photo are not published on the public site.
+  await expect(page.locator('#productGrid .product-card')).toHaveCount(2);
+  await expect(page.locator('#productGrid .product-photo-pending')).toHaveCount(0);
+  await expect(page.locator('#catalogueMeta')).toContainText('2 products shown');
   const list = await events(page, 'view_item_list');
   expect(list.map((e) => e.params.item_list_id)).toContain('catalogue');
   expect(problems).toEqual([]);
+});
+
+test('review mode also lists products that are still waiting for a photo', async ({ page }) => {
+  await useReviewMode(page);
+  await page.goto('/');
+  await openCatalogue(page);
+  await expect(page.locator('#productGrid .product-card')).toHaveCount(4);
+  await expect(page.locator('#productGrid .product-photo-pending')).toHaveCount(2);
 });
 
 test('a #catalogue link opens the catalogue on load', async ({ page }) => {
@@ -71,7 +81,7 @@ test('search narrows results, shows a no-match state and records the search once
     ['isolate', 0]
   ]);
   await page.locator('#clearSearch').click();
-  await expect(page.locator('#productGrid .product-card')).toHaveCount(4);
+  await expect(page.locator('#productGrid .product-card')).toHaveCount(2);
   await expect(search).toBeFocused();
 });
 
@@ -85,6 +95,8 @@ test('search terms are scrubbed of e-mail addresses and phone numbers before the
 });
 
 test('brand filter, sort and reset work together with context chips', async ({ page }) => {
+  // Review mode lists all four catalogue entries, so every filter has something to narrow.
+  await useReviewMode(page);
   await page.goto('/');
   await openCatalogue(page);
   await page.locator('#brandFilter').selectOption('pintola');
