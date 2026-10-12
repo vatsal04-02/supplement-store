@@ -122,7 +122,7 @@ other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 116 automated tests passing: six viewports (360–1920 px) with no console
+- 117 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
   serious or critical issues), source integrity checks, the layout rules

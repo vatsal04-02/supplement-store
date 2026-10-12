@@ -906,7 +906,8 @@ html:not(.review-mode) .visit-location[data-map="pending"] {
 
 /* A2: one vertical padding value for every section. */
 :root {
-  --section-pad: clamp(56px, 5.5vw, 80px);
+  /* Round 4: capped lower so no section opens a long void. */
+  --section-pad: clamp(48px, 5vw, 72px);
 }
 main > section:not(.hero) {
   padding-block: var(--section-pad);
@@ -1335,36 +1336,6 @@ main > section.story-section.story-active > .story-rail:after {
   }
 }
 
-/* D14: ghost typography: a huge outlined word behind three headlines,
-   the same stroke-only treatment as the outlined numerals. */
-.section-head {
-  position: relative;
-  isolation: isolate;
-}
-.section-head > span.ghost-type {
-  position: absolute;
-  z-index: -1;
-  grid-column: 1 / -1;
-  grid-row: 1 / span 2;
-  bottom: -0.1em;
-  left: -0.05em;
-  font-family: var(--display);
-  font-size: clamp(5rem, 13vw, 12rem);
-  font-weight: 800;
-  line-height: 0.8;
-  letter-spacing: -0.04em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  color: transparent;
-  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.09);
-  pointer-events: none;
-  user-select: none;
-}
-@supports not (-webkit-text-stroke: 1px #fff) {
-  .section-head > span.ghost-type {
-    color: rgba(255, 255, 255, 0.05);
-  }
-}
 main > section {
   overflow-x: clip;
 }
@@ -1667,4 +1638,219 @@ main > section {
   .hero-proof {
     animation: none !important;
   }
+}
+
+/* 14. Round 4: visual polish -------------------------------------------- */
+/* Announcement bar: one owner-confirmed line (the rotation script only runs
+   when there is more than one message). */
+
+/* Product cards: the photo takes 60% of its stage and the card is denser.
+   The supplied crops are small (about 120 × 150 px), so a larger photo per
+   product will make these sharper. */
+main .featured-card .featured-photo .product-packshot,
+main .product-card .product-photo .product-packshot,
+main .featured-card:first-child .featured-photo .product-packshot {
+  width: auto;
+  height: 60%;
+  max-width: 90%;
+  max-height: none;
+  object-fit: contain;
+}
+.featured-photo,
+.product-photo {
+  position: relative;
+  padding: 14px;
+}
+main .featured-photo > picture,
+main .product-photo > picture {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  height: auto;
+}
+.featured-body {
+  padding: 18px 20px 20px;
+  gap: 10px;
+}
+.card-trust {
+  margin: 4px 0 0;
+  color: #d8d8d8;
+  font-size: 0.66rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.card-trust:before {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  margin: 0 8px 3px 0;
+  background: var(--red);
+  vertical-align: middle;
+}
+@media (min-width: 1180px) {
+  .featured-card:first-child .featured-body {
+    padding: 24px 26px;
+  }
+}
+
+/* Ghost words: two sections only, smaller, at the section's top-right edge
+   inside its padding (never behind a headline). */
+main > section > .ghost-type {
+  position: absolute;
+  z-index: 0;
+  top: 6px;
+  right: max(12px, calc((100% - var(--max)) / 2));
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 6vw, 4.4rem);
+  font-weight: 800;
+  line-height: 0.8;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.09);
+  pointer-events: none;
+  user-select: none;
+}
+@supports not (-webkit-text-stroke: 1px #fff) {
+  main > section > .ghost-type {
+    color: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Reviews: a slim strip — headline, one line, one button. */
+.reviews-layout.reviews-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 32px;
+}
+.reviews-strip h2 {
+  flex: 0 0 auto;
+  margin: 0;
+  padding-right: 0.25em;
+  white-space: nowrap;
+}
+.reviews-strip .reviews-line {
+  flex: 1 1 320px;
+  margin: 0;
+  color: var(--muted);
+}
+.reviews-strip .reviews-tagline {
+  display: inline;
+  margin: 0 8px 0 0;
+}
+.reviews-strip .btn {
+  flex: 0 0 auto;
+}
+
+/* Goal finder: goals on the left, suggested category on the right. */
+.finder:after {
+  display: none;
+}
+.finder .finder-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+  align-items: center;
+}
+.finder-goals {
+  margin-top: 22px;
+}
+.finder-goals .choices {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+.finder .finder-panel {
+  align-self: center;
+  padding: clamp(24px, 3vw, 36px);
+}
+@media (max-width: 760px) {
+  .finder .finder-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .finder-goals .choices {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Secondary headings: sentence case and smaller. The condensed all-caps
+   treatment stays for the hero, Featured range, Shop by category and the
+   founder. */
+h2.heading-secondary,
+.section-head h2.heading-secondary,
+.finder-copy h2.heading-secondary,
+.visit-copy h2.heading-secondary,
+.reviews h2.heading-secondary,
+.authenticity-copy h2.heading-secondary,
+.enquiry-process-head h2.heading-secondary,
+.flavour-copy h2.heading-secondary {
+  max-width: 22ch;
+  font-size: clamp(1.7rem, 2.5vw, 2.35rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.012em;
+  text-transform: none;
+}
+@media (min-width: 1051px) {
+  .visit-copy h2.heading-secondary,
+  .reviews-intro h2.heading-secondary {
+    font-size: clamp(1.7rem, 2.5vw, 2.35rem);
+  }
+}
+
+/* Hero headline: slightly looser tracking. */
+.editorial-hero h1,
+.editorial-hero h1 .hero-line,
+.editorial-hero h1 .hero-line > span {
+  letter-spacing: -0.02em;
+}
+
+/* Header: Search and Order list as icon buttons with a count badge. */
+.nav-tools .icon-btn.icon-only {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  min-width: 44px;
+  height: 44px;
+  padding: 0;
+}
+.nav-tools .icon-btn.icon-only svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-tools .icon-btn .count-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: var(--red);
+  color: #ffffff;
+  font-size: 0.66rem;
+  font-weight: 900;
+  line-height: 1;
+}
+.nav-tools .icon-btn.icon-only {
+  overflow: visible;
+}
+.nav-tools .icon-btn.icon-only:before {
+  border-radius: 0;
 }

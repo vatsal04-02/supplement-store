@@ -250,6 +250,14 @@
     });
   }
 
+  // One trust line per product card. "100% original" is an authenticity
+  // guarantee, shown only once approvals.originalClaim is true (or in review
+  // mode); "Sealed pack" is always shown.
+  var originalApproved = reviewMode || (SITE.approvals && SITE.approvals.originalClaim === true);
+  function cardTrustLine() {
+    return '<p class="card-trust">' + (originalApproved ? '100% original · ' : '') + 'Sealed pack</p>';
+  }
+
   function photoTrust(p) {
     return p.image ? '<span class="product-photo-trust">Store-supplied photo</span>' : '';
   }
@@ -369,6 +377,7 @@
       '</h3><p>' +
       esc(category + (variant ? ' · ' + variantLabel(variant) : '')) +
       '</p>' +
+      cardTrustLine() +
       '<div class="featured-facts"><div class="featured-fact"><small>Selling price</small><strong>' +
       esc(featuredPrice) +
       '</strong></div>' +
@@ -573,6 +582,7 @@
       '">' +
       esc(p.name) +
       '</h3></div>' +
+      cardTrustLine() +
       '<div class="product-core-facts">' +
       variantMarkup(p) +
       '<div data-price-area>' +

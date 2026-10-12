@@ -187,16 +187,16 @@ test('headlines match the agreed copy, with kickers on key sections only', async
   expect(heads).toEqual({
     featured: 'Featured range.',
     categories: 'Shop by category.',
-    'flavour-editorial': 'Read the label.',
-    'enquiry-process': 'How it works.',
-    finder: 'Start with your goal.',
-    reviews: 'Reviews.',
-    authenticity: 'Verify before you use.',
-    why: 'Why Infinite Nutrition.',
+    'flavour-editorial': 'Read the label',
+    'enquiry-process': 'How it works',
+    finder: 'Start with your goal',
+    reviews: 'Reviews',
+    authenticity: 'Verify before you use',
+    why: 'Why Infinite Nutrition',
     founder: 'Built on strength. Driven by purpose.',
-    visit: 'Visit the store.',
-    policies: 'Store policies.',
-    faq: 'FAQ.'
+    visit: 'Visit the store',
+    policies: 'Store policies',
+    faq: 'FAQ'
   });
   await expect(page.locator('.reviews-tagline')).toHaveText('No fake reviews. Ever.');
   await expect(page.locator('.honest-note strong')).toHaveText('Before you enquire.');
@@ -204,12 +204,27 @@ test('headlines match the agreed copy, with kickers on key sections only', async
   await expect(page.locator('#store-location h3, .founder-training h3')).toHaveCount(0);
   const kickers = await page.locator('main .eyebrow').evaluateAll((list) => list.map((k) => k.closest('section').id));
   expect(kickers).toEqual(['home', 'authenticity', 'founder']);
-  const result = await page.evaluate(() => {
-    const sections = [...document.querySelectorAll('main > section:not(.hero)')].filter((s) => !s.hidden);
-    return [...new Set(sections.map((s) => getComputedStyle(s.querySelector('h2')).fontSize))].map(parseFloat);
-  });
-  // Column-width caps (to keep long words whole) may shave a few pixels.
-  expect(Math.max(...result) - Math.min(...result)).toBeLessThanOrEqual(8);
+  // Two heading styles: condensed all-caps for three section "hero moments"
+  // (plus the hero itself), a smaller sentence-case style everywhere else.
+  const styles = await page.evaluate(() =>
+    [...document.querySelectorAll('main > section:not(.hero)')]
+      .filter((s) => !s.hidden)
+      .map((s) => {
+        const h = s.querySelector('h2');
+        return {
+          id: s.id || s.className.split(' ')[0],
+          secondary: h.classList.contains('heading-secondary'),
+          transform: getComputedStyle(h).textTransform,
+          size: parseFloat(getComputedStyle(h).fontSize)
+        };
+      })
+  );
+  const display = styles.filter((h) => !h.secondary);
+  const secondary = styles.filter((h) => h.secondary);
+  expect(display.map((h) => h.id)).toEqual(['featured', 'categories', 'founder']);
+  expect(secondary.length).toBeGreaterThanOrEqual(3);
+  expect(new Set(secondary.map((h) => h.transform))).toEqual(new Set(['none']));
+  expect(Math.max(...secondary.map((h) => h.size))).toBeLessThan(Math.min(...display.map((h) => h.size)));
 });
 
 test('one primary call to action per section and one honest-store note', async ({ page }) => {
@@ -240,16 +255,56 @@ test('bulk-order strip opens a prefilled WhatsApp bulk enquiry', async ({ page }
   expect(text).not.toMatch(/₹|discount|offer/i);
 });
 
-test('the announcement bar rotates factual messages', async ({ page }) => {
-  await page.clock.install();
+test('the announcement bar shows the owner-confirmed line', async ({ page }) => {
   await page.goto('/');
-  const active = () => page.locator('.utility-msg.is-active').textContent();
-  expect(await active()).toBe('Sports nutrition and supplements · Lucknow');
-  await page.clock.fastForward(4600);
-  expect(await active()).toBe('Build an order list, then enquire on WhatsApp');
-  await page.clock.fastForward(4600);
-  expect(await active()).toBe('Call or WhatsApp +91 88404 27558');
-  await expect(page.locator('.utility-msg[aria-hidden="true"]')).toHaveCount(2);
+  await expect(page.locator('.utility')).toHaveText("LUCKNOW'S FIRST 24×7 NUTRITION STORE");
+});
+
+test('round 4 layout: dominant product photos, two edge ghost words, slim reviews, balanced finder, one-row header', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const shares = await page.evaluate(() =>
+    [...document.querySelectorAll('.featured-photo')].map((ph) => {
+      const img = ph.querySelector('.product-packshot').getBoundingClientRect();
+      return Math.round((100 * img.height) / ph.getBoundingClientRect().height);
+    })
+  );
+  for (const share of shares) expect(share).toBeGreaterThanOrEqual(58);
+  await expect(page.locator('.featured-card .card-trust').first()).toHaveText('Sealed pack');
+  // Ghost words: at most two, none overlapping a headline.
+  const ghosts = await page.evaluate(() =>
+    [...document.querySelectorAll('.ghost-type')].map((g) => {
+      const r = g.getBoundingClientRect();
+      const h = g.parentElement.querySelector('h2').getBoundingClientRect();
+      const overlap = r.left < h.right && r.right > h.left && r.top < h.bottom && r.bottom > h.top;
+      return { section: g.parentElement.id, overlap };
+    })
+  );
+  expect(ghosts.length).toBeLessThanOrEqual(2);
+  expect(ghosts.filter((g) => g.overlap)).toEqual([]);
+  expect(await page.locator('#reviews').evaluate((el) => el.offsetHeight)).toBeLessThanOrEqual(213);
+  const finder = await page.evaluate(() => ({
+    watermark: getComputedStyle(document.querySelector('.finder'), '::after').display,
+    columns: getComputedStyle(document.querySelector('.finder-grid')).gridTemplateColumns.split(' ').length,
+    goalsLeft:
+      document.querySelector('.choices').getBoundingClientRect().right <=
+      document.querySelector('.finder-panel').getBoundingClientRect().left
+  }));
+  expect(finder).toEqual({ watermark: 'none', columns: 2, goalsLeft: true });
+  const header = await page.evaluate(() => {
+    const items = [...document.querySelectorAll('.site-nav .brand, #mainNav a, .nav-tools button, .nav-wa')].map((el) =>
+      el.getBoundingClientRect()
+    );
+    return {
+      height: Math.round(document.querySelector('.site-nav').getBoundingClientRect().height),
+      tops: new Set(items.map((r) => Math.round(r.top + r.height / 2))).size,
+      links: document.querySelectorAll('#mainNav a').length
+    };
+  });
+  expect(header.height).toBeLessThanOrEqual(80);
+  expect(header.links).toBe(6);
+  await expect(page.locator('#focusSearch')).toHaveAccessibleName('Search products');
+  await expect(page.locator('.site-nav .cart-open')).toHaveAccessibleName('Order list 0');
 });
 
 test('back-to-top appears after two viewports on desktop and returns to the top', async ({ page }) => {

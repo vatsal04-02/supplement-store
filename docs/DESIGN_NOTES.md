@@ -177,6 +177,27 @@ devices with DevTools before launch.
   back-to-top button after two viewports. The catalogue already had
   client-side category filter chips (all seven categories).
 
+## Round 4: visual polish
+
+- **Announcement bar:** "LUCKNOW'S FIRST 24×7 NUTRITION STORE" (confirmed by
+  the owner). Opening hours elsewhere on the page and in structured data are
+  unchanged; see the launch checklist.
+- **Product cards:** each photo fills 60% of its media stage (the supplied
+  crops are about 120 × 150 px, so they are enlarged and look soft until
+  larger pack photos are supplied); one trust line per card, "Sealed pack",
+  with "100% original" added only once `approvals.originalClaim` is true.
+- **Ghost words:** two only ("SHOP", "ASK"), about 40% smaller, at the top
+  right edge of their sections; none behind a headline.
+- **Spacing:** section padding capped at `clamp(48px, 5vw, 72px)`.
+- **Reviews:** a slim strip: headline, one line, Share feedback.
+- **Goal finder:** watermark removed; goals on the left, the suggested
+  category panel on the right.
+- **Headings:** a secondary, sentence-case style for nine sections; the
+  condensed all-caps treatment stays on the hero, Featured range, Shop by
+  category and the founder. Hero headline tracking loosened to −0.02em.
+- **Header:** Search and Order list are icon buttons (with accessible names
+  and a count badge); all six nav links stay.
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The
