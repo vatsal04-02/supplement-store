@@ -280,6 +280,33 @@ light theme:
 - **Footer:** a WhatsApp call to action, brand, explore and contact columns,
   a base row, and a faint "INFINITE" wordmark drawn as CSS content.
 
+## Motion and mesh pass
+
+`css/experience.css` (loaded last) and a small block in `js/app.js` add
+motion graphics and colour depth:
+
+- **Animated gradient meshes** behind nine sections (`data-mesh` on the
+  section; the JS inserts a decorative `.mesh` layer): three slow-drifting
+  colour fields (crimson, peach, rose), a faint dot grid and film grain.
+  The hero mesh is off on phones, where the video plays.
+- **How it works** is now a dark feature band with a red mesh, frosted
+  step cards with glowing numbers, and a marching dashed connector.
+- **Hero:** "BEAST." in brand red, a rotating circular badge (logo with
+  "Infinite Nutrition · Sports nutrition · Lucknow"), and the photo label
+  floating at the top right. The duplicate logo block above the headline is
+  gone, so the hero is tighter.
+- **Two crossing ticker bands** (red and charcoal, moving in opposite
+  directions).
+- **Featured:** with two products, two equal side-by-side cards (no empty
+  half-card).
+- **Founder:** the barbell card is a dark editorial panel with a large quote.
+- **Interaction:** a red reading-progress bar under the header and a soft
+  cursor spotlight on cards (fine pointers only).
+- **Rules kept:** every loop pauses when its section is off screen; reduced
+  motion stops all of it; motion uses transform and opacity. In headless
+  software rendering the meshes cost a few frames per second; GPUs
+  composite them cheaply.
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The

@@ -165,29 +165,62 @@ test('all seven category tiles share one card design and never show "0 listed"',
   }
 });
 
-test('light theme: paper and white sections alternate; only the footer and bulk card stay dark', async ({ page }) => {
+test('surfaces: light sections with animated meshes, one dark feature band and dark islands', async ({ page }) => {
   await page.goto('/');
   const surfaces = await page.evaluate(() =>
     [...document.querySelectorAll('main > section')]
       .filter((s) => !s.hidden)
-      .map((s) => [s.id || s.className.split(' ')[0], getComputedStyle(s).backgroundColor])
+      .map((s) => [s.id || s.className.split(' ')[0], getComputedStyle(s).backgroundColor, s.getAttribute('data-mesh')])
   );
   const paper = 'rgb(246, 243, 238)';
   const white = 'rgb(255, 255, 255)';
-  // The desktop hero paints a gradient over paper; every other section is one of the two surfaces.
-  for (const [id, bg] of surfaces.slice(1)) expect([paper, white], id).toContain(bg);
-  expect(surfaces.filter(([, bg]) => bg === white).map(([id]) => id)).toEqual([
+  const dark = 'rgb(17, 13, 11)';
+  for (const [id, bg] of surfaces.slice(1)) expect([paper, white, dark], id).toContain(bg);
+  expect(surfaces.filter(([, bg]) => bg === dark).map(([id]) => id)).toEqual(['enquiry-process']);
+  expect(surfaces.filter(([, , mesh]) => mesh).map(([id]) => id)).toEqual([
+    'home',
+    'featured',
     'categories',
     'enquiry-process',
-    'reviews',
+    'finder',
+    'authenticity',
     'why',
-    'visit',
+    'policies',
     'faq'
   ]);
+  // Every mesh section has its injected, decorative mesh layer.
+  expect(await page.locator('[data-mesh] > .mesh[aria-hidden="true"]').count()).toBe(9);
   const islands = await page.evaluate(() =>
     ['body', '.footer', '.bulk-strip', 'header.site-nav'].map((sel) => getComputedStyle(document.querySelector(sel)).backgroundColor)
   );
   expect(islands).toEqual([paper, 'rgb(27, 24, 21)', 'rgb(27, 24, 21)', 'rgba(255, 255, 255, 0.9)']);
+});
+
+test('meshes animate only while their section is on screen; reduced motion keeps them still', async ({ page, browser }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const states = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('[data-mesh]:not(.editorial-hero)')].map((s) => {
+        const r = s.getBoundingClientRect();
+        const onScreen = r.bottom > 0 && r.top < innerHeight;
+        const play = getComputedStyle(s.querySelector('.mesh-blob')).animationPlayState;
+        return onScreen === (play === 'running');
+      })
+    );
+  await page.evaluate(() => document.getElementById('finder').scrollIntoView({ behavior: 'instant' }));
+  await expect.poll(async () => (await states()).every(Boolean)).toBe(true);
+  const progress = await page.locator('.scroll-progress').evaluate((el) => new DOMMatrix(getComputedStyle(el).transform).a);
+  expect(progress).toBeGreaterThan(0.1);
+  expect(progress).toBeLessThan(1);
+  const calm = await browser.newContext({ reducedMotion: 'reduce' });
+  const still = await calm.newPage();
+  await still.goto('/');
+  const names = await still.evaluate(() =>
+    [...document.querySelectorAll('.mesh-blob, .hero-badge svg')].map((el) => getComputedStyle(el).animationName)
+  );
+  expect(new Set(names)).toEqual(new Set(['none']));
+  await calm.close();
 });
 
 test('headlines match the agreed copy, with kickers on key sections only', async ({ page }) => {
@@ -384,7 +417,7 @@ test('unfinished content stays hidden on the public site', async ({ page }) => {
   await expect(page.locator('.location-actions a[href^="https://wa.me/"]')).toBeVisible();
 });
 
-test('the hero loops only its glow pulse and embers, and pauses them off-screen', async ({ page }) => {
+test('the hero loops only its glow, embers, mesh, badge and photo label, and pauses them off-screen', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
   const infinite = () =>
@@ -400,7 +433,15 @@ test('the hero loops only its glow pulse and embers, and pauses them off-screen'
       return out;
     });
   const atTop = await infinite();
-  expect([...new Set(atTop.map((a) => a.name))].sort()).toEqual(['emberRise', 'heroGlowPulse']);
+  expect([...new Set(atTop.map((a) => a.name))].sort()).toEqual([
+    'badgeFloat',
+    'badgeSpin',
+    'emberRise',
+    'heroGlowPulse',
+    'meshDriftA',
+    'meshDriftB',
+    'meshDriftC'
+  ]);
   expect(atTop.filter((a) => a.name === 'emberRise').length).toBeLessThanOrEqual(20);
   await page.evaluate(() => window.scrollTo({ top: document.getElementById('categories').offsetTop, behavior: 'instant' }));
   await expect(page.locator('.editorial-hero')).toHaveClass(/motion-paused/);

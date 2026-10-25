@@ -2111,12 +2111,70 @@
     sync();
   })();
 
-  /* The category ticker only moves while it is on screen. */
-  var ticker = document.querySelector('.range-ticker');
-  if (ticker && 'IntersectionObserver' in window) {
-    new IntersectionObserver(function (entries) {
-      ticker.classList.toggle('is-paused', !entries[entries.length - 1].isIntersecting);
-    }).observe(ticker);
+  /* Motion graphics. Each [data-mesh] section gets an animated gradient mesh
+     (three soft colour fields, a dot grid and grain). Meshes and tickers
+     only animate while their section is on screen; CSS keeps them still
+     under reduced motion. */
+  document.querySelectorAll('[data-mesh]').forEach(function (section) {
+    var mesh = document.createElement('div');
+    mesh.className = 'mesh mesh-' + section.getAttribute('data-mesh');
+    mesh.setAttribute('aria-hidden', 'true');
+    mesh.innerHTML = '<span class="mesh-blob"></span><span class="mesh-blob"></span><span class="mesh-blob"></span>';
+    section.insertBefore(mesh, section.firstChild);
+  });
+  var liveTargets = document.querySelectorAll('[data-mesh], .range-ticker');
+  if ('IntersectionObserver' in window) {
+    var liveObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        entry.target.classList.toggle('is-live', entry.isIntersecting);
+        if (entry.target.classList.contains('range-ticker')) entry.target.classList.toggle('is-paused', !entry.isIntersecting);
+      });
+    });
+    liveTargets.forEach(function (target) {
+      liveObserver.observe(target);
+    });
+  } else {
+    liveTargets.forEach(function (target) {
+      target.classList.add('is-live');
+    });
+  }
+
+  // Reading progress under the header: one transform per frame at most.
+  var progressBar = document.querySelector('.scroll-progress');
+  if (progressBar) {
+    var progressTick = false;
+    var paintProgress = function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      progressBar.style.transform = 'scaleX(' + (max > 0 ? Math.min(1, window.scrollY / max) : 0).toFixed(4) + ')';
+      progressTick = false;
+    };
+    window.addEventListener(
+      'scroll',
+      function () {
+        if (!progressTick) {
+          progressTick = true;
+          requestAnimationFrame(paintProgress);
+        }
+      },
+      { passive: true }
+    );
+    paintProgress();
+  }
+
+  // Cursor spotlight on cards (fine pointers only): a soft glow follows the pointer.
+  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.addEventListener(
+      'pointermove',
+      function (event) {
+        var card =
+          event.target.closest && event.target.closest('.featured-card, .trust-item, .enquiry-step, .policy-button, .finder-panel');
+        if (!card) return;
+        var rect = card.getBoundingClientRect();
+        card.style.setProperty('--mx', (event.clientX - rect.left).toFixed(0) + 'px');
+        card.style.setProperty('--my', (event.clientY - rect.top).toFixed(0) + 'px');
+      },
+      { passive: true }
+    );
   }
 
   /* Fine-pointer depth only: tiny offsets preserve sharpness and never run on touch or reduced-motion devices. */

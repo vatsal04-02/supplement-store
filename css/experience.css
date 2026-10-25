@@ -1,0 +1,451 @@
+/* Infinite Nutrition — experience layer (loaded last).
+   Animated gradient meshes behind key sections, a dark feature band for
+   "How it works", crossing category tickers, a rotating hero badge, a
+   reading-progress bar, cursor spotlights on cards and tighter spacing.
+   Every loop runs only while its section is on screen (js/app.js toggles
+   .is-live) and everything stands still under reduced motion. Motion uses
+   transform and opacity only. */
+
+/* 1. Tighter rhythm ------------------------------------------------------- */
+:root {
+  --section-pad: clamp(48px, 5vw, 76px);
+  --mesh-a: rgba(184, 0, 25, 0.2);
+  --mesh-b: rgba(255, 150, 110, 0.26);
+  --mesh-c: rgba(255, 196, 206, 0.55);
+}
+.section-head {
+  margin-bottom: clamp(26px, 3vw, 40px);
+}
+
+/* 2. Gradient mesh ---------------------------------------------------------- */
+[data-mesh] {
+  position: relative;
+  isolation: isolate;
+}
+.mesh {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.mesh-blob {
+  position: absolute;
+  width: min(56vw, 820px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, var(--mesh-a) 0%, rgba(255, 255, 255, 0) 66%);
+  animation: meshDriftA 26s ease-in-out infinite alternate;
+  animation-play-state: paused;
+}
+.mesh-blob:nth-child(1) {
+  top: -38%;
+  left: -18%;
+}
+.mesh-blob:nth-child(2) {
+  top: -10%;
+  right: -22%;
+  background: radial-gradient(circle at 50% 50%, var(--mesh-b) 0%, rgba(255, 255, 255, 0) 66%);
+  animation-name: meshDriftB;
+  animation-duration: 32s;
+}
+.mesh-blob:nth-child(3) {
+  bottom: -46%;
+  left: 24%;
+  background: radial-gradient(circle at 50% 50%, var(--mesh-c) 0%, rgba(255, 255, 255, 0) 66%);
+  animation-name: meshDriftC;
+  animation-duration: 38s;
+}
+.is-live > .mesh .mesh-blob,
+.editorial-hero:not(.motion-paused) > .mesh .mesh-blob {
+  animation-play-state: running;
+}
+/* A faint dot grid, strongest in the middle, and film grain. */
+.mesh::before,
+.mesh::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.mesh::before {
+  background-image: radial-gradient(rgba(23, 20, 15, 0.13) 1px, transparent 1.5px);
+  background-size: 22px 22px;
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 0%, transparent 75%);
+  opacity: 0.55;
+}
+.mesh::after {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+}
+.mesh-soft {
+  --mesh-a: rgba(184, 0, 25, 0.12);
+  --mesh-b: rgba(255, 170, 130, 0.2);
+  --mesh-c: rgba(255, 205, 214, 0.45);
+}
+@keyframes meshDriftA {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(14%, 10%, 0) scale(1.12);
+  }
+  100% {
+    transform: translate3d(28%, -4%, 0) scale(0.94);
+  }
+}
+@keyframes meshDriftB {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1.05);
+  }
+  50% {
+    transform: translate3d(-18%, 14%, 0) scale(0.92);
+  }
+  100% {
+    transform: translate3d(-8%, 30%, 0) scale(1.15);
+  }
+}
+@keyframes meshDriftC {
+  0% {
+    transform: translate3d(0, 0, 0) scale(0.95);
+  }
+  50% {
+    transform: translate3d(-20%, -16%, 0) scale(1.1);
+  }
+  100% {
+    transform: translate3d(16%, -26%, 0) scale(1);
+  }
+}
+/* Cards on a mesh read as frosted panels. */
+[data-mesh] :is(.featured-card, .finder-panel, .trust-item, .faq-item, .featured-editorial) {
+  background-color: rgba(255, 255, 255, 0.86);
+}
+#faq .faq-item {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(23, 20, 15, 0.1);
+}
+
+/* 3. Hero ---------------------------------------------------------------- */
+@media (min-width: 761px) {
+  .editorial-hero,
+  .editorial-hero .hero-grid {
+    min-height: clamp(600px, calc(100svh - 110px), 780px);
+  }
+  .editorial-hero .hero-brandlock {
+    display: none;
+  }
+  .editorial-hero .hero-copy {
+    position: relative;
+    padding-block: 24px;
+  }
+  .editorial-hero h1 .accent-line > span {
+    color: var(--red);
+  }
+  /* The photo label sits top-right (the rotating badge owns the lower left)
+     and floats gently. */
+  .editorial-hero .real-range-note {
+    top: 22px;
+    right: 22px;
+    bottom: auto;
+    left: auto;
+    animation: badgeFloat 6s ease-in-out infinite;
+  }
+}
+@media (max-width: 760px) {
+  .editorial-hero > .mesh {
+    display: none;
+  }
+}
+/* Rotating badge where the copy meets the photo. */
+.hero-badge {
+  display: none;
+}
+@media (min-width: 1051px) {
+  .hero-badge {
+    position: absolute;
+    right: -98px;
+    bottom: 30px;
+    z-index: 8;
+    display: grid;
+    place-items: center;
+    width: 132px;
+    height: 132px;
+    border-radius: 50%;
+    background: #ffffff;
+    box-shadow:
+      0 0 0 1px var(--line),
+      0 24px 48px -20px rgba(23, 20, 15, 0.45);
+  }
+  .hero-badge svg {
+    position: absolute;
+    inset: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    animation: badgeSpin 22s linear infinite;
+  }
+  .hero-badge text {
+    fill: var(--ink);
+    font-family: var(--body);
+    font-size: 9.6px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }
+  .hero-badge img {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+@keyframes badgeSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes badgeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* 4. Reading progress ------------------------------------------------------ */
+.scroll-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 3px;
+  background: linear-gradient(90deg, #ff4d5e, var(--red) 45%, #7a0011);
+  transform: scaleX(0);
+  transform-origin: left;
+  pointer-events: none;
+}
+
+/* 5. Crossing tickers ------------------------------------------------------ */
+.ticker-stage {
+  position: relative;
+  overflow: hidden;
+  padding-block: 40px;
+  background: var(--paper);
+}
+.ticker-stage .range-ticker {
+  width: 104%;
+  margin-left: -2%;
+  transform: rotate(-2.2deg);
+  box-shadow: 0 18px 30px -20px rgba(143, 0, 21, 0.6);
+}
+.ticker-stage .range-ticker-alt {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: -0;
+  margin-top: -27px;
+  background: var(--charcoal);
+  transform: rotate(2.2deg);
+  opacity: 0.96;
+}
+.ticker-stage .range-ticker:not(.range-ticker-alt) {
+  position: relative;
+  z-index: 1;
+}
+.range-ticker-alt .range-ticker-track {
+  animation-direction: reverse;
+  animation-duration: 54s;
+}
+.range-ticker-alt span {
+  color: #f3eee7;
+}
+.range-ticker-alt span::after {
+  background: var(--red);
+}
+
+/* 6. Featured: two equal cards side by side ---------------------------------- */
+@media (min-width: 1180px) {
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(2)) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(2)) > .featured-card {
+    grid-column: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  }
+  .featured-grid:has(> .featured-card:first-child:nth-last-child(2)) > .featured-card .featured-photo {
+    height: 100%;
+    aspect-ratio: auto;
+    min-height: 360px;
+  }
+}
+/* Cursor spotlight (set by js/app.js); harmless when the pointer is elsewhere. */
+.featured-card,
+.trust-grid .trust-item,
+.policy-button,
+.finder-panel {
+  background-image: radial-gradient(420px circle at var(--mx, -400px) var(--my, -400px), rgba(184, 0, 25, 0.075), rgba(184, 0, 25, 0) 60%);
+}
+
+/* 7. How it works: a dark feature band ---------------------------------------- */
+main > section#enquiry-process {
+  --white: #ffffff;
+  --ink: #ffffff;
+  --ink-2: #ece6de;
+  --muted: #cfc6bb;
+  --dim: #c2b8ac;
+  --line: rgba(255, 255, 255, 0.14);
+  --mesh-a: rgba(184, 0, 25, 0.62);
+  --mesh-b: rgba(120, 0, 22, 0.7);
+  --mesh-c: rgba(255, 110, 80, 0.2);
+  color-scheme: dark;
+  background: #110d0b;
+  color: #ffffff;
+  border-bottom: 0;
+}
+#enquiry-process .mesh::before {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.16) 1px, transparent 1.5px);
+}
+#enquiry-process h2,
+#enquiry-process .enquiry-step strong {
+  color: #ffffff;
+}
+#enquiry-process .enquiry-process-head > p {
+  color: #d9d1c7;
+}
+#enquiry-process .enquiry-step {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.055);
+  background-image: radial-gradient(
+    380px circle at var(--mx, -400px) var(--my, -400px),
+    rgba(255, 80, 100, 0.16),
+    rgba(255, 80, 100, 0) 60%
+  );
+}
+#enquiry-process .enquiry-step span {
+  color: #d9d1c7;
+}
+#enquiry-process .enquiry-step b {
+  background: var(--red);
+  color: #ffffff;
+  box-shadow:
+    0 0 0 6px rgba(184, 0, 25, 0.22),
+    0 0 32px rgba(255, 40, 70, 0.55);
+}
+@media (min-width: 1051px) {
+  #enquiry-process .enquiry-step {
+    background-color: rgba(255, 255, 255, 0.055);
+    padding-inline: 20px;
+  }
+  /* The connecting line marches toward the next step. */
+  #enquiry-process .enquiry-steps::before {
+    top: 53px;
+    border: 0;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, rgba(255, 90, 110, 0.75) 0 10px, transparent 10px 20px);
+    background-size: 200% 100%;
+  }
+}
+#enquiry-process .story-rail::after {
+  background: linear-gradient(90deg, var(--red) 0 64px, rgba(255, 255, 255, 0.14) 64px 100%);
+}
+
+/* 8. Category tiles: richer motion ------------------------------------------ */
+.category-tile.category-gradient .category-icon {
+  filter: drop-shadow(0 8px 14px rgba(184, 0, 25, 0.25));
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .category-tile.category-gradient:hover .category-icon {
+    transform: rotate(-8deg) scale(1.12);
+  }
+}
+
+/* 9. Reduced motion: everything still. -------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .mesh-blob,
+  .hero-badge,
+  .hero-badge svg,
+  .editorial-hero .real-range-note {
+    animation: none !important;
+  }
+}
+@media (min-width: 1051px) and (prefers-reduced-motion: no-preference) {
+  #enquiry-process .enquiry-steps::before {
+    animation: lineMarch 1.6s linear infinite;
+    animation-play-state: paused;
+  }
+  #enquiry-process.is-live .enquiry-steps::before {
+    animation-play-state: running;
+  }
+}
+@keyframes lineMarch {
+  to {
+    background-position: -20px 0;
+  }
+}
+
+/* 10. Founder training card: a dark editorial panel. ------------------------- */
+.founder-training {
+  --white: #ffffff;
+  --ink: #ffffff;
+  background: radial-gradient(80% 90% at 100% 0%, rgba(184, 0, 25, 0.45), rgba(184, 0, 25, 0) 60%), #15110f;
+  background-color: #15110f;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.founder-training-copy {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: transparent;
+  padding: clamp(28px, 4vw, 56px);
+}
+.founder-training-copy::before {
+  content: "“";
+  display: block;
+  margin-bottom: 4px;
+  color: var(--red);
+  font-family: var(--display);
+  font-size: 5rem;
+  line-height: 0.6;
+}
+.founder-training-copy p {
+  margin: 0;
+  color: #f1ece6;
+  font-family: var(--display);
+  font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+.founder-training .founder-training-media figcaption {
+  color: #17140f;
+}
+
+/* 11. Phones ------------------------------------------------------------------ */
+@media (max-width: 760px) {
+  .ticker-stage {
+    padding-block: 22px;
+  }
+  .ticker-stage .range-ticker {
+    width: 110%;
+    margin-left: -5%;
+    transform: rotate(-3deg);
+  }
+  .ticker-stage .range-ticker-alt {
+    position: relative;
+    top: auto;
+    margin-top: -6px;
+    transform: rotate(2deg);
+  }
+  .range-ticker span {
+    padding-block: 12px 10px;
+  }
+  #enquiry-process .enquiry-step:nth-child(n) {
+    padding: 22px 20px 24px;
+    margin: 0;
+  }
+  #enquiry-process .enquiry-steps {
+    gap: 12px;
+  }
+}
