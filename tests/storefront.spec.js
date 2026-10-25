@@ -256,7 +256,11 @@ test('one primary call to action per section and one honest-store note', async (
   // Hero: one proof line; the unapproved "100% original" claim stays hidden.
   await expect(page.locator('.hero-benefits')).toHaveCount(0);
   await expect(page.locator('.hero-proof [data-approval="originalClaim"]')).toBeHidden();
-  expect((await page.locator('.hero-proof').innerText()).toLowerCase()).toBe('imported & indian brands · guidance before you buy');
+  expect(await page.locator('.hero-proof li:visible').allInnerTexts()).toEqual([
+    'Imported & Indian brands',
+    'Guidance before you buy',
+    'Store in Lucknow'
+  ]);
 });
 
 test('bulk-order strip opens a prefilled WhatsApp bulk enquiry', async ({ page }) => {
@@ -456,4 +460,39 @@ test('index.html opened directly from disk works without errors', async ({ page 
   await page.locator('.product-card [data-add]').first().click();
   await expect(page.locator('#cartCount')).toHaveText('1');
   expect(problems).toEqual([]);
+});
+
+test('the category ticker moves only while on screen and is still under reduced motion', async ({ page, browser }) => {
+  await page.goto('/');
+  const state = () =>
+    page.evaluate(() => ({
+      paused: document.querySelector('.range-ticker').classList.contains('is-paused'),
+      play: getComputedStyle(document.querySelector('.range-ticker-track')).animationPlayState
+    }));
+  await page.evaluate(() => document.querySelector('.range-ticker').scrollIntoView({ block: 'center', behavior: 'instant' }));
+  await expect.poll(state).toEqual({ paused: false, play: 'running' });
+  await page.evaluate(() => document.getElementById('faq').scrollIntoView({ behavior: 'instant' }));
+  await expect.poll(state).toEqual({ paused: true, play: 'paused' });
+  const calm = await browser.newContext({ reducedMotion: 'reduce' });
+  const still = await calm.newPage();
+  await still.goto('/');
+  expect(await still.evaluate(() => getComputedStyle(document.querySelector('.range-ticker-track')).animationName)).toBe('none');
+  await calm.close();
+});
+
+test('an eighth tile opens the full catalogue without changing the seven category tiles', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('.category-tile')).toHaveCount(7);
+  const all = page.locator('#categoryGrid > .category-all');
+  await expect(all).toHaveText(/Full catalogue\s*Browse all products/);
+  await all.click();
+  await expect(page.locator('#catalogue')).toBeVisible();
+});
+
+test('the footer offers a WhatsApp enquiry and lists both store numbers', async ({ page }) => {
+  await page.goto('/');
+  const cta = page.locator('.footer-cta a.btn.primary');
+  await expect(cta).toHaveAttribute('href', /^https:\/\/wa\.me\/918840427558\?text=/);
+  await expect(page.locator('.footer-contacts a[href^="tel:"]')).toHaveText(['+91 88404 27558', '+91 83032 53308']);
+  await expect(page.locator('.footer-wordmark')).toHaveText('');
 });

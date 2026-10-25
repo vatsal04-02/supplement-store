@@ -165,7 +165,8 @@ for (const size of [
           vh: innerHeight,
           heroH: hero.height,
           gapAbove: top,
-          gapBelow: hero.bottom - cta.bottom - parseFloat(copy.paddingBottom),
+          // The copy block ends with the actions row (CTA plus the store link).
+          gapBelow: hero.bottom - box('.editorial-hero .actions').bottom - parseFloat(copy.paddingBottom),
           ctaW: cta.width,
           ctaSides: [cta.left, innerWidth - cta.right],
           h1: parseFloat(getComputedStyle(document.querySelector('.editorial-hero h1')).fontSize),

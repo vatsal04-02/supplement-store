@@ -1,0 +1,765 @@
+/* Infinite Nutrition — premium layout layer.
+   Loaded last. redesign.css sets the light palette and fonts; this layer
+   gives the page its structure and finish: a bigger type scale, an
+   editorial hero with a trust list, a moving category ticker, richer
+   product and category cards, a visual enquiry timeline, icon cards and a
+   full footer. Content is unchanged apart from structure; nothing here
+   adds a claim, price or rating. */
+
+/* 1. Rhythm and type scale ---------------------------------------------- */
+:root {
+  /* Roomier than before, still within the slim-reviews limit (Round 4). */
+  --section-pad: clamp(56px, 6vw, 80px);
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --tint: #f9eeee;
+  --tint-2: #f3dede;
+}
+body {
+  font-size: 16px;
+  line-height: 1.6;
+}
+.section-head {
+  margin-bottom: clamp(36px, 4vw, 56px);
+  align-items: end;
+}
+.section-head h2,
+.finder-copy h2,
+.founder-copy h2,
+.authenticity-copy h2,
+.flavour-copy h2,
+.enquiry-process-head h2,
+.visit-copy h2,
+.reviews h2 {
+  letter-spacing: -0.005em;
+  line-height: 0.95;
+}
+.section-head h2:not(.heading-secondary) {
+  font-size: clamp(2.8rem, 5.6vw, 5rem);
+}
+h2.heading-secondary {
+  font-size: clamp(2.2rem, 3.4vw, 3.1rem);
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+.section-head > p,
+.enquiry-process-head > p {
+  font-size: 1.04rem;
+  line-height: 1.65;
+  color: var(--muted);
+  max-width: 44ch;
+}
+/* Small labels never drop below 12px. */
+.card-trust,
+.category-count,
+.category-grid .category-visual-note,
+.featured-fact small,
+.product-photo-trust,
+.editorial-caption,
+.eyebrow,
+.editorial-hero .eyebrow {
+  font-size: max(0.75rem, 12px);
+}
+
+/* 2. Header ------------------------------------------------------------- */
+.site-nav .nav-links a {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.site-nav .nav-links a:not(.active):hover {
+  color: var(--red);
+}
+
+/* 3. Hero (desktop and tablet) ------------------------------------------ */
+@media (min-width: 761px) {
+  .editorial-hero h1 {
+    font-size: clamp(4.6rem, 8.6vw, 8.6rem);
+    line-height: 0.88;
+    letter-spacing: -0.01em;
+  }
+  .editorial-hero .hero-lede {
+    max-width: 34ch;
+    margin-top: 22px;
+    font-size: clamp(1.05rem, 1.25vw, 1.2rem);
+    line-height: 1.6;
+  }
+  .editorial-hero .editorial-visual {
+    border-radius: 28px;
+  }
+  /* The photo's label becomes a frosted badge in the lower corner. */
+  .editorial-hero .real-range-note {
+    top: auto;
+    right: auto;
+    bottom: 22px;
+    left: 22px;
+    padding: 12px 16px 12px 44px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-radius: 14px;
+    background: rgba(18, 16, 14, 0.55);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: #ffffff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    line-height: 1.35;
+    text-transform: uppercase;
+    width: max-content;
+    max-width: calc(100% - 44px);
+  }
+  .editorial-hero .real-range-note::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 16px;
+    width: 18px;
+    height: 18px;
+    margin-top: -9px;
+    border-radius: 50%;
+    background: var(--red);
+    box-shadow: 0 0 0 4px rgba(184, 0, 25, 0.28);
+  }
+}
+/* Trust list with check marks (all sizes). */
+.editorial-hero .hero-proof {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  margin: 26px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+}
+.editorial-hero .hero-proof li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.editorial-hero .hero-proof li[hidden] {
+  display: none;
+}
+.editorial-hero .hero-proof li::before {
+  content: "";
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4 8-9'/%3E%3C/svg%3E")
+      center / 11px no-repeat,
+    var(--red);
+}
+@media (min-width: 761px) {
+  .editorial-hero .hero-proof {
+    color: var(--ink-2);
+  }
+}
+.editorial-hero .actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 28px;
+  margin-top: 34px;
+}
+.hero-secondary-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.hero-secondary-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 8px;
+  height: 2px;
+  background: currentColor;
+  transform-origin: left;
+  transition: transform 0.35s var(--ease-out);
+}
+.hero-secondary-link:hover::after {
+  transform: scaleX(0.4);
+}
+@media (max-width: 760px) {
+  .editorial-hero .hero-proof {
+    gap: 8px 16px;
+    margin-top: 18px;
+    font-size: 0.82rem;
+    color: #f1ece6;
+  }
+  .editorial-hero .actions {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 24px;
+  }
+  .hero-secondary-link {
+    color: #ffffff;
+  }
+}
+
+/* 4. Category ticker ------------------------------------------------------ */
+.range-ticker {
+  position: relative;
+  overflow: hidden;
+  background: var(--red);
+  color: #ffffff;
+  border-block: 1px solid rgba(0, 0, 0, 0.12);
+}
+.range-ticker-track {
+  display: flex;
+  width: max-content;
+  animation: rangeTicker 42s linear infinite;
+}
+.range-ticker.is-paused .range-ticker-track {
+  animation-play-state: paused;
+}
+.range-ticker-group {
+  display: flex;
+  flex: none;
+}
+.range-ticker span {
+  display: inline-flex;
+  align-items: center;
+  gap: 34px;
+  padding: 18px 0 16px 34px;
+  font-family: var(--display);
+  font-size: clamp(1.25rem, 2vw, 1.75rem);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.range-ticker span::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.55);
+}
+@keyframes rangeTicker {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .range-ticker-track {
+    animation: none;
+  }
+}
+
+/* 5. Featured products ---------------------------------------------------- */
+.featured-card {
+  border-radius: 24px;
+}
+.featured-photo,
+.product-photo {
+  background:
+    radial-gradient(55% 45% at 50% 46%, #ffffff 0%, rgba(255, 255, 255, 0) 100%), linear-gradient(180deg, #f4efe8 0%, #ebe4da 100%);
+}
+.featured-body h3 {
+  font-size: clamp(1.7rem, 2.3vw, 2.2rem);
+  line-height: 1;
+}
+.featured-facts {
+  gap: 8px;
+}
+.featured-fact {
+  border: 0;
+  border-radius: 12px;
+  background: var(--paper);
+}
+.featured-editorial {
+  border-radius: 24px;
+}
+
+/* 6. Categories ------------------------------------------------------------ */
+.category-grid {
+  --tile-gap: 18px;
+}
+.category-tile {
+  border-radius: 22px;
+  transition: transform 0.45s var(--ease-out);
+}
+.category-tile.category-gradient .category-media {
+  background:
+    radial-gradient(85% 70% at 88% 6%, rgba(184, 0, 25, 0.16), rgba(184, 0, 25, 0) 62%),
+    linear-gradient(165deg, #ffffff 0%, var(--tint) 100%);
+}
+.category-tile.category-gradient .category-icon {
+  stroke: var(--red);
+  stroke-width: 1.4;
+}
+.category-tile::before {
+  display: none;
+}
+/* A small arrow chip on every tile, pinned to the tile's top-left corner. */
+.category-grid .category-copy {
+  position: static;
+}
+.category-grid .category-copy > * {
+  position: relative;
+  z-index: 4;
+}
+.category-tile .category-copy::after {
+  z-index: 4;
+  content: "→";
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  font-size: 1.05rem;
+  font-weight: 700;
+  box-shadow: 0 6px 16px -8px rgba(23, 20, 15, 0.45);
+  transition: transform 0.45s var(--ease-out);
+}
+.category-tile.category-gradient .category-copy::after {
+  background: var(--red);
+  color: #ffffff;
+}
+@media (hover: hover) and (pointer: fine) {
+  .category-tile:hover .category-copy::after {
+    transform: translateX(4px) rotate(-45deg);
+  }
+}
+/* The eighth tile opens the whole catalogue. */
+.category-grid > .category-all {
+  position: relative;
+  display: flex;
+  flex: 0 0 calc((100% - 3 * var(--tile-gap)) / 4);
+  flex-direction: column;
+  justify-content: flex-end;
+  aspect-ratio: 4 / 5;
+  padding: 24px;
+  overflow: hidden;
+  border-radius: 22px;
+  background:
+    radial-gradient(90% 60% at 100% 0%, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0) 60%),
+    linear-gradient(160deg, #c4001b 0%, #8f0015 100%);
+  background-color: #a8001a;
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 20px 44px -22px rgba(143, 0, 21, 0.7);
+  transition: transform 0.45s var(--ease-out);
+}
+.category-all-kicker {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+.category-all strong {
+  margin-top: 8px;
+  font-family: var(--display);
+  font-size: clamp(1.8rem, 2.6vw, 2.6rem);
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+.category-all-arrow {
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--red);
+  font-size: 1.4rem;
+  font-weight: 700;
+  transition: transform 0.45s var(--ease-out);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .category-tile:hover,
+  .category-all:hover {
+    transform: translateY(-4px);
+  }
+  .category-all:hover .category-all-arrow {
+    transform: rotate(-45deg);
+  }
+}
+@media (max-width: 1050px) {
+  .category-grid > .category-all {
+    flex-basis: calc((100% - var(--tile-gap)) / 2);
+    aspect-ratio: 4 / 3;
+  }
+}
+/* Phones: two compact columns instead of one long stack. */
+@media (max-width: 760px) {
+  .category-grid {
+    --tile-gap: 12px;
+  }
+  .category-grid > .category-tile:nth-child(n),
+  .category-grid > .category-all {
+    flex-basis: calc((100% - var(--tile-gap)) / 2);
+    aspect-ratio: 4 / 5;
+  }
+  .category-grid .category-copy {
+    padding: 14px;
+  }
+  .category-grid .category-visual-note {
+    display: none;
+  }
+  .category-tile .category-copy::after {
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+  }
+  .category-grid > .category-all {
+    padding: 14px;
+  }
+  .category-all-arrow {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* 7. How it works: a numbered timeline ------------------------------------ */
+.enquiry-steps {
+  position: relative;
+  gap: 16px;
+  border: 0;
+}
+.enquiry-step {
+  position: relative;
+  padding: 26px 22px 28px;
+  border: 0;
+  border-radius: 20px;
+  background: var(--paper);
+}
+.enquiry-step b {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: #ffffff;
+  color: var(--red);
+  font-family: var(--display);
+  font-size: 1.45rem;
+  box-shadow:
+    0 0 0 1px var(--line),
+    0 10px 20px -12px rgba(23, 20, 15, 0.35);
+}
+.enquiry-step b::after,
+.enquiry-step b::before {
+  display: none;
+}
+.enquiry-step strong {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.45rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.enquiry-step span {
+  display: block;
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+@media (min-width: 1051px) {
+  /* A dashed line joins the step numbers. */
+  .enquiry-steps::before {
+    content: "";
+    position: absolute;
+    top: 52px;
+    left: 8%;
+    right: 8%;
+    border-top: 2px dashed rgba(184, 0, 25, 0.35);
+  }
+  .enquiry-step {
+    background: transparent;
+    padding-inline: 14px;
+  }
+  .enquiry-step b {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* 8. Why Infinite Nutrition: icon cards ----------------------------------- */
+.trust-grid {
+  gap: 18px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+.trust-grid .trust-item {
+  position: relative;
+  padding: 30px 28px 32px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  transition: transform 0.45s var(--ease-out);
+}
+.trust-grid .trust-item::before,
+.trust-grid .trust-item::after {
+  display: none;
+}
+.trust-icon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 22px;
+  border-radius: 16px;
+  background: var(--tint);
+  color: var(--red);
+}
+.trust-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.trust-item .trust-num {
+  position: absolute;
+  top: 30px;
+  right: 28px;
+  margin: 0;
+  color: var(--muted);
+  font-family: var(--display);
+  font-size: 1.1rem;
+}
+.trust-item .trust-num::after,
+.trust-item .trust-num::before {
+  display: none;
+}
+.trust-item h3 {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.trust-item p {
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .trust-grid .trust-item:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lift);
+  }
+}
+.trust-evidence {
+  margin-top: 22px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  overflow: hidden;
+}
+
+/* 9. Founder ---------------------------------------------------------------- */
+@media (min-width: 761px) {
+  .founder-photo {
+    border-radius: 28px;
+    box-shadow:
+      18px 18px 0 0 var(--tint-2),
+      var(--shadow-lift);
+  }
+}
+.founder-copy h2 {
+  font-size: clamp(2.8rem, 5vw, 4.6rem);
+}
+
+/* 10. FAQ and policies ------------------------------------------------------ */
+.faq-item summary {
+  padding-block: 22px;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+.policy-button {
+  min-height: 112px;
+}
+
+/* 11. Footer ---------------------------------------------------------------- */
+.footer {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(56px, 6vw, 88px) 0 0;
+}
+.footer .footer-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: clamp(40px, 5vw, 64px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.footer-kicker {
+  margin: 0;
+  color: #f0a8b1;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.footer-cta-title {
+  margin: 10px 0 0;
+  color: #ffffff;
+  font-family: var(--display);
+  font-size: clamp(2.2rem, 4.4vw, 3.8rem);
+  font-weight: 700;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+.footer .footer-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.4fr 1fr;
+  gap: 40px;
+  align-items: start;
+  padding-block: clamp(40px, 5vw, 64px);
+}
+.footer-brand {
+  display: grid;
+  gap: 16px;
+}
+.footer-brand .footer-logo {
+  width: 66px;
+  height: 66px;
+  border-radius: 16px;
+}
+.footer-brand-name {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+.footer-brand-name strong {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  line-height: 1;
+  text-transform: uppercase;
+}
+.footer-brand-name span,
+.footer-address {
+  margin: 0;
+  color: #d6cfc6;
+  font-size: 0.92rem;
+}
+.footer-col-title {
+  grid-column: 1 / -1;
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.footer .footer-links {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, max-content));
+  gap: 10px 48px;
+}
+.footer .footer-links a,
+.footer .footer-contact a {
+  color: #e6dfd6;
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+.footer .footer-links a:hover,
+.footer .footer-contact a:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+.footer .footer-contacts {
+  display: grid;
+  gap: 12px;
+}
+.footer .footer-contact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+.footer .footer-contact a:first-child {
+  color: #ffffff;
+  font-weight: 700;
+}
+.footer .footer-base {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 24px;
+  padding-block: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d6cfc6;
+  font-size: 0.85rem;
+}
+.footer .footer-base p {
+  margin: 0;
+}
+.footer .footer-privacy .text-link {
+  color: #e6dfd6;
+}
+/* Drawn as generated content: decoration, not text. */
+.footer-wordmark::before {
+  content: "Infinite";
+}
+.footer-wordmark {
+  margin: 0 0 -0.18em;
+  color: rgba(255, 255, 255, 0.045);
+  font-family: var(--display);
+  font-size: clamp(6rem, 24vw, 22rem);
+  font-weight: 700;
+  line-height: 0.8;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+}
+@media (max-width: 900px) {
+  .footer .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .footer .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  .footer .footer-cta .btn {
+    width: 100%;
+  }
+}
+
+/* Phones: keep the hero copy over the dark side of the video frame, and
+   let policy tiles size to their text. */
+@media (max-width: 760px) {
+  .editorial-hero .hero-copy > .hero-lede,
+  .editorial-hero .hero-copy > .hero-proof {
+    max-width: 250px;
+  }
+  .policy-button {
+    min-height: 0;
+  }
+}

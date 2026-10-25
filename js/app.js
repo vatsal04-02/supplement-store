@@ -459,43 +459,46 @@
   // otherwise the brand's red gradient with a category icon. Counts are
   // real catalogue entries; a category with none says "Ask in store".
   var categoryGrid = byId('categoryGrid');
-  categoryGrid.innerHTML = categories
-    .map(function (category) {
-      var count = listedCount(category.id);
-      var media = categoryMedia[category.id] || {};
-      var visual = media.visual && media.visual.srcset ? media.visual : null;
-      var store = media.store && media.store.srcset ? media.store : null;
-      var primary = visual || store;
-      var tileSizes = '(max-width: 760px) calc(100vw - 24px), (max-width: 1050px) 50vw, 25vw';
-      var note;
-      if (visual) note = store ? 'Supporting category visual · inset shows the real store range' : 'Supporting category visual';
-      else if (store) note = 'Real Infinite Nutrition store photo';
-      else note = count ? 'Browse the listed products' : 'On the store shelves';
-      var mediaMarkup = primary
-        ? categoryPicture(primary, 'category-primary', tileSizes) +
-          (visual && store ? categoryPicture(store, 'category-store-proof', '112px') : '')
-        : categoryIcon(category.id);
-      // The tile's name comes from its visible copy (WCAG 2.5.3 label in name);
-      // the image layer is decorative here because the note says what it shows.
-      return (
-        '<a class="category-tile category-' +
-        esc(category.id) +
-        (primary ? ' category-photo' : ' category-gradient') +
-        (!visual && store ? ' category-store-primary' : '') +
-        '" href="#catalogue" data-open-catalogue data-category-link="' +
-        esc(category.id) +
-        '" data-track-source="category_tile"><div class="category-media" aria-hidden="true">' +
-        mediaMarkup +
-        '</div><span class="category-shine" aria-hidden="true"></span><div class="category-copy"><span class="category-count">' +
-        (count ? count + ' listed' : 'Ask in store') +
-        '</span><strong>' +
-        esc(category.label) +
-        '</strong><small class="category-visual-note">' +
-        esc(note) +
-        '</small></div></a>'
-      );
-    })
-    .join('');
+  categoryGrid.innerHTML =
+    categories
+      .map(function (category) {
+        var count = listedCount(category.id);
+        var media = categoryMedia[category.id] || {};
+        var visual = media.visual && media.visual.srcset ? media.visual : null;
+        var store = media.store && media.store.srcset ? media.store : null;
+        var primary = visual || store;
+        var tileSizes = '(max-width: 760px) calc(100vw - 24px), (max-width: 1050px) 50vw, 25vw';
+        var note;
+        if (visual) note = store ? 'Supporting category visual · inset shows the real store range' : 'Supporting category visual';
+        else if (store) note = 'Real Infinite Nutrition store photo';
+        else note = count ? 'Browse the listed products' : 'On the store shelves';
+        var mediaMarkup = primary
+          ? categoryPicture(primary, 'category-primary', tileSizes) +
+            (visual && store ? categoryPicture(store, 'category-store-proof', '112px') : '')
+          : categoryIcon(category.id);
+        // The tile's name comes from its visible copy (WCAG 2.5.3 label in name);
+        // the image layer is decorative here because the note says what it shows.
+        return (
+          '<a class="category-tile category-' +
+          esc(category.id) +
+          (primary ? ' category-photo' : ' category-gradient') +
+          (!visual && store ? ' category-store-primary' : '') +
+          '" href="#catalogue" data-open-catalogue data-category-link="' +
+          esc(category.id) +
+          '" data-track-source="category_tile"><div class="category-media" aria-hidden="true">' +
+          mediaMarkup +
+          '</div><span class="category-shine" aria-hidden="true"></span><div class="category-copy"><span class="category-count">' +
+          (count ? count + ' listed' : 'Ask in store') +
+          '</span><strong>' +
+          esc(category.label) +
+          '</strong><small class="category-visual-note">' +
+          esc(note) +
+          '</small></div></a>'
+        );
+      })
+      .join('') +
+    // An eighth tile completes the grid and opens the whole catalogue.
+    '<a class="category-all" href="#catalogue" data-open-catalogue data-track-source="category_all"><span class="category-all-kicker">Full catalogue</span><strong>Browse all products</strong><span class="category-all-arrow" aria-hidden="true">→</span></a>';
   applyMediaVars(categoryGrid);
 
   /* ---------- catalogue ---------- */
@@ -2107,6 +2110,14 @@
     });
     sync();
   })();
+
+  /* The category ticker only moves while it is on screen. */
+  var ticker = document.querySelector('.range-ticker');
+  if (ticker && 'IntersectionObserver' in window) {
+    new IntersectionObserver(function (entries) {
+      ticker.classList.toggle('is-paused', !entries[entries.length - 1].isIntersecting);
+    }).observe(ticker);
+  }
 
   /* Fine-pointer depth only: tiny offsets preserve sharpness and never run on touch or reduced-motion devices. */
   var precisionMotion = window.matchMedia(

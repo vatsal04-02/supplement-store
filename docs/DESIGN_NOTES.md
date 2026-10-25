@@ -257,6 +257,29 @@ tokens, so the older layers follow, and fixes only what tokens cannot.
   and the phone menu were moved to white. Every text element was checked
   for contrast in each state at 390, 768 and 1440 px.
 
+## Premium layout pass
+
+`css/premium.css` (loaded last) adds structure and finish on top of the
+light theme:
+
+- **Rhythm and type:** section padding `clamp(56px, 6vw, 80px)` (the
+  ceiling keeps the Round 4 slim reviews strip), larger condensed
+  headlines, and no small label below 12px.
+- **Hero:** a larger headline, the selling points as a check-mark list
+  (Imported & Indian brands, Guidance before you buy, Store in Lucknow; the
+  "100% original" item still waits for `approvals.originalClaim`), a
+  secondary "Visit the store" link, and the photo label as a frosted badge.
+- **Category ticker:** a red band of category names under the hero. It is
+  decorative (`aria-hidden`), pauses whenever it is off screen and stands
+  still under reduced motion.
+- **Categories:** the seven tiles keep one size; an eighth red "Browse all
+  products" tile completes the 4 × 2 grid and opens the catalogue. Phones
+  show two columns.
+- **How it works:** numbered steps on a dashed timeline.
+- **Why Infinite Nutrition:** separate icon cards with a soft lift on hover.
+- **Footer:** a WhatsApp call to action, brand, explore and contact columns,
+  a base row, and a faint "INFINITE" wordmark drawn as CSS content.
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The

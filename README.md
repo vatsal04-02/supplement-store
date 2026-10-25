@@ -39,7 +39,8 @@ ANALYTICS_ADMIN_TOKEN=$(openssl rand -hex 24) npm start
 index.html              storefront markup
 css/styles.css          original design system (formatted, otherwise unchanged)
 css/refinements.css     all fixes and refinements made in this pass
-css/redesign.css        light premium theme (tokens, type, surfaces), loaded last
+css/redesign.css        light premium theme (tokens, type, surfaces)
+css/premium.css         premium layout layer (hero, ticker, cards, timeline, footer), loaded last
 js/site-config.js       ✎ business details, map, policies, analytics settings
 js/catalogue.js         ✎ products, categories, category imagery
 js/analytics.js         event layer (schema, privacy, transport, GA4 consent)
@@ -123,7 +124,7 @@ other launch items are still to be confirmed.
 
 ## Quality status (measured on this build)
 
-- 130 automated tests passing: six viewports (360–1920 px) with no console
+- 133 automated tests passing: six viewports (360–1920 px) with no console
   errors, failed requests or horizontal overflow; catalogue, order list,
   overlays, analytics client/server, dashboard, axe WCAG 2.1 AA scans (no
   serious or critical issues), source integrity checks, the layout rules
