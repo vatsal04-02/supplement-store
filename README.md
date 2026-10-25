@@ -39,13 +39,14 @@ ANALYTICS_ADMIN_TOKEN=$(openssl rand -hex 24) npm start
 index.html              storefront markup
 css/styles.css          original design system (formatted, otherwise unchanged)
 css/refinements.css     all fixes and refinements made in this pass
+css/redesign.css        light premium theme (tokens, type, surfaces), loaded last
 js/site-config.js       ✎ business details, map, policies, analytics settings
 js/catalogue.js         ✎ products, categories, category imagery
 js/analytics.js         event layer (schema, privacy, transport, GA4 consent)
 js/store-map.js         map/directions, shown only for verified URLs
 js/app.js               storefront behaviour
 admin/                  owner dashboard (index.html, dashboard.js, dashboard.css)
-assets/                 images (hero, editorial, store, founder, products, brand, social)
+assets/                 images, hero video and poster, self-hosted fonts (assets/fonts, OFL)
 server/                 server.mjs, analytics-store.mjs, event-schema.mjs
 scripts/build.mjs       production build → dist/
 scripts/lighthouse.mjs  Lighthouse audit of dist/

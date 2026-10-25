@@ -8,6 +8,25 @@ async function hoverAndRead(page, selector, read) {
   await item.scrollIntoViewIfNeeded();
   // Let any scroll reveal settle so the pointer lands on a still target.
   await item.evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished.catch(() => {}))));
+  // Hero targets follow scroll-linked depth that settles only once the hero is
+  // back in view: wait until the target has been still for ten frames.
+  await item.evaluate(
+    (el) =>
+      el.closest('.editorial-hero') &&
+      new Promise((resolve) => {
+        let last = '';
+        let still = 0;
+        const check = () => {
+          const r = el.getBoundingClientRect();
+          const now = [r.x, r.y, r.width, r.height].map((v) => v.toFixed(1)).join();
+          still = now === last ? still + 1 : 0;
+          last = now;
+          if (still >= 10) resolve();
+          else requestAnimationFrame(check);
+        };
+        requestAnimationFrame(check);
+      })
+  );
   await page.mouse.move(2, 2);
   const before = await item.evaluate(read);
   await item.hover();

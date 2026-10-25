@@ -230,6 +230,33 @@ devices with DevTools before launch.
   resumes on return. The local Node server now sends `video/*` types and
   byte ranges, which Safari needs to play video; Vercel does this already.
 
+## Light premium redesign
+
+The all-black page read as heavy, so the site now uses a light palette.
+The change lives in `css/redesign.css`, loaded last. It re-points the colour
+tokens, so the older layers follow, and fixes only what tokens cannot.
+
+- **Palette:** warm paper `#F6F3EE` and white sections alternate down the page
+  (white: categories, how it works, reviews, why, visit, FAQ). Type is
+  charcoal `#17140F` with secondary text `#5B5248`, both well above 4.5:1. The
+  brand red `#B80019` is kept for calls to action, kickers and accents only.
+- **Dark on purpose:** the phone hero (it plays over video), the
+  announcement bar, the bulk-order band and the footer (warm charcoal
+  `#1B1815`). Photo category tiles keep a dark scrim under white type.
+- **Type:** Barlow Condensed 700 for display headlines and Manrope (variable)
+  for body text, both self-hosted under `assets/fonts/` (SIL Open Font
+  License, about 47 KB in total), so the strict CSP is unchanged. System fonts are
+  the fallback, including when the page is opened from disk.
+- **Surfaces:** white cards with a 1px warm border, 14–20px radius and a soft
+  layered shadow that deepens on hover; rounded photos; captions on photos
+  are white pills. The header is translucent white with a blur.
+- **Desktop hero:** a bright editorial hero with the moody product photograph
+  in a rounded, shadowed frame; the red glow behind it is softened and the
+  ember particles are off.
+- **Overlays:** dialogs, the order-list drawer, toasts, the catalogue filters
+  and the phone menu were moved to white. Every text element was checked
+  for contrast in each state at 390, 768 and 1440 px.
+
 ## Architecture decision
 
 The page stays plain HTML, CSS and JavaScript (classic deferred scripts). The

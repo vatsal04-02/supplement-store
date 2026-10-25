@@ -165,14 +165,29 @@ test('all seven category tiles share one card design and never show "0 listed"',
   }
 });
 
-test('exactly three sections are light: reviews, why and visit', async ({ page }) => {
+test('light theme: paper and white sections alternate; only the footer and bulk card stay dark', async ({ page }) => {
   await page.goto('/');
-  const light = await page.evaluate(() =>
+  const surfaces = await page.evaluate(() =>
     [...document.querySelectorAll('main > section')]
-      .filter((s) => !s.hidden && getComputedStyle(s).backgroundColor === 'rgb(244, 244, 244)')
-      .map((s) => s.id)
+      .filter((s) => !s.hidden)
+      .map((s) => [s.id || s.className.split(' ')[0], getComputedStyle(s).backgroundColor])
   );
-  expect(light).toEqual(['reviews', 'why', 'visit']);
+  const paper = 'rgb(246, 243, 238)';
+  const white = 'rgb(255, 255, 255)';
+  // The desktop hero paints a gradient over paper; every other section is one of the two surfaces.
+  for (const [id, bg] of surfaces.slice(1)) expect([paper, white], id).toContain(bg);
+  expect(surfaces.filter(([, bg]) => bg === white).map(([id]) => id)).toEqual([
+    'categories',
+    'enquiry-process',
+    'reviews',
+    'why',
+    'visit',
+    'faq'
+  ]);
+  const islands = await page.evaluate(() =>
+    ['body', '.footer', '.bulk-strip', 'header.site-nav'].map((sel) => getComputedStyle(document.querySelector(sel)).backgroundColor)
+  );
+  expect(islands).toEqual([paper, 'rgb(27, 24, 21)', 'rgb(27, 24, 21)', 'rgba(255, 255, 255, 0.9)']);
 });
 
 test('headlines match the agreed copy, with kickers on key sections only', async ({ page }) => {

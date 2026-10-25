@@ -51,7 +51,15 @@ test.describe('phones', () => {
       ],
       fit: 'cover 50% 50%'
     });
-    // The clip covers the hero, under the copy.
+    // The clip covers the hero, under the copy (measured once the frame's entrance has finished).
+    await page.locator('.editorial-visual').evaluate((el) =>
+      Promise.all(
+        el
+          .getAnimations()
+          .filter((a) => a.effect.getComputedTiming().iterations !== Infinity)
+          .map((a) => a.finished.catch(() => {}))
+      )
+    );
     const cover = await page.evaluate(() => {
       const hero = document.getElementById('home').getBoundingClientRect();
       const v = document.querySelector('.hero-video').getBoundingClientRect();

@@ -94,6 +94,7 @@ const MIME = {
   '.webp': 'image/webp',
   '.avif': 'image/avif',
   '.ico': 'image/x-icon',
+  '.woff2': 'font/woff2',
   '.webm': 'video/webm',
   '.mp4': 'video/mp4',
   '.txt': 'text/plain; charset=utf-8',

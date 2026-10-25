@@ -1,0 +1,578 @@
+/* Infinite Nutrition — light premium redesign.
+   Loaded after styles.css and refinements.css. The site moves from an
+   all-black page to warm paper and white surfaces with charcoal type; the
+   brand red is kept for calls to action and small accents. Three places stay
+   dark on purpose: the phone hero (it plays over video), the bulk-order card
+   and the footer. Every colour is a token, so components defined in the older
+   layers follow automatically; the rules below only fix what tokens cannot. */
+
+/* 1. Type ------------------------------------------------------------------ */
+@font-face {
+  font-family: "Manrope";
+  src: url("../assets/fonts/manrope-latin-wght.woff2") format("woff2");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("../assets/fonts/barlow-condensed-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* 2. Tokens ---------------------------------------------------------------- */
+:root,
+.section-light {
+  color-scheme: light;
+  --paper: #f6f3ee;
+  --paper-2: #efe9e1;
+  --ink: #17140f;
+  --ink-2: #3b352e;
+  --bg: var(--paper);
+  --surface: var(--paper);
+  --surface-raised: #ffffff;
+  --card: #ffffff;
+  --card-2: #f3efe9;
+  --line: #e2dbd1;
+  --hairline: rgba(23, 20, 15, 0.12);
+  --hairline-soft: rgba(23, 20, 15, 0.08);
+  /* --white is the old "text on the page" colour; it now means ink. */
+  --white: var(--ink);
+  --muted: #5b5248;
+  --dim: #564d44;
+  --black: var(--paper);
+  --red: #b80019;
+  --red-hover: #8f0015;
+  --deep: #8f0015;
+  --on-red: #ffffff;
+  --charcoal: #1b1815;
+  --radius-lg: 20px;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(23, 20, 15, 0.04), 0 18px 40px -18px rgba(23, 20, 15, 0.18);
+  --premium-shadow: var(--shadow);
+  --shadow-lift: 0 2px 4px rgba(23, 20, 15, 0.05), 0 28px 56px -22px rgba(23, 20, 15, 0.26);
+  --display: "Barlow Condensed", "Arial Narrow", "Helvetica Neue", sans-serif;
+  --body: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Dark islands re-declare the old palette inside themselves. */
+.footer,
+.bulk-strip,
+.map-placeholder {
+  color-scheme: dark;
+  --bg: var(--charcoal);
+  --surface: var(--charcoal);
+  --card: #24201c;
+  --card-2: #2b2621;
+  --line: rgba(255, 255, 255, 0.14);
+  --hairline: rgba(255, 255, 255, 0.14);
+  --hairline-soft: rgba(255, 255, 255, 0.09);
+  --white: #ffffff;
+  --ink: #ffffff;
+  --ink-2: #ece6de;
+  --muted: #d6cfc6;
+  --dim: #bfb6ab;
+  --black: var(--charcoal);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 3. Page surfaces ----------------------------------------------------------- */
+/* Two quiet surfaces alternate down the page: warm paper and white. */
+main > section:not(.editorial-hero) {
+  background: var(--paper);
+  border-bottom: 1px solid var(--hairline-soft);
+}
+main > section:is(#categories, #enquiry-process, #reviews, #why, #visit, #faq) {
+  background: #ffffff;
+}
+main > section:not(.editorial-hero)::before,
+main > section:not(.editorial-hero)::after {
+  background-image: none;
+}
+.story-rail::after {
+  background: var(--red);
+}
+
+/* 4. Announcement bar and header -------------------------------------------- */
+.utility {
+  background: var(--charcoal);
+  color: #f3eee7;
+}
+.utility-msg {
+  color: #f3eee7;
+}
+header.site-nav {
+  background: rgba(255, 255, 255, 0.9);
+  -webkit-backdrop-filter: saturate(160%) blur(14px);
+  backdrop-filter: saturate(160%) blur(14px);
+  border-bottom: 1px solid var(--hairline-soft);
+  box-shadow: none;
+}
+header.site-nav.is-scrolled,
+header.site-nav.scrolled {
+  box-shadow: 0 10px 30px -18px rgba(23, 20, 15, 0.35);
+}
+.site-nav .nav-links a,
+.site-nav .brand,
+.site-nav .brand * {
+  color: var(--ink);
+}
+.site-nav .nav-links a:not(.active) {
+  color: var(--ink-2);
+}
+.nav-tools .icon-btn,
+.nav-tools .menu-toggle,
+.site-nav .menu-btn {
+  border-color: var(--line);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  color: var(--ink);
+}
+.nav-tools .icon-btn::before {
+  border-radius: inherit;
+}
+.nav-tools .icon-btn:is(:hover, :focus-visible) {
+  color: #ffffff;
+}
+.count-badge {
+  color: #ffffff;
+}
+
+/* 5. Buttons ----------------------------------------------------------------- */
+.btn,
+.small-action,
+.nav-wa,
+.policy-button,
+.choice,
+.mobile-bar a,
+.mobile-bar button {
+  border-radius: var(--radius-sm);
+}
+.btn::before,
+.btn::after,
+.small-action::before,
+.small-action::after,
+.nav-wa::before,
+.nav-wa::after {
+  border-radius: inherit;
+}
+.btn.primary,
+.small-action,
+.nav-wa,
+.eyebrow,
+.btn.primary *,
+.small-action *,
+.nav-wa * {
+  color: var(--on-red);
+}
+.btn.primary {
+  box-shadow: 0 10px 24px -12px rgba(184, 0, 25, 0.55);
+}
+.btn:not(.primary) {
+  border-color: rgba(23, 20, 15, 0.28);
+  color: var(--ink);
+  background: transparent;
+}
+.btn:not(.primary):is(:hover, :focus-visible) {
+  border-color: var(--red);
+  color: #ffffff;
+}
+.text-link,
+.view-link,
+a.text-link {
+  color: var(--ink);
+}
+
+/* 6. Kickers: a soft red pill instead of a solid red block. -------------------- */
+.eyebrow,
+.editorial-hero .eyebrow {
+  border-radius: 999px;
+  padding: 6px 12px 5px;
+}
+
+/* 7. Hero -------------------------------------------------------------------- */
+/* Desktop and tablet: a bright editorial hero; the moody product photograph
+   sits in a rounded frame like a campaign print. */
+@media (min-width: 761px) {
+  .editorial-hero {
+    background:
+      radial-gradient(60% 70% at 78% 42%, rgba(184, 0, 25, 0.07), rgba(184, 0, 25, 0) 70%),
+      linear-gradient(180deg, #fbf9f6 0%, var(--paper) 100%);
+  }
+  .editorial-hero::before,
+  .editorial-hero::after {
+    background: none;
+  }
+  .editorial-hero .hero-grid::before {
+    background: radial-gradient(closest-side, rgba(184, 0, 25, 0.16), rgba(184, 0, 25, 0.05) 60%, rgba(184, 0, 25, 0) 100%);
+  }
+  .editorial-hero .editorial-visual {
+    border-radius: 24px;
+    overflow: hidden;
+    border: 0;
+    box-shadow:
+      0 2px 6px rgba(23, 20, 15, 0.06),
+      0 40px 80px -30px rgba(23, 20, 15, 0.45);
+  }
+  .editorial-hero .editorial-visual::before {
+    background: none;
+  }
+  .hero-frame-corner,
+  .hero-depth-floor,
+  .hero-embers {
+    display: none;
+  }
+  .editorial-hero h1,
+  .editorial-hero .hero-brandlock strong {
+    color: var(--ink);
+  }
+  .editorial-hero .hero-lede {
+    color: var(--ink-2);
+  }
+  .editorial-hero .hero-proof,
+  .editorial-hero .hero-brandlock span {
+    color: var(--muted);
+  }
+  .editorial-hero h1 .accent-line {
+    color: var(--red);
+  }
+  .editorial-hero .real-range-note {
+    color: #ffffff;
+  }
+}
+/* Phones: the cinematic video hero stays dark, with its own palette. */
+@media (max-width: 760px) {
+  .editorial-hero {
+    --white: #ffffff;
+    --muted: #d9d2c9;
+    --dim: #c9c0b5;
+    --ink: #ffffff;
+    --ink-2: #f1ece6;
+    color-scheme: dark;
+    background: #0b0a09;
+    color: #ffffff;
+  }
+}
+
+/* 8. Cards, photos and captions ---------------------------------------------- */
+.featured-card,
+.product-card,
+.featured-editorial,
+.finder-panel,
+.policy-button,
+.faq-item,
+.trust-grid,
+.review-empty,
+.reviews-strip,
+.visit-panel,
+.visit-location,
+.contact-side,
+.trust-evidence,
+.founder-training {
+  border-radius: var(--radius-lg);
+}
+.featured-card,
+.product-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.featured-card:hover,
+.product-card:hover {
+  box-shadow: var(--shadow-lift);
+}
+.featured-photo,
+.product-photo {
+  background: radial-gradient(70% 60% at 50% 55%, #ffffff 0%, var(--paper-2) 100%);
+}
+.featured-photo::before,
+.product-photo::before {
+  background: none;
+}
+.product-photo-trust,
+.editorial-caption,
+.authenticity-photo figcaption,
+.authenticity-grid span,
+.flavour-media figcaption,
+.founder-training-media figcaption {
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--ink);
+  border-radius: 999px;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+.featured-fact {
+  background: var(--paper);
+  border-radius: var(--radius-sm);
+}
+.featured-editorial,
+.featured-editorial-media,
+.flavour-editorial .wrap,
+.flavour-media,
+.authenticity-media,
+.authenticity-photo,
+.authenticity-media figure,
+.founder-photo,
+.founder-training,
+.founder-training-media {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+:is(.featured-editorial-media, .flavour-media, .authenticity-photo, .authenticity-media figure, .founder-photo, .founder-training-media) {
+  background: var(--paper-2);
+}
+.authenticity-media {
+  background: transparent;
+}
+.featured-editorial,
+.founder-training {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.founder-training {
+  padding: 0;
+}
+
+/* 9. Categories --------------------------------------------------------------- */
+.category-tile {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.category-tile::before {
+  border-radius: 0;
+}
+/* Photo tiles keep a dark scrim under white type. */
+.category-tile.category-photo {
+  --white: #ffffff;
+  --muted: #ede7df;
+  --dim: #ede7df;
+  --ink: #ffffff;
+  border: 0;
+}
+.category-tile.category-photo :is(h3, strong, span, small, p) {
+  color: #ffffff;
+}
+/* Tiles without a photo become clean white cards with a red icon. */
+.category-tile.category-gradient {
+  background: #ffffff;
+}
+.category-tile.category-gradient::after {
+  background: none;
+}
+.category-tile.category-gradient .category-media {
+  background:
+    radial-gradient(90% 80% at 85% 10%, rgba(184, 0, 25, 0.1), rgba(184, 0, 25, 0) 65%),
+    linear-gradient(180deg, #ffffff 0%, var(--paper) 100%);
+}
+.category-tile.category-gradient .category-shine {
+  background: linear-gradient(115deg, rgba(184, 0, 25, 0) 32%, rgba(184, 0, 25, 0.06) 45%, rgba(184, 0, 25, 0) 58%);
+}
+.category-tile.category-gradient :is(h3, strong) {
+  color: var(--ink);
+}
+.category-tile.category-gradient :is(span, small, p) {
+  color: var(--muted);
+}
+.category-tile.category-gradient svg {
+  color: var(--red);
+  stroke: currentColor;
+}
+.category-tile:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+/* 10. Steps, finder, reviews --------------------------------------------------- */
+.finder-panel {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+.choice {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  color: var(--ink);
+}
+.choice[aria-pressed="true"],
+.choice.active,
+.choice.is-active {
+  background: var(--red);
+  border-color: var(--red);
+  color: #ffffff;
+}
+
+/* 11. Policies and FAQ ------------------------------------------------------- */
+.policy-button,
+.faq-item {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+#faq .faq-item {
+  background: var(--paper);
+  box-shadow: none;
+}
+.policy-button:hover {
+  box-shadow: var(--shadow-lift);
+}
+
+/* 12. Dark islands ----------------------------------------------------------- */
+.footer {
+  background: var(--charcoal);
+  color: #ffffff;
+  border-top: 0;
+}
+.bulk-strip {
+  background: radial-gradient(80% 140% at 100% 50%, rgba(184, 0, 25, 0.35), rgba(184, 0, 25, 0) 60%), var(--charcoal);
+  color: #ffffff;
+}
+.bulk-strip .btn:not(.primary) {
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+/* 13. Mobile quick bar ------------------------------------------------------ */
+.mobile-bar {
+  background: rgba(255, 255, 255, 0.94);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--hairline-soft);
+  box-shadow: 0 -12px 30px -18px rgba(23, 20, 15, 0.35);
+}
+.mobile-bar .mobile-call {
+  background: #ffffff;
+  border: 1px solid rgba(23, 20, 15, 0.28);
+  color: var(--ink);
+}
+.mobile-bar .mobile-wa {
+  background: var(--red);
+  border-color: var(--red);
+  color: #ffffff;
+}
+
+/* 14. Fixes after the first visual pass -------------------------------------- */
+/* The Why grid draws its lines through a 1px gap, so the grid is rounded, not
+   each cell. */
+.trust-grid {
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.trust-item {
+  border-radius: 0;
+}
+/* Secondary contact buttons: outlined ink, never dark red on dark red. */
+.small-action.alt {
+  background: #ffffff;
+  border: 1px solid rgba(23, 20, 15, 0.28);
+  color: var(--ink);
+}
+.small-action.alt::after {
+  box-shadow: none;
+}
+.small-action.alt:is(:hover, :focus-visible) {
+  color: #ffffff;
+  border-color: var(--red);
+}
+.category-tile.category-gradient :is(strong, span, small) {
+  text-shadow: none;
+}
+.story-rail::after {
+  background: linear-gradient(90deg, var(--red) 0 64px, var(--line) 64px 100%);
+}
+/* Barlow Condensed sits higher in its line box than the old face: give the
+   red underline under "beast." room inside the reveal clip. */
+.editorial-hero h1 .hero-line.accent-line {
+  padding-bottom: 0.2em;
+  text-underline-offset: 0.08em;
+}
+
+/* Header after scrolling stays light, with a soft shadow. */
+.site-nav.scrolled {
+  background: rgba(255, 255, 255, 0.94);
+  border-bottom-color: var(--hairline-soft);
+  box-shadow: 0 12px 30px -20px rgba(23, 20, 15, 0.4);
+}
+/* Text on red is always white. */
+.order-list-btn,
+.order-list-btn *,
+.filter[aria-pressed="true"],
+.filter[aria-pressed="true"] *,
+.filter.active,
+.filter.active *,
+.category-tag,
+.card-action.add,
+.toast-action,
+.status,
+.policy-dialog .status,
+.modal .status {
+  color: #ffffff;
+}
+.card-trust {
+  color: var(--muted);
+}
+/* Toast: a white card. */
+.toast {
+  background: #ffffff;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--red);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lift);
+}
+.toast p {
+  color: var(--ink);
+}
+.toast-close {
+  color: var(--muted);
+}
+.toast-action {
+  border-radius: var(--radius-sm);
+}
+.back-to-top {
+  border-radius: 999px;
+  background: var(--charcoal);
+  color: #ffffff;
+}
+/* Phone overlays: dialogs and the menu panel were hard-coded black. */
+@media (max-width: 760px) {
+  .modal {
+    background: #ffffff;
+  }
+  .nav-links {
+    background: #ffffff !important;
+    border-bottom: 1px solid var(--line);
+    box-shadow: 0 24px 40px -24px rgba(23, 20, 15, 0.35);
+  }
+  .nav-links a {
+    border-color: var(--line);
+  }
+}
+.mobile-bar .mobile-wa,
+.mobile-wa {
+  color: #ffffff !important;
+}
+.detail-hero picture,
+.detail-hero > .product-photo-pending {
+  background: radial-gradient(70% 60% at 50% 55%, #ffffff 0%, var(--paper-2) 100%);
+  border-color: var(--line);
+  border-radius: var(--radius);
+}
+.detail-hero img {
+  filter: drop-shadow(0 12px 16px rgba(23, 20, 15, 0.18));
+}
+.founder-fact small {
+  color: var(--muted);
+}
